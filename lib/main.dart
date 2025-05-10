@@ -6,6 +6,8 @@ import 'package:sproutly/services/database_service.dart';
 import 'package:sproutly/models/plant.dart';
 import 'package:intl/intl.dart';
 
+import 'screens/dashboard_screen.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -52,12 +54,26 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+
           children: <Widget>[
             const Text('You have pushed the button this many times:'),
+
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DashboardScreen(),
+                  ),
+                );
+              },
+              child: const Text("Go to Dashboard"),
+            ),
             _ListPlants(),
           ],
         ),
       ),
+
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Plant plant = Plant(

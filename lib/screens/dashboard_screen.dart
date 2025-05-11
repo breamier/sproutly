@@ -30,7 +30,12 @@ class DashboardScreen extends StatelessWidget {
             children: [
               Row(
                 // mainAxisAlignment: MainAxisAlignment.center,
-                children: [Image.asset('Sproutly_logo.png', height: 100)],
+                children: [
+                  Image.asset(
+                    'assets/Sproutly_logo.png',
+                    height: MediaQuery.of(context).size.height * 0.1,
+                  ),
+                ],
               ),
 
               // TIPS
@@ -70,9 +75,18 @@ class DashboardScreen extends StatelessWidget {
 
                 child: Row(
                   children: [
-                    PlantThumbnail(name: 'Rose', imagePath: 'Rose.png'),
-                    const SizedBox(width: 12),
-                    PlantThumbnail(name: 'Hyacinth', imagePath: 'Hyacinth.png'),
+                    Expanded(
+                      child: PlantThumbnail(
+                        name: 'Rose',
+                        imagePath: 'assets/Rose.png',
+                      ),
+                    ),
+                    Expanded(
+                      child: PlantThumbnail(
+                        name: 'Hyacinth',
+                        imagePath: 'assets/Hyacinth.png',
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -307,14 +321,18 @@ class PlantThumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final imageWidth = screenWidth * 0.2;
+    final imageHeight = imageWidth * 1.25;
+
     return Column(
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: Image.asset(
             imagePath,
-            width: 80,
-            height: 100,
+            width: imageWidth,
+            height: imageHeight,
             fit: BoxFit.cover,
           ),
         ),
@@ -322,8 +340,8 @@ class PlantThumbnail extends StatelessWidget {
         Text(
           name,
           style: headingFont.copyWith(
-            fontSize: 14,
-            color: Color.fromARGB(255, 114, 120, 49),
+            fontSize: screenWidth * 0.035,
+            color: const Color.fromARGB(255, 114, 120, 49),
           ),
         ),
       ],

@@ -1,12 +1,11 @@
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
 import 'package:sproutly/firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:sproutly/services/database_service.dart';
-import 'package:sproutly/models/plant.dart';
-import 'package:intl/intl.dart';
-
-import 'screens/dashboard_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:sproutly/add_plant.dart';
+import 'screens/landing_page.dart';
+import 'screens/guide_book.dart';
+//import 'add_plant.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,125 +13,151 @@ void main() async {
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: true,
   );
-  runApp(const MyApp());
+  runApp(const SproutlyApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class SproutlyApp extends StatelessWidget {
+  const SproutlyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Sproutly',
       debugShowCheckedModeBanner: false,
-
-      title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF747822),
+          primary: const Color(0xFF747822),
+        ),
+        useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: HomeScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-  final String title;
+class HomeScreen extends StatefulWidget {
+  HomeScreen({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  final DatabaseService _databaseService = DatabaseService();
-
+class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+    const Color buttonColor = Color(0xFF747822);
 
-        title: Text(widget.title),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text(
+          'Sproutly Home Page',
+          style: TextStyle(
+            color: Color(0xFF747822),
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Poppins',
+          ),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
 
           children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const DashboardScreen(),
+            SizedBox(
+              width: 200,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LandingPage(),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                );
-              },
-              child: const Text("Go to Dashboard"),
+                ),
+                child: const Text(
+                  'Landing Page',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ),
             ),
-            _ListPlants(),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: 200,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const GuideBookScreen(),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Guide Book',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: 200,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddPlantPage(),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Add Plant',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
-      ),
-
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Plant plant = Plant(
-            plantName: "New Plant",
-            addedOn: Timestamp.now(),
-            type: "Type of Plant",
-          );
-          _databaseService.addPlant(plant);
-        },
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-
-  Widget _ListPlants() {
-    return SizedBox(
-      height: MediaQuery.sizeOf(context).height * 0.80,
-      width: MediaQuery.sizeOf(context).width,
-      child: StreamBuilder(
-        stream: _databaseService.getPlants(),
-        builder: (context, snapshot) {
-          List plants = snapshot.data?.docs ?? [];
-          if (plants.isEmpty) {
-            return const Center(child: Text("Add a plant!"));
-          }
-          print(plants);
-
-          return ListView.builder(
-            itemCount: plants.length,
-            itemBuilder: (context, index) {
-              // Instance of Plant (can access stuff through plant.plantName)
-              Plant plant = plants[index].data();
-              // Get plan id
-              String plantId = plants[index].id;
-              print(plantId);
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 10,
-                  horizontal: 10,
-                ),
-                child: ListTile(
-                  tileColor: Colors.amberAccent,
-                  title: Text(plant.plantName),
-                  subtitle: Text(
-                    DateFormat(
-                      "dd-MM-YYYY h:mm a",
-                    ).format(plant.addedOn.toDate()),
-                  ),
-                  onTap: () {
-                    _databaseService.deletePlant(plantId);
-                  },
-                ),
-              );
-            },
-          );
-        },
       ),
     );
   }

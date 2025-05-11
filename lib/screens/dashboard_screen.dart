@@ -32,7 +32,7 @@ class DashboardScreen extends StatelessWidget {
                 // mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Image.asset(
-                    'assets/Sproutly_logo.png',
+                    'assets/sproutly_logo2.png',
                     height: MediaQuery.of(context).size.height * 0.1,
                   ),
                 ],
@@ -78,13 +78,13 @@ class DashboardScreen extends StatelessWidget {
                     Expanded(
                       child: PlantThumbnail(
                         name: 'Rose',
-                        imagePath: 'assets/Rose.png',
+                        imagePath: 'assets/rose.png',
                       ),
                     ),
                     Expanded(
                       child: PlantThumbnail(
                         name: 'Hyacinth',
-                        imagePath: 'assets/Hyacinth.png',
+                        imagePath: 'assets/hyacinth.png',
                       ),
                     ),
                   ],

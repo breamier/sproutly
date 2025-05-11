@@ -61,11 +61,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-<<<<<<< HEAD
-    - assets/Sproutly_logo.png
-    - assets/Hyacinth.png
-    - assets/Rose.png
     - assets/sproutly_logo.png
+    - assets/sproutly_logo2.png
     - assets/cactus.png
     - assets/herbs.png
     - assets/trees.png
@@ -77,7 +74,6 @@ flutter:
     - assets/rose.png
     - assets/hyacinth.png
 
->>>>>>> 01adb8c221e08341edb18e868c4a8db0037a8d9f
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

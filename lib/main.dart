@@ -3,6 +3,7 @@ import 'package:sproutly/firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:sproutly/add_plant.dart';
+import 'package:sproutly/screens/dashboard_screen.dart';
 import 'screens/landing_page.dart';
 import 'screens/guide_book.dart';
 //import 'add_plant.dart';
@@ -65,6 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+
           children: <Widget>[
             SizedBox(
               width: 200,
@@ -95,6 +97,38 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
+
+            const SizedBox(height: 16),
+            SizedBox(
+              width: 200,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const DashboardScreen(),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Dashboard',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ),
+            ),
+
             const SizedBox(height: 16),
             SizedBox(
               width: 200,
@@ -115,6 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
+
                 child: const Text(
                   'Guide Book',
                   style: TextStyle(

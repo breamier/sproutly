@@ -7,8 +7,8 @@ class DashboardScreen extends StatelessWidget {
   static const TextStyle headingFont = TextStyle(
     fontFamily: 'Poppins',
     fontWeight: FontWeight.w700,
-    fontSize: 18,
-    color: Color(0xFF4B5502),
+    fontSize: 24,
+    color: Color(0xFF747822),
   );
 
   static const TextStyle bodyFont = TextStyle(
@@ -21,6 +21,23 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight + 20),
+        child: AppBar(
+          automaticallyImplyLeading: false,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          title: Row(
+            children: [
+              Image.asset(
+                'assets/sproutly_logo2.png',
+                height: kToolbarHeight + 30,
+              ),
+            ],
+          ),
+        ),
+      ),
+
       backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -28,16 +45,6 @@ class DashboardScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                // mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    'assets/sproutly_logo2.png',
-                    height: MediaQuery.of(context).size.height * 0.1,
-                  ),
-                ],
-              ),
-
               // TIPS
               TipsWidget(),
 
@@ -69,23 +76,17 @@ class DashboardScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF2EFEF),
                   borderRadius: BorderRadius.circular(12),
                 ),
-
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: PlantThumbnail(
-                        name: 'Rose',
-                        imagePath: 'assets/rose.png',
-                      ),
-                    ),
-                    Expanded(
-                      child: PlantThumbnail(
-                        name: 'Hyacinth',
-                        imagePath: 'assets/hyacinth.png',
-                      ),
+                child: Wrap(
+                  spacing: 16,
+                  runSpacing: 16,
+                  alignment: WrapAlignment.start,
+                  children: const [
+                    PlantThumbnail(name: 'Rose', imagePath: 'assets/rose.png'),
+                    PlantThumbnail(
+                      name: 'Hyacinth',
+                      imagePath: 'assets/hyacinth.png',
                     ),
                   ],
                 ),
@@ -185,13 +186,15 @@ class _TipsWidgetState extends State<TipsWidget> {
               IconButton(
                 onPressed: _goToPrevious,
                 icon: const Icon(Icons.arrow_back_ios, size: 20),
-                color: _currentPage == 0 ? Colors.grey : Colors.black,
+                color: _currentPage == 0
+                    ? Color.fromARGB(255, 161, 162, 135)
+                    : Color(0xFF747822),
               ),
 
               // Tip content
               Expanded(
                 child: SizedBox(
-                  height: 60,
+                  height: 80,
                   child: PageView.builder(
                     controller: _pageController,
                     itemCount: tips.length,
@@ -204,7 +207,7 @@ class _TipsWidgetState extends State<TipsWidget> {
                       return Center(
                         child: Text(
                           tips[index],
-                          style: bodyFont,
+                          style: bodyFont.copyWith(color: Color(0xFF4B5502)),
                           textAlign: TextAlign.center,
                         ),
                       );
@@ -284,8 +287,8 @@ class ReminderCard extends StatelessWidget {
                       child: Text(
                         task,
                         style: bodyFont.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: Color.fromARGB(255, 114, 120, 49),
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF747822),
                         ),
                       ),
                     ),

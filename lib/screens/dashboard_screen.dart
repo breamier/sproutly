@@ -265,7 +265,7 @@ class ReminderCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF2EFEF),
+        color: const Color(0xFFF8F4F4),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(

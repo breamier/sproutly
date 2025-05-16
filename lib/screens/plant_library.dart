@@ -143,7 +143,6 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
     return filteredPlants.map((plant) {
       return GestureDetector(
         onTap: () {
-          // Navigate to plant profile screen when a plant is tapped
           Navigator.push(
             context,
             MaterialPageRoute(

@@ -98,7 +98,6 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // If showing resolved issues, use full screen
     if (_showResolvedIssues) {
       return Scaffold(
         backgroundColor: Colors.white,
@@ -134,7 +133,7 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
                     ),
                     const SizedBox(width: 15),
                     Text(
-                      'Resolved Issues',
+                      'Plant Issues',
                       style: TextStyle(
                         fontFamily: 'Curvilingus',
                         fontSize: 34,

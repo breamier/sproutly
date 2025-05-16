@@ -6,6 +6,7 @@ import 'package:sproutly/add_plant.dart';
 import 'package:sproutly/screens/dashboard_screen.dart';
 import 'screens/landing_page.dart';
 import 'screens/guide_book.dart';
+import 'screens/reminders_screen.dart';
 //import 'add_plant.dart';
 
 void main() async {
@@ -160,6 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
+
             const SizedBox(height: 16),
             SizedBox(
               width: 200,
@@ -182,6 +184,38 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: const Text(
                   'Add Plant',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ),
+            ),
+
+            // Reminders
+            const SizedBox(height: 16),
+            SizedBox(
+              width: 200,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const RemindersScreen(),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Reninders Screen',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

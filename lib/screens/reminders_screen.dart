@@ -22,7 +22,7 @@ class RemindersScreen extends StatelessWidget {
     fontFamily: 'Poppins',
     fontWeight: FontWeight.w400,
     fontSize: 14,
-    color: Colors.black87,
+    color: Color(0xFF747822),
   );
 
   @override
@@ -36,8 +36,7 @@ class RemindersScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              crossAxisAlignment:
-                  CrossAxisAlignment.center, // vertically center
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
                   width: 50,
@@ -154,7 +153,7 @@ class ReminderCard extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                           color: const Color(0xFF747822),
                         ),
-                        overflow: TextOverflow.ellipsis, // avoid overflow
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Text(

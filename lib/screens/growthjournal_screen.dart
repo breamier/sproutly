@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sproutly/main.dart';
 
 class GrowthJournalScreen extends StatelessWidget {
   const GrowthJournalScreen({super.key});
@@ -8,22 +9,22 @@ class GrowthJournalScreen extends StatelessWidget {
   static const TextStyle titleFont = TextStyle(
     fontFamily: 'Curvilingus',
     fontWeight: FontWeight.w700,
-    fontSize: 28,
-    color: oliveGreen,
+    fontSize: 40,
+    color: Color(0xFF747822),
   );
 
   static const TextStyle headingFont = TextStyle(
     fontFamily: 'Poppins',
     fontWeight: FontWeight.w700,
-    fontSize: 18,
-    color: oliveGreen,
+    fontSize: 24,
+    color: Color(0xFF747822),
   );
 
   static const TextStyle bodyFont = TextStyle(
     fontFamily: 'Poppins',
     fontWeight: FontWeight.w400,
-    fontSize: 14,
-    color: Colors.black87,
+    fontSize: 20,
+    color: Color(0xFF747822),
   );
 
   @override
@@ -39,16 +40,30 @@ class GrowthJournalScreen extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  width: 28,
-                  height: 28,
+                  width: 50,
+                  height: 50,
                   decoration: BoxDecoration(
+                    color: const Color(0xFF8C8F3E).withOpacity(0.25),
                     shape: BoxShape.circle,
-                    border: Border.all(color: oliveGreen, width: 2),
+                    border: Border.all(
+                      color: const Color(0xFF8C8F3E),
+                      width: 2,
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.chevron_right,
-                    size: 18,
-                    color: oliveGreen,
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SproutlyApp(),
+                        ),
+                      );
+                    },
+                    child: Icon(
+                      Icons.chevron_right,
+                      color: Color(0xFF8C8F3E),
+                      size: 36,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -56,14 +71,14 @@ class GrowthJournalScreen extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 25),
 
             const Text("Notes", style: headingFont),
             const SizedBox(height: 12),
 
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
               decoration: BoxDecoration(
                 border: Border.all(color: oliveGreen),
                 borderRadius: BorderRadius.circular(8),
@@ -87,11 +102,11 @@ class GrowthJournalScreen extends StatelessWidget {
 
             Row(
               children: [
-                _buildPhoto("assets/tulips.png"),
+                _buildPhoto(context, "assets/tulips.png"),
                 const SizedBox(width: 8),
-                _buildPhoto("assets/hyacinth.png"),
+                _buildPhoto(context, "assets/hyacinth.png"),
                 const SizedBox(width: 8),
-                _buildAddPhotoBox(),
+                _buildAddPhotoBox(context),
               ],
             ),
 
@@ -127,33 +142,50 @@ class GrowthJournalScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPhoto(String path) {
+  Widget _buildPhoto(BuildContext context, String path) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final imageWidth = screenWidth * 0.25;
+    final imageHeight = imageWidth * 1.30;
+
     return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: Image.asset(path, width: 70, height: 70, fit: BoxFit.cover),
+      // borderRadius: BorderRadius.circular(8),
+      child: Image.asset(
+        path,
+        width: imageWidth,
+        height: imageHeight,
+        fit: BoxFit.cover,
+      ),
     );
   }
 
-  Widget _buildAddPhotoBox() {
+  Widget _buildAddPhotoBox(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final imageWidth = screenWidth * 0.25;
+    final imageHeight = imageWidth * 1.30;
+
     return Container(
-      width: 70,
-      height: 70,
+      width: imageWidth,
+      height: imageHeight,
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: Color.fromARGB(255, 136, 123, 123)),
+        // borderRadius: BorderRadius.circular(4),
       ),
       child: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add, size: 20, color: Colors.grey),
+            Icon(
+              Icons.add,
+              size: 20,
+              color: Color.fromARGB(255, 136, 123, 123),
+            ),
             SizedBox(height: 2),
             Text(
               "Add new photo",
               style: TextStyle(
                 fontFamily: 'Poppins',
-                fontSize: 8,
-                color: Colors.grey,
+                fontSize: 10,
+                color: Color.fromARGB(255, 136, 123, 123),
               ),
               textAlign: TextAlign.center,
             ),

@@ -2,12 +2,15 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:sproutly/firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:sproutly/add_plant.dart';
 import 'package:sproutly/screens/dashboard_screen.dart';
 import 'screens/landing_page.dart';
 import 'screens/guide_book.dart';
 import 'screens/reminders_screen.dart';
 //import 'add_plant.dart';
+import 'screens/add_plant_form.dart';
+
+import 'package:provider/provider.dart';
+import 'services/database_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,7 +18,26 @@ void main() async {
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: true,
   );
-  runApp(const SproutlyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider<DatabaseService>(create: (_) => DatabaseService()),
+        // can add more providers here to share objects and instances
+      ],
+      child: const SproutlyApp(),
+    ),
+  );
+}
+
+// test if correctly fetching the dropdowns options/values
+Future<void> testPaths() async {
+  final db = DatabaseService();
+  print('Water levels: ${await db.getDropdownOptions('water-level')}');
+  print('Sunlight: ${await db.getDropdownOptions('sunlight-level')}');
+  print('Care levels: ${await db.getDropdownOptions('care-level')}');
+  print(
+    'Types: ${await db.getDropdownOptions('water-storage-and-adaptation')}',
+  );
 }
 
 class SproutlyApp extends StatelessWidget {
@@ -39,7 +61,7 @@ class SproutlyApp extends StatelessWidget {
 }
 
 class HomeScreen extends StatefulWidget {
-  HomeScreen({super.key});
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -170,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const AddPlantPage(),
+                      builder: (context) => const AddNewPlant(),
                     ),
                   );
                 },
@@ -222,6 +244,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     fontFamily: 'Poppins',
                   ),
                 ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: 200,
+              child: ElevatedButton(
+                onPressed: () async {
+                  await testPaths();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Check console for test results')),
+                  );
+                },
+                child: Text('Test Firestore Paths'),
               ),
             ),
           ],

@@ -1,10 +1,5 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:sproutly/firebase_options.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sproutly/services/database_service.dart';
-import 'package:sproutly/models/plant.dart';
-import 'package:intl/intl.dart';
 
 class AddPlantPage extends StatefulWidget {
   const AddPlantPage({super.key});

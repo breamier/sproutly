@@ -141,7 +141,7 @@ class NotiService {
         body,
         scheduledDate,
         notificationDetails(),
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
 
         matchDateTimeComponents: weekday != null
             ? DateTimeComponents.dayOfWeekAndTime

@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Plant {
@@ -28,47 +29,46 @@ class Plant {
   });
 
   factory Plant.fromJson(Map<String, Object?> json, String id) {
+    Timestamp timestamp;
+    try {
+      timestamp = _parseAddedOn(json['addedOn']);
+    } catch (e) {
+      timestamp = Timestamp.now();
+    }
+
     return Plant(
       id: id,
-      plantName: json['plantName']! as String,
-      date: json['date']! as String,
-      time: json['time']! as String,
-      water: json['water']! as String,
-      sunlight: json['sunlight']! as String,
-      careLevel: json['careLevel']! as String,
+      plantName: json['plantName'] as String? ?? 'Unknown Plant',
+      date: json['date'] as String? ?? '',
+      time: json['time'] as String? ?? '',
+      water: json['water'] as String? ?? '',
+      sunlight: json['sunlight'] as String? ?? '',
+      careLevel: json['careLevel'] as String? ?? '',
       lifespan: json['lifespan'] as String?,
       waterStorage: json['waterStorage'] as String?,
-      addedOn: json['addedOn']! as Timestamp,
+      addedOn: timestamp,
       type: json['type'] as String?,
     );
   }
 
-  Plant copyWith({
-    String? id,
-    String? plantName,
-    String? date,
-    String? time,
-    String? water,
-    String? sunlight,
-    String? careLevel,
-    String? lifespan,
-    String? waterStorage,
-    Timestamp? addedOn,
-    String? type,
-  }) {
-    return Plant(
-      id: id ?? this.id,
-      plantName: plantName ?? this.plantName,
-      date: date ?? this.date,
-      time: time ?? this.time,
-      water: water ?? this.water,
-      sunlight: sunlight ?? this.sunlight,
-      careLevel: careLevel ?? this.careLevel,
-      lifespan: lifespan ?? this.lifespan,
-      waterStorage: waterStorage ?? this.waterStorage,
-      addedOn: addedOn ?? this.addedOn,
-      type: type ?? this.type,
-    );
+  static Timestamp _parseAddedOn(dynamic addedOn) {
+    if (addedOn is Timestamp) {
+      return addedOn;
+    } else if (addedOn is String) {
+      try {
+        final dateTime = DateTime.tryParse(addedOn);
+        if (dateTime != null) {
+          return Timestamp.fromDate(dateTime);
+        }
+
+        final format = DateFormat("MMMM d, y 'at' h:mm:ss a 'UTC'Z");
+        final parsedDate = format.parse(addedOn.replaceAll('UTC+', 'UTC+'));
+        return Timestamp.fromDate(parsedDate);
+      } catch (e) {
+        throw FormatException('Could not parse date: $addedOn');
+      }
+    }
+    throw ArgumentError('addedOn must be either Timestamp or String');
   }
 
   Map<String, Object?> toJson() {

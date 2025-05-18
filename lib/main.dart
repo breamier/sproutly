@@ -1,20 +1,63 @@
+//imports
+import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:sproutly/firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:sproutly/add_plant.dart';
-import 'package:sproutly/screens/dashboard_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+//services
+import 'services/database_service.dart';
+import 'services/schedule_service.dart';
+import 'services/notification_service.dart';
+
+//screens
+import 'screens/dashboard_screen.dart';
 import 'screens/landing_page.dart';
 import 'screens/guide_book.dart';
+import 'screens/add_plant_form.dart';
+import 'screens/watering_schedule.dart';
 import 'screens/plant_library.dart';
 
 void main() async {
+  // initialize database
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: true,
   );
-  runApp(const SproutlyApp());
+
+  // Check and request notification permissions
+  final hasPermission = await AppPermissions.checkAndRequestNotifications();
+  debugPrint('Notification permission granted: $hasPermission');
+
+  // initialize notification
+  await NotiService().initNotification();
+  // Initialize background notification handler
+
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider<DatabaseService>(create: (_) => DatabaseService()),
+        Provider<ScheduleService>(create: (_) => ScheduleService()),
+        Provider<NotiService>(create: (_) => NotiService()),
+
+        // can add more providers here to share objects and instances
+      ],
+      child: const SproutlyApp(),
+    ),
+  );
+}
+
+// test if correctly fetching the dropdowns options/values
+Future<void> testPaths() async {
+  final db = DatabaseService();
+  debugPrint('Water levels: ${await db.getDropdownOptions('water-level')}');
+  debugPrint('Sunlight: ${await db.getDropdownOptions('sunlight-level')}');
+  debugPrint('Care levels: ${await db.getDropdownOptions('care-level')}');
+  debugPrint(
+    'Types: ${await db.getDropdownOptions('water-storage-and-adaptation')}',
+  );
 }
 
 class SproutlyApp extends StatelessWidget {
@@ -38,7 +81,7 @@ class SproutlyApp extends StatelessWidget {
 }
 
 class HomeScreen extends StatefulWidget {
-  HomeScreen({super.key});
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -199,7 +242,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const AddPlantPage(),
+                      builder: (context) => const AddNewPlant(),
                     ),
                   );
                 },
@@ -221,9 +264,64 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
+            // watering schedule page
+            const SizedBox(height: 16),
+            SizedBox(
+              width: 200,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const WateringScheduleScreen(),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Watering Schedule',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: 200,
+              child: ElevatedButton(
+                onPressed: () async {
+                  await testPaths();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Check console for test results')),
+                  );
+                },
+                child: Text('Test Firestore Paths'),
+              ),
+            ),
           ],
         ),
       ),
     );
+  }
+}
+
+class AppPermissions {
+  static Future<bool> checkAndRequestNotifications() async {
+    final status = await Permission.notification.status;
+    if (status.isDenied) {
+      final result = await Permission.notification.request();
+      return result.isGranted;
+    }
+    return status.isGranted;
   }
 }

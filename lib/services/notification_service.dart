@@ -159,3 +159,5 @@ class NotiService {
     await notificationPlugin.cancelAll();
   }
 }
+}
+

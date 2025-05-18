@@ -104,3 +104,5 @@ class ScheduleService {
     return snapshot.docs;
   }
 }
+}
+

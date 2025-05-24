@@ -243,6 +243,36 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             // Reminders
+            const SizedBox(height: 16),
+            SizedBox(
+              width: 200,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const RemindersScreen(),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Reminders Screen',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ),
+            ),
 
             // watering schedule page
             const SizedBox(height: 16),
@@ -253,8 +283,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const RemindersScreen(),
-
                       builder: (context) => const WateringScheduleScreen(),
                     ),
                   );
@@ -268,8 +296,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 child: const Text(
-                  'Reninders Screen',
-
                   'Watering Schedule',
                   style: TextStyle(
                     fontSize: 16,
@@ -345,7 +371,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             // Firestore stuff
-
             const SizedBox(height: 16),
             SizedBox(
               width: 200,

@@ -22,6 +22,7 @@ import 'package:sproutly/screens/dashboard_screen.dart';
 import 'package:sproutly/screens/landing_page.dart';
 import 'package:sproutly/screens/guide_book/guide_book.dart';
 import 'package:sproutly/screens/add_plant/add_plant_form.dart';
+import 'package:sproutly/screens/add_plant/add_plant_camera.dart';
 import 'package:sproutly/screens/watering_schedule.dart';
 import 'package:sproutly/screens/user_plant_library/plant_library.dart';
 import 'package:sproutly/screens/reminders_screen.dart';
@@ -138,14 +139,15 @@ class DevToolsPage extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
             SizedBox(
               width: 200,
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => DashboardScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const LandingPage(),
+                    ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
@@ -157,7 +159,35 @@ class DevToolsPage extends StatelessWidget {
                   ),
                 ),
                 child: const Text(
-                  'Dashboard',
+                  'Landing Page',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: 200,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => AddPlantCamera()),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Add Plant Camera',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

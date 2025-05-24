@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sproutly/main.dart';
+import 'package:sproutly/screens/growth_journal/growthjournal_entries_screen.dart';
 
 class GrowthJournalScreen extends StatelessWidget {
   const GrowthJournalScreen({super.key});
@@ -70,7 +71,7 @@ class GrowthJournalScreen extends StatelessWidget {
                       );
                     },
                     child: const Icon(
-                      Icons.chevron_right,
+                      Icons.chevron_left,
                       color: Color(0xFF8C8F3E),
                       size: 36,
                     ),
@@ -108,12 +109,14 @@ class GrowthJournalScreen extends StatelessWidget {
                   Text("Title", style: headingFont),
                   SizedBox(height: 8),
                   Expanded(
-                    child: SingleChildScrollView(
-                      child: Text(
-                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
-                        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. "
-                        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-                        style: bodyFont,
+                    child: TextField(
+                      maxLines: null,
+                      expands: true,
+                      style: bodyFont,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding: EdgeInsets.zero,
                       ),
                     ),
                   ),
@@ -146,7 +149,12 @@ class GrowthJournalScreen extends StatelessWidget {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  // TODO: Implement save logic
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => GrowthJournalEntriesScreen(),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: oliveGreen,

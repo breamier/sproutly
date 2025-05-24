@@ -135,48 +135,33 @@ class _ReminderCardState extends State<ReminderCard> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFFF8F4F4),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Transform.scale(
-            scale: 1.5, // makes the checkbox bigger
-            child: Checkbox(
-              value: isChecked,
-              onChanged: (bool? value) {
-                setState(() {
-                  isChecked = value ?? false;
-                });
-              },
-              shape: const CircleBorder(),
-              activeColor: const Color.fromARGB(255, 85, 91, 16),
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const SizedBox(), // empty to push date to the right
-                    Text(
-                      widget.time,
-                      style: RemindersScreen.bodyFont.copyWith(
-                        color: Colors.grey,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Transform.scale(
+                scale: 1.5,
+                child: Checkbox(
+                  value: isChecked,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      isChecked = value ?? false;
+                    });
+                  },
+                  shape: const CircleBorder(),
+                  activeColor: const Color.fromARGB(255, 85, 91, 16),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                const SizedBox(height: 4),
-                Text(
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
                   widget.task,
                   style: RemindersScreen.bodyFont.copyWith(
                     fontWeight: FontWeight.w500,
@@ -184,7 +169,18 @@ class _ReminderCardState extends State<ReminderCard> {
                   ),
                   softWrap: true,
                 ),
-              ],
+              ),
+            ],
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: Text(
+              widget.time,
+              style: RemindersScreen.bodyFont.copyWith(
+                color: Colors.grey,
+                fontSize: 12,
+              ),
             ),
           ),
         ],

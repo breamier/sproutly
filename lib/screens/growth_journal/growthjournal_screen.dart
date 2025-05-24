@@ -106,7 +106,14 @@ class GrowthJournalScreen extends StatelessWidget {
               child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Title", style: headingFont),
+                  TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Title',
+                      hintStyle: headingFont,
+                      border: InputBorder.none,
+                    ),
+                    style: headingFont,
+                  ),
                   SizedBox(height: 8),
                   Expanded(
                     child: TextField(
@@ -206,7 +213,7 @@ class GrowthJournalScreen extends StatelessWidget {
     return SizedBox(
       width: boxWidth,
       child: AspectRatio(
-        aspectRatio: 3 / 4, // Matches image aspect ratio
+        aspectRatio: 3 / 4,
         child: Container(
           decoration: BoxDecoration(
             border: Border.all(color: const Color.fromARGB(255, 136, 123, 123)),

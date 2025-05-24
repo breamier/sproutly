@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sproutly/main.dart';
 
-// Constants
 const Color oliveGreen = Color(0xFF747822);
 
 const TextStyle titleFont = TextStyle(
@@ -75,7 +74,16 @@ class GrowthJournalEntriesScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Text('Growth Journal\nEntries', style: titleFont),
+                  Text(
+                    'Growth Journal\nEntries',
+                    style: TextStyle(
+                      fontFamily: 'Curvilingus',
+                      fontWeight: FontWeight.w700,
+                      fontSize: (MediaQuery.of(context).size.width * 0.08)
+                          .clamp(24.0, 38.0),
+                      color: const Color(0xFF747822),
+                    ),
+                  ),
                 ],
               ),
 

@@ -67,7 +67,15 @@ class GrowthJournalScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Text("Growth Journal", style: titleFont),
+                Text(
+                  "Growth Journal",
+                  style: TextStyle(
+                    fontFamily: 'Curvilingus',
+                    fontWeight: FontWeight.w700,
+                    fontSize: MediaQuery.of(context).size.width * 0.08,
+                    color: const Color(0xFF747822),
+                  ),
+                ),
               ],
             ),
 
@@ -100,14 +108,17 @@ class GrowthJournalScreen extends StatelessWidget {
             const Text("Photos", style: headingFont),
             const SizedBox(height: 12),
 
-            Row(
-              children: [
-                _buildPhoto(context, "assets/tulips.png"),
-                const SizedBox(width: 8),
-                _buildPhoto(context, "assets/hyacinth.png"),
-                const SizedBox(width: 8),
-                _buildAddPhotoBox(context),
-              ],
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildPhoto(context, "assets/tulips.png"),
+                  const SizedBox(width: 8),
+                  _buildPhoto(context, "assets/hyacinth.png"),
+                  const SizedBox(width: 8),
+                  _buildAddPhotoBox(context),
+                ],
+              ),
             ),
 
             const Spacer(),
@@ -144,7 +155,7 @@ class GrowthJournalScreen extends StatelessWidget {
 
   Widget _buildPhoto(BuildContext context, String path) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final imageWidth = screenWidth * 0.25;
+    final imageWidth = (screenWidth * 0.25).clamp(80.0, 150.0);
     final imageHeight = imageWidth * 1.30;
 
     return ClipRRect(

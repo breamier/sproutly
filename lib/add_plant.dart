@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:sproutly/models/plant.dart';
 import 'package:sproutly/services/database_service.dart';
 
 class AddPlantPage extends StatefulWidget {
@@ -35,6 +38,12 @@ class _AddPlantPageState extends State<AddPlantPage> {
             plantName: "New Plant",
             addedOn: Timestamp.now(),
             type: "Type of Plant",
+            id: '',
+            date: '',
+            time: '',
+            water: '',
+            sunlight: '',
+            careLevel: '',
           );
           _databaseService.addPlant(plant);
         },

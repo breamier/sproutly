@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:sproutly/firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:sproutly/screens/dashboard_screen.dart';
+import 'package:sproutly/screens/growthjournal_entries_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sproutly/widget_tree.dart';
@@ -12,6 +15,19 @@ import 'package:sproutly/widget_tree.dart';
 import 'services/database_service.dart';
 import 'services/schedule_service.dart';
 import 'services/notification_service.dart';
+
+//screens
+import 'screens/dashboard_screen.dart';
+import 'screens/landing_page.dart';
+import 'screens/guide_book.dart';
+import 'screens/reminders_screen.dart';
+//import 'add_plant.dart';
+import 'screens/add_plant_form.dart';
+import 'screens/growthjournal_screen.dart';
+import 'package:provider/provider.dart';
+import 'services/database_service.dart';
+import 'screens/watering_schedule.dart';
+import 'screens/plant_library.dart';
 
 Future<void> main() async {
   // initialize database

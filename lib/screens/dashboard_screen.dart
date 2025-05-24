@@ -48,6 +48,23 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight + 20),
+        child: AppBar(
+          automaticallyImplyLeading: false,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          title: Row(
+            children: [
+              Image.asset(
+                'assets/sproutly_logo2.png',
+                height: kToolbarHeight + 15,
+              ),
+            ],
+          ),
+        ),
+      ),
+
       backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -307,7 +324,7 @@ class ReminderCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF2EFEF),
+        color: const Color(0xFFF8F4F4),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(

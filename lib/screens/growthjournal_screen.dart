@@ -121,7 +121,8 @@ class GrowthJournalScreen extends StatelessWidget {
               ),
             ),
 
-            const Spacer(),
+            // const Spacer(),
+            const SizedBox(height: 15),
 
             Center(
               child: ElevatedButton(
@@ -155,11 +156,10 @@ class GrowthJournalScreen extends StatelessWidget {
 
   Widget _buildPhoto(BuildContext context, String path) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final imageWidth = (screenWidth * 0.26).clamp(90.0, 130.0);
+    final imageWidth = screenWidth * 0.2;
     final imageHeight = imageWidth * 1.30;
 
     return ClipRRect(
-      // borderRadius: BorderRadius.circular(8),
       child: Image.asset(
         path,
         width: imageWidth,
@@ -171,7 +171,7 @@ class GrowthJournalScreen extends StatelessWidget {
 
   Widget _buildAddPhotoBox(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final imageWidth = screenWidth * 0.25;
+    final imageWidth = screenWidth * 0.2;
     final imageHeight = imageWidth * 1.30;
 
     return Container(
@@ -195,7 +195,7 @@ class GrowthJournalScreen extends StatelessWidget {
               "Add new photo",
               style: TextStyle(
                 fontFamily: 'Poppins',
-                fontSize: 10,
+                fontSize: 8,
                 color: Color.fromARGB(255, 136, 123, 123),
               ),
               textAlign: TextAlign.center,

@@ -21,7 +21,6 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-<<<<<<< HEAD
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(kToolbarHeight + 20),
         child: AppBar(
@@ -39,8 +38,6 @@ class DashboardScreen extends StatelessWidget {
         ),
       ),
 
-=======
->>>>>>> 366a4035de7b8b65f5694a7857f6a2747502b3a4
       backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),

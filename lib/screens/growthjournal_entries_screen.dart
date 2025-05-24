@@ -75,11 +75,11 @@ class GrowthJournalEntriesScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'Growth Journal\nEntries',
+                    'Growth Journal Entries',
                     style: TextStyle(
                       fontFamily: 'Curvilingus',
                       fontWeight: FontWeight.w700,
-                      fontSize: (MediaQuery.of(context).size.width * 0.08)
+                      fontSize: (MediaQuery.of(context).size.width * 0.05)
                           .clamp(24.0, 38.0),
                       color: const Color(0xFF747822),
                     ),

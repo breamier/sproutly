@@ -31,7 +31,7 @@ class DashboardScreen extends StatelessWidget {
             children: [
               Image.asset(
                 'assets/sproutly_logo2.png',
-                height: kToolbarHeight + 30,
+                height: kToolbarHeight + 15,
               ),
             ],
           ),

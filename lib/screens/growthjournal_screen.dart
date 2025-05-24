@@ -155,7 +155,7 @@ class GrowthJournalScreen extends StatelessWidget {
 
   Widget _buildPhoto(BuildContext context, String path) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final imageWidth = (screenWidth * 0.25).clamp(80.0, 150.0);
+    final imageWidth = (screenWidth * 0.26).clamp(90.0, 130.0);
     final imageHeight = imageWidth * 1.30;
 
     return ClipRRect(

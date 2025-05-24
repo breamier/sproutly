@@ -27,8 +27,12 @@ class GrowthJournalScreen extends StatelessWidget {
     color: oliveGreen,
   );
 
-  // Example mock image paths – replace with dynamic data later
+  // Example mock image paths
   final List<String> imagePaths = const [
+    'assets/tulips.png',
+    'assets/hyacinth.png',
+    'assets/tulips.png',
+    'assets/hyacinth.png',
     'assets/tulips.png',
     'assets/hyacinth.png',
   ];
@@ -121,18 +125,19 @@ class GrowthJournalScreen extends StatelessWidget {
             const Text("Photos", style: headingFont),
             const SizedBox(height: 12),
 
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  ...imagePaths.map(
-                    (path) => Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: _buildPhoto(context, path),
-                    ),
-                  ),
-                  _buildAddPhotoBox(context),
-                ],
+            SizedBox(
+              height: MediaQuery.of(context).size.width * 0.2 * 1.30,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: imagePaths.length + 1,
+                separatorBuilder: (context, index) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  if (index < imagePaths.length) {
+                    return _buildPhoto(context, imagePaths[index]);
+                  } else {
+                    return _buildAddPhotoBox(context);
+                  }
+                },
               ),
             ),
 
@@ -213,7 +218,7 @@ class GrowthJournalScreen extends StatelessWidget {
                   "Add new photo",
                   style: TextStyle(
                     fontFamily: 'Poppins',
-                    fontSize: 10,
+                    fontSize: 8,
                     color: Color.fromARGB(255, 136, 123, 123),
                   ),
                   textAlign: TextAlign.center,

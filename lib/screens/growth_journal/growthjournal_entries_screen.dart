@@ -67,7 +67,7 @@ class GrowthJournalEntriesScreen extends StatelessWidget {
                         );
                       },
                       child: const Icon(
-                        Icons.chevron_right,
+                        Icons.chevron_left,
                         color: Color(0xFF8C8F3E),
                         size: 36,
                       ),
@@ -75,11 +75,11 @@ class GrowthJournalEntriesScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'Growth Journal Entries',
+                    'Growth Journal',
                     style: TextStyle(
                       fontFamily: 'Curvilingus',
                       fontWeight: FontWeight.w700,
-                      fontSize: (MediaQuery.of(context).size.width * 0.05)
+                      fontSize: (MediaQuery.of(context).size.width * 0.08)
                           .clamp(24.0, 38.0),
                       color: const Color(0xFF747822),
                     ),
@@ -88,10 +88,7 @@ class GrowthJournalEntriesScreen extends StatelessWidget {
               ),
 
               const SizedBox(height: 25),
-              Text(
-                'Growth Journals',
-                style: headingFont.copyWith(fontSize: 24),
-              ),
+              Text('My Entries', style: headingFont.copyWith(fontSize: 24)),
               const SizedBox(height: 16),
               Expanded(
                 child: ListView(

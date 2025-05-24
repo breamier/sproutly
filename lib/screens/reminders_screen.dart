@@ -59,7 +59,7 @@ class RemindersScreen extends StatelessWidget {
                       );
                     },
                     child: Icon(
-                      Icons.chevron_right,
+                      Icons.chevron_left,
                       color: Color(0xFF8C8F3E),
                       size: 36,
                     ),
@@ -87,7 +87,11 @@ class RemindersScreen extends StatelessWidget {
             // Upcoming Reminders
             Text("Upcoming Reminders", style: headingFont),
             const SizedBox(height: 12),
-            ReminderCard(task: 'Trim the Cactus', time: 'May 2, 2025 9:00 AM'),
+            ReminderCard(
+              task:
+                  'STEAm THUNDER BY SVT HAPPY 10TH YEAR ANNIVERSARY BABIES KO STEAm THUNDER BY SVT HAPPY 10TH YEAR ANNIVERSARY BABIES KO',
+              time: 'May 2, 2025 9:00 AM',
+            ),
             const SizedBox(height: 8),
 
             ReminderCard(
@@ -115,18 +119,23 @@ class RemindersScreen extends StatelessWidget {
   }
 }
 
-class ReminderCard extends StatelessWidget {
+class ReminderCard extends StatefulWidget {
   final String task;
   final String time;
 
   const ReminderCard({super.key, required this.task, required this.time});
 
-  static const TextStyle bodyFont = RemindersScreen.bodyFont;
+  @override
+  State<ReminderCard> createState() => _ReminderCardState();
+}
+
+class _ReminderCardState extends State<ReminderCard> {
+  bool isChecked = false;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFFF8F4F4),
         borderRadius: BorderRadius.circular(12),
@@ -134,36 +143,39 @@ class ReminderCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.radio_button_unchecked,
-            color: Color.fromARGB(255, 85, 91, 16),
+          Transform.scale(
+            scale: 1.5,
+            child: Checkbox(
+              value: isChecked,
+              onChanged: (bool? value) {
+                setState(() {
+                  isChecked = value ?? false;
+                });
+              },
+              shape: const CircleBorder(),
+              activeColor: const Color.fromARGB(255, 85, 91, 16),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        task,
-                        style: bodyFont.copyWith(
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF747822),
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Text(
-                      time,
-                      style: bodyFont.copyWith(
-                        color: Colors.grey,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
+                Text(
+                  widget.task,
+                  style: RemindersScreen.bodyFont.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF747822),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  widget.time,
+                  style: RemindersScreen.bodyFont.copyWith(
+                    color: Colors.grey,
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),

@@ -10,22 +10,28 @@ class GrowthJournalScreen extends StatelessWidget {
     fontFamily: 'Curvilingus',
     fontWeight: FontWeight.w700,
     fontSize: 40,
-    color: Color(0xFF747822),
+    color: oliveGreen,
   );
 
   static const TextStyle headingFont = TextStyle(
     fontFamily: 'Poppins',
     fontWeight: FontWeight.w700,
     fontSize: 24,
-    color: Color(0xFF747822),
+    color: oliveGreen,
   );
 
   static const TextStyle bodyFont = TextStyle(
     fontFamily: 'Poppins',
     fontWeight: FontWeight.w400,
     fontSize: 20,
-    color: Color(0xFF747822),
+    color: oliveGreen,
   );
+
+  // Example mock image paths – replace with dynamic data later
+  final List<String> imagePaths = const [
+    'assets/tulips.png',
+    'assets/hyacinth.png',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +65,7 @@ class GrowthJournalScreen extends StatelessWidget {
                         ),
                       );
                     },
-                    child: Icon(
+                    child: const Icon(
                       Icons.chevron_right,
                       color: Color(0xFF8C8F3E),
                       size: 36,
@@ -73,7 +79,7 @@ class GrowthJournalScreen extends StatelessWidget {
                     fontFamily: 'Curvilingus',
                     fontWeight: FontWeight.w700,
                     fontSize: MediaQuery.of(context).size.width * 0.08,
-                    color: const Color(0xFF747822),
+                    color: oliveGreen,
                   ),
                 ),
               ],
@@ -86,6 +92,7 @@ class GrowthJournalScreen extends StatelessWidget {
 
             Container(
               width: double.infinity,
+              height: 300,
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
               decoration: BoxDecoration(
                 border: Border.all(color: oliveGreen),
@@ -96,9 +103,15 @@ class GrowthJournalScreen extends StatelessWidget {
                 children: [
                   Text("Title", style: headingFont),
                   SizedBox(height: 8),
-                  Text(
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-                    style: bodyFont,
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Text(
+                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
+                        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. "
+                        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+                        style: bodyFont,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -112,21 +125,24 @@ class GrowthJournalScreen extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _buildPhoto(context, "assets/tulips.png"),
-                  const SizedBox(width: 8),
-                  _buildPhoto(context, "assets/hyacinth.png"),
-                  const SizedBox(width: 8),
+                  ...imagePaths.map(
+                    (path) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: _buildPhoto(context, path),
+                    ),
+                  ),
                   _buildAddPhotoBox(context),
                 ],
               ),
             ),
 
-            // const Spacer(),
             const SizedBox(height: 15),
 
             Center(
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  // TODO: Implement save logic
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: oliveGreen,
                   shape: RoundedRectangleBorder(
@@ -156,51 +172,55 @@ class GrowthJournalScreen extends StatelessWidget {
 
   Widget _buildPhoto(BuildContext context, String path) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final imageWidth = screenWidth * 0.2;
-    final imageHeight = imageWidth * 1.30;
+    final photoWidth = screenWidth * 0.2;
 
-    return ClipRRect(
-      child: Image.asset(
-        path,
-        width: imageWidth,
-        height: imageHeight,
-        fit: BoxFit.cover,
+    return SizedBox(
+      width: photoWidth,
+      child: AspectRatio(
+        aspectRatio: 3 / 4,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.asset(path, fit: BoxFit.cover),
+        ),
       ),
     );
   }
 
   Widget _buildAddPhotoBox(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final imageWidth = screenWidth * 0.2;
-    final imageHeight = imageWidth * 1.30;
+    final boxWidth = screenWidth * 0.2;
 
-    return Container(
-      width: imageWidth,
-      height: imageHeight,
-      decoration: BoxDecoration(
-        border: Border.all(color: Color.fromARGB(255, 136, 123, 123)),
-        // borderRadius: BorderRadius.circular(4),
-      ),
-      child: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.add,
-              size: 20,
-              color: Color.fromARGB(255, 136, 123, 123),
+    return SizedBox(
+      width: boxWidth,
+      child: AspectRatio(
+        aspectRatio: 3 / 4, // Matches image aspect ratio
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: const Color.fromARGB(255, 136, 123, 123)),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.add,
+                  size: 20,
+                  color: Color.fromARGB(255, 136, 123, 123),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  "Add new photo",
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 10,
+                    color: Color.fromARGB(255, 136, 123, 123),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
-            SizedBox(height: 2),
-            Text(
-              "Add new photo",
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 8,
-                color: Color.fromARGB(255, 136, 123, 123),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+          ),
         ),
       ),
     );

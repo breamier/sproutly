@@ -14,10 +14,7 @@ class LandingPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Spacer(flex: 2),
-              Image.asset(
-                'assets/sproutly_logo.png',
-                height: 140,
-              ),
+              Image.asset('assets/sproutly_logo.png', height: 140),
               const SizedBox(height: 10),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -25,7 +22,7 @@ class LandingPage extends StatelessWidget {
                   onPressed: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => const DashboardScreen(),
+                        builder: (context) => DashboardScreen(),
                       ),
                     );
                   },
@@ -33,9 +30,13 @@ class LandingPage extends StatelessWidget {
                     backgroundColor: Colors.white,
                     foregroundColor: const Color(0xFF747822),
                     shape: RoundedRectangleBorder(
-                       borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                      borderRadius: BorderRadius.circular(12),
                     ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 30,
+                      vertical: 12,
+                    ),
+                  ),
                   child: const Text(
                     'Get Started',
                     style: TextStyle(

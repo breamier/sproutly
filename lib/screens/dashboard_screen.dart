@@ -1,8 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:sproutly/auth.dart';
 import 'navbar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sproutly/screens/dev_tools.dart';
 
 class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
+  DashboardScreen({super.key});
+
+  final User? user = Auth().currentUser;
+
+  Future<void> signOut() async {
+    try {
+      await Auth().signOut();
+    } catch (e) {
+      debugPrint('Sign out failed: $e');
+    }
+  }
+
+  Widget _userUid() {
+    return Text(user?.email ?? 'User email');
+  }
+
+  Widget _signOutButton() {
+    return ElevatedButton(
+      onPressed: () async {
+        await signOut();
+      },
+      child: const Text('Sign Out'),
+    );
+  }
 
   static const TextStyle headingFont = TextStyle(
     fontFamily: 'Poppins',
@@ -36,6 +62,22 @@ class DashboardScreen extends StatelessWidget {
                     height: MediaQuery.of(context).size.height * 0.1,
                   ),
                 ],
+              ),
+
+              _userUid(),
+              _signOutButton(),
+              const SizedBox(height: 24),
+
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const DevToolsPage(),
+                    ),
+                  );
+                },
+                child: const Text('Dev Tools'),
               ),
 
               // TIPS
@@ -217,9 +259,10 @@ class _TipsWidgetState extends State<TipsWidget> {
               IconButton(
                 onPressed: _goToNext,
                 icon: const Icon(Icons.arrow_forward_ios, size: 20),
-                color: _currentPage == tips.length - 1
-                    ? Colors.grey
-                    : Colors.black,
+                color:
+                    _currentPage == tips.length - 1
+                        ? Colors.grey
+                        : Colors.black,
               ),
             ],
           ),
@@ -236,9 +279,10 @@ class _TipsWidgetState extends State<TipsWidget> {
                 height: 8,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _currentPage == index
-                      ? const Color(0xFF4B5502)
-                      : Colors.grey[400],
+                  color:
+                      _currentPage == index
+                          ? const Color(0xFF4B5502)
+                          : Colors.grey[400],
                 ),
               );
             }),

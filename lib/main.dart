@@ -45,15 +45,15 @@ Future<void> main() async {
 }
 
 // test if correctly fetching the dropdowns options/values
-Future<void> testPaths() async {
-  final db = DatabaseService();
-  debugPrint('Water levels: ${await db.getDropdownOptions('water-level')}');
-  debugPrint('Sunlight: ${await db.getDropdownOptions('sunlight-level')}');
-  debugPrint('Care levels: ${await db.getDropdownOptions('care-level')}');
-  debugPrint(
-    'Types: ${await db.getDropdownOptions('water-storage-and-adaptation')}',
-  );
-}
+// Future<void> testPaths() async {
+//   final db = DatabaseService();
+//   debugPrint('Water levels: ${await db.getDropdownOptions('water-level')}');
+//   debugPrint('Sunlight: ${await db.getDropdownOptions('sunlight-level')}');
+//   debugPrint('Care levels: ${await db.getDropdownOptions('care-level')}');
+//   debugPrint(
+//     'Types: ${await db.getDropdownOptions('water-storage-and-adaptation')}',
+//   );
+// }
 
 class SproutlyApp extends StatelessWidget {
   const SproutlyApp({super.key});

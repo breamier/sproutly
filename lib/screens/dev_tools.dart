@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:sproutly/models/plant.dart';
 
 //imports
 // import 'package:flutter/material.dart';
@@ -6,6 +8,7 @@ import 'package:flutter/material.dart';
 // import 'package:sproutly/firebase_options.dart';
 // import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:provider/provider.dart';
+// import 'package:permission_handler/permission_handler.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:sproutly/widget_tree.dart';
 
@@ -22,19 +25,21 @@ import 'package:sproutly/screens/add_plant_form.dart';
 import 'package:sproutly/screens/watering_schedule.dart';
 import 'package:sproutly/screens/plant_library.dart';
 
-// test if correctly fetching the dropdowns options/values
-Future<void> testPaths() async {
-  final db = DatabaseService();
-  debugPrint('Water levels: ${await db.getDropdownOptions('water-level')}');
-  debugPrint('Sunlight: ${await db.getDropdownOptions('sunlight-level')}');
-  debugPrint('Care levels: ${await db.getDropdownOptions('care-level')}');
-  debugPrint(
-    'Types: ${await db.getDropdownOptions('water-storage-and-adaptation')}',
-  );
-}
-
 class DevToolsPage extends StatelessWidget {
-  const DevToolsPage({super.key});
+  final String userId;
+  const DevToolsPage({super.key, required this.userId});
+  // const DevToolsPage({super.key});
+
+  // test if correctly fetching the dropdowns options/values
+  Future<void> testPaths() async {
+    final db = DatabaseService();
+    debugPrint('Water levels: ${await db.getDropdownOptions('water-level')}');
+    debugPrint('Sunlight: ${await db.getDropdownOptions('sunlight-level')}');
+    debugPrint('Care levels: ${await db.getDropdownOptions('care-level')}');
+    debugPrint(
+      'Types: ${await db.getDropdownOptions('water-storage-and-adaptation')}',
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,6 +94,47 @@ class DevToolsPage extends StatelessWidget {
               ),
             ),
 
+            const SizedBox(height: 16),
+            SizedBox(
+              width: 200,
+              child: ElevatedButton(
+                onPressed: () async {
+                  final plant = Plant(
+                    id: '',
+                    plantName: 'Test Plant',
+                    date: '2023-10-01',
+                    time: '10:00 AM',
+                    water: 'Medium',
+                    sunlight: 'High',
+                    careLevel: 'Easy',
+                    lifespan: '1 year',
+                    waterStorage: 'Normal',
+                    addedOn: Timestamp.now(),
+                    type: 'Indoor',
+                  );
+                  await DatabaseService().addPlant(plant);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Test plant added!')),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Test Add Plant',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
             SizedBox(
               width: 200,

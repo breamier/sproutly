@@ -8,6 +8,7 @@ class DashboardScreen extends StatelessWidget {
   DashboardScreen({super.key});
 
   final User? user = Auth().currentUser;
+  final userId = FirebaseAuth.instance.currentUser!.uid;
 
   Future<void> signOut() async {
     try {
@@ -73,7 +74,7 @@ class DashboardScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const DevToolsPage(),
+                      builder: (context) => DevToolsPage(userId: userId),
                     ),
                   );
                 },

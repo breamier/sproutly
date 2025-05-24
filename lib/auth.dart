@@ -29,7 +29,7 @@ class Auth {
           .createUserWithEmailAndPassword(email: email, password: password);
       // Add user to Firestore
       await FirebaseFirestore.instance
-          .collection('users')
+          .collection('Users')
           .doc(userCredential.user!.uid)
           .set({
             'email': email,

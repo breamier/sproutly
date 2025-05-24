@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sproutly/screens/dashboard_screen.dart';
 
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
@@ -13,22 +14,18 @@ class LandingPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Spacer(flex: 2),
-              // Logo
               Image.asset(
                 'assets/sproutly_logo.png',
                 height: 140,
               ),
               const SizedBox(height: 10),
-              // Get Started Button
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 40),
                 child: ElevatedButton(
                   onPressed: () {
-                    // Show a simple message since there's no dashboard yet
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Dashboard coming soon!'),
-                        duration: Duration(seconds: 2),
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const DashboardScreen(),
                       ),
                     );
                   },

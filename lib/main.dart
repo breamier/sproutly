@@ -17,6 +17,7 @@ import 'screens/landing_page.dart';
 import 'screens/guide_book.dart';
 import 'screens/add_plant_form.dart';
 import 'screens/watering_schedule.dart';
+import 'screens/plant_library.dart';
 
 void main() async {
   // initialize database
@@ -194,6 +195,37 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 child: const Text(
                   'Guide Book',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: 200,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PlantLibraryScreen(),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+
+                child: const Text(
+                  'Plant Library',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

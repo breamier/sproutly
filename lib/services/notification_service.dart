@@ -21,10 +21,11 @@ class NotiService {
 
     // Request permissions (for Android 13+)
     if (Platform.isAndroid) {
-      final androidPlugin = notificationPlugin
-          .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin
-          >();
+      final androidPlugin =
+          notificationPlugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >();
       await androidPlugin?.requestNotificationsPermission();
     }
 
@@ -75,17 +76,19 @@ class NotiService {
 
   Future<bool> _requestPermissions() async {
     if (Platform.isAndroid) {
-      final androidPlugin = notificationPlugin
-          .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin
-          >();
+      final androidPlugin =
+          notificationPlugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >();
       final granted = await androidPlugin?.requestNotificationsPermission();
       return granted ?? false;
     } else if (Platform.isIOS) {
-      final iosPlugin = notificationPlugin
-          .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin
-          >();
+      final iosPlugin =
+          notificationPlugin
+              .resolvePlatformSpecificImplementation<
+                IOSFlutterLocalNotificationsPlugin
+              >();
       await iosPlugin?.requestPermissions(
         alert: true,
         badge: true,
@@ -143,9 +146,10 @@ class NotiService {
         notificationDetails(),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
 
-        matchDateTimeComponents: weekday != null
-            ? DateTimeComponents.dayOfWeekAndTime
-            : DateTimeComponents.time,
+        matchDateTimeComponents:
+            weekday != null
+                ? DateTimeComponents.dayOfWeekAndTime
+                : DateTimeComponents.time,
       );
 
       debugPrint('Notification scheduled successfully');

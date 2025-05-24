@@ -25,6 +25,7 @@ import 'screens/growthjournal_screen.dart';
 import 'package:provider/provider.dart';
 import 'services/database_service.dart';
 import 'screens/watering_schedule.dart';
+import 'screens/plant_library.dart';
 
 void main() async {
   // initialize database
@@ -211,6 +212,37 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
+            const SizedBox(height: 16),
+            SizedBox(
+              width: 200,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PlantLibraryScreen(),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+
+                child: const Text(
+                  'Plant Library',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
             SizedBox(
               width: 200,

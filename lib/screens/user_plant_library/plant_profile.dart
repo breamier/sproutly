@@ -4,15 +4,12 @@ import 'plant_issues.dart';
 class PlantProfileScreen extends StatelessWidget {
   final Map<String, dynamic> plant;
 
-  const PlantProfileScreen({
-    super.key,
-    required this.plant,
-  });
+  const PlantProfileScreen({super.key, required this.plant});
 
   @override
   Widget build(BuildContext context) {
     const Color oliveTitleColor = Color(0xFF747822);
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -56,7 +53,7 @@ class PlantProfileScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 25),
 
                 Center(
@@ -72,9 +69,9 @@ class PlantProfileScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 30),
-                
+
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -98,12 +95,15 @@ class PlantProfileScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 25),
-                
+
                 // Tip container
                 Container(
-                  padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 15,
+                    horizontal: 20,
+                  ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(25),
                     border: Border.all(color: oliveTitleColor, width: 1.5),
@@ -130,9 +130,9 @@ class PlantProfileScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 30),
-                
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -150,9 +150,9 @@ class PlantProfileScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 40),
-                
+
                 _buildActionButton(
                   context: context,
                   label: 'Plant Issues',
@@ -164,9 +164,9 @@ class PlantProfileScreen extends StatelessWidget {
                     );
                   },
                 ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 _buildActionButton(
                   context: context,
                   label: 'Growth Journal',
@@ -177,7 +177,7 @@ class PlantProfileScreen extends StatelessWidget {
                     );
                   },
                 ),
-                
+
                 const SizedBox(height: 30),
               ],
             ),
@@ -187,10 +187,7 @@ class PlantProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCareIcon({
-    required String iconAsset,
-    required String label,
-  }) {
+  Widget _buildCareIcon({required String iconAsset, required String label}) {
     return Column(
       children: [
         Image.asset(

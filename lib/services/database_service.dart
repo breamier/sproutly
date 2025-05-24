@@ -1,30 +1,50 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sproutly/models/plant.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-const String PLANT_COLLECTION_REF = "plants";
+const String USERS_COLLECTION_REF = "Users";
 const String plantCategoriesRef = "plants-categories";
 const String categoriesIdRef = "TJLhPyxbEG4wXt5aSRFg";
 
 class DatabaseService {
+  // final String userId;
   final _firestore = FirebaseFirestore.instance;
 
-  late final CollectionReference _plantsRef;
-
-  DatabaseService() {
-    _plantsRef = _firestore
-        .collection(PLANT_COLLECTION_REF)
+  CollectionReference<Plant> get _plantsRef {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('No user logged in');
+    }
+    return _firestore
+        .collection(USERS_COLLECTION_REF)
+        .doc(user.uid)
+        .collection('plants')
         .withConverter<Plant>(
-          fromFirestore: (snapshots, _) =>
-              Plant.fromJson(snapshots.data()!, snapshots.id),
+          fromFirestore:
+              (snapshots, _) => Plant.fromJson(snapshots.data()!, snapshots.id),
           toFirestore: (plant, _) => plant.toJson(),
         );
   }
+  // DatabaseService() {
+  //   if (user == null) {
+  //     throw Exception('No user logged in');
+  //   }
+  //   _plantsRef = _firestore
+  //       .collection(USERS_COLLECTION_REF)
+  //       .doc(userId)
+  //       .collection('plants')
+  //       .withConverter<Plant>(
+  //         fromFirestore:
+  //             (snapshots, _) => Plant.fromJson(snapshots.data()!, snapshots.id),
+  //         toFirestore: (plant, _) => plant.toJson(),
+  //       );
+  // }
 
   Stream<QuerySnapshot> getPlants() {
     return _plantsRef.snapshots();
   }
 
-  void addPlant(Plant plant) async {
+  Future<void> addPlant(Plant plant) async {
     _plantsRef.add(plant);
   }
 
@@ -39,10 +59,11 @@ class DatabaseService {
   // fetching all plants-categories values in firestore
   Future<List<String>> getDropdownOptions(String fieldPath) async {
     try {
-      final doc = await _firestore
-          .collection(plantCategoriesRef)
-          .doc(categoriesIdRef)
-          .get();
+      final doc =
+          await _firestore
+              .collection(plantCategoriesRef)
+              .doc(categoriesIdRef)
+              .get();
 
       if (!doc.exists) return [];
 

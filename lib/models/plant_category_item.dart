@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sproutly/screens/plant_information_screen.dart';
+import 'package:sproutly/screens/guide_book/plant_information_screen.dart';
 import 'plant_category_model.dart';
 
 class PlantCategoryItem extends StatelessWidget {
@@ -38,12 +38,13 @@ class PlantCategoryItem extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => PlantInformationScreen(
-              plantType: title,
-              plantImage: imageName,
-              plantDescription: description,
-              careTip: careTip,
-            ),
+            builder:
+                (context) => PlantInformationScreen(
+                  plantType: title,
+                  plantImage: imageName,
+                  plantDescription: description,
+                  careTip: careTip,
+                ),
           ),
         );
       },
@@ -56,10 +57,7 @@ class PlantCategoryItem extends StatelessWidget {
               child: SizedBox(
                 width: 70,
                 height: 70,
-                child: Image.asset(
-                  'assets/$imageName',
-                  fit: BoxFit.cover,
-                ),
+                child: Image.asset('assets/$imageName', fit: BoxFit.cover),
               ),
             ),
             const SizedBox(width: 16),

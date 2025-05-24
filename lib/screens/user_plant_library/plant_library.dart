@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sproutly/screens/plant_profile.dart';
+import 'package:sproutly/screens/user_plant_library/plant_profile.dart';
 
 class PlantLibraryScreen extends StatefulWidget {
   const PlantLibraryScreen({super.key});
@@ -28,7 +28,7 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
       final name = plant['name'].toString().toLowerCase();
       final type = plant['type'].toString().toLowerCase();
       final query = _searchQuery.toLowerCase();
-      
+
       return name.contains(query) || type.contains(query);
     }).toList();
   }
@@ -55,7 +55,7 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
   @override
   Widget build(BuildContext context) {
     const Color oliveTitleColor = Color(0xFF747822);
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -79,7 +79,7 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
               Container(
                 height: 50,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8E8D5), 
+                  color: const Color(0xFFE8E8D5),
                   borderRadius: BorderRadius.circular(25),
                   border: Border.all(color: oliveTitleColor, width: 1.5),
                 ),
@@ -112,26 +112,26 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
               // Grid of plants
               filteredPlants.isEmpty
                   ? Expanded(
-                      child: Center(
-                        child: Text(
-                          'No plants found',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 18,
-                            color: oliveTitleColor,
-                          ),
+                    child: Center(
+                      child: Text(
+                        'No plants found',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 18,
+                          color: oliveTitleColor,
                         ),
                       ),
-                    )
-                  : Expanded(
-                      child: GridView.count(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 24,
-                        childAspectRatio: 0.75,
-                        children: _buildPlantItems(),
-                      ),
                     ),
+                  )
+                  : Expanded(
+                    child: GridView.count(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 24,
+                      childAspectRatio: 0.75,
+                      children: _buildPlantItems(),
+                    ),
+                  ),
             ],
           ),
         ),
@@ -156,10 +156,7 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
             Expanded(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: Image.asset(
-                  plant['image'] as String,
-                  fit: BoxFit.cover,
-                ),
+                child: Image.asset(plant['image'] as String, fit: BoxFit.cover),
               ),
             ),
             const SizedBox(height: 8),

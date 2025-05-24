@@ -3,31 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:sproutly/firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:sproutly/screens/dashboard_screen.dart';
-import 'package:sproutly/screens/growthjournal_entries_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sproutly/widget_tree.dart';
-// import 'package:firebase_auth_project/auth.dart';
 
 //services
 import 'services/database_service.dart';
 import 'services/schedule_service.dart';
 import 'services/notification_service.dart';
 
-//screens
-import 'screens/dashboard_screen.dart';
-import 'screens/landing_page.dart';
-import 'screens/guide_book.dart';
-import 'screens/reminders_screen.dart';
 //import 'add_plant.dart';
-import 'screens/add_plant_form.dart';
-import 'screens/growthjournal_screen.dart';
-import 'package:provider/provider.dart';
-import 'services/database_service.dart';
-import 'screens/watering_schedule.dart';
-import 'screens/plant_library.dart';
+// import 'package:provider/provider.dart';
 
 Future<void> main() async {
   // initialize database
@@ -134,206 +120,7 @@ class AppPermissions {
 //           mainAxisAlignment: MainAxisAlignment.center,
 
 //           children: <Widget>[
-//             SizedBox(
-//               width: 200,
-//               child: ElevatedButton(
-//                 onPressed: () {
-//                   Navigator.push(
-//                     context,
-//                     MaterialPageRoute(
-//                       builder: (context) => const LandingPage(),
-//                     ),
-//                   );
-//                 },
-//                 style: ElevatedButton.styleFrom(
-//                   backgroundColor: buttonColor,
-//                   foregroundColor: Colors.white,
-//                   padding: const EdgeInsets.symmetric(vertical: 12),
-//                   shape: RoundedRectangleBorder(
-//                     borderRadius: BorderRadius.circular(12),
-//                   ),
-//                 ),
-//                 child: const Text(
-//                   'Landing Page',
-//                   style: TextStyle(
-//                     fontSize: 16,
-//                     fontWeight: FontWeight.bold,
-//                     fontFamily: 'Poppins',
-//                   ),
-//                 ),
-//               ),
-//             ),
 
-//             const SizedBox(height: 16),
-//             SizedBox(
-//               width: 200,
-//               child: ElevatedButton(
-//                 onPressed: () {
-//                   Navigator.push(
-//                     context,
-//                     MaterialPageRoute(builder: (context) => DashboardScreen()),
-//                   );
-//                 },
-//                 style: ElevatedButton.styleFrom(
-//                   backgroundColor: buttonColor,
-//                   foregroundColor: Colors.white,
-//                   padding: const EdgeInsets.symmetric(vertical: 12),
-//                   shape: RoundedRectangleBorder(
-//                     borderRadius: BorderRadius.circular(12),
-//                   ),
-//                 ),
-//                 child: const Text(
-//                   'Dashboard',
-//                   style: TextStyle(
-//                     fontSize: 16,
-//                     fontWeight: FontWeight.bold,
-//                     fontFamily: 'Poppins',
-//                   ),
-//                 ),
-//               ),
-//             ),
-
-//             const SizedBox(height: 16),
-//             SizedBox(
-//               width: 200,
-//               child: ElevatedButton(
-//                 onPressed: () {
-//                   Navigator.push(
-//                     context,
-//                     MaterialPageRoute(
-//                       builder: (context) => const GuideBookScreen(),
-//                     ),
-//                   );
-//                 },
-//                 style: ElevatedButton.styleFrom(
-//                   backgroundColor: buttonColor,
-//                   foregroundColor: Colors.white,
-//                   padding: const EdgeInsets.symmetric(vertical: 12),
-//                   shape: RoundedRectangleBorder(
-//                     borderRadius: BorderRadius.circular(12),
-//                   ),
-//                 ),
-
-//                 child: const Text(
-//                   'Guide Book',
-//                   style: TextStyle(
-//                     fontSize: 16,
-//                     fontWeight: FontWeight.bold,
-//                     fontFamily: 'Poppins',
-//                   ),
-//                 ),
-//               ),
-//             ),
-//             const SizedBox(height: 16),
-//             SizedBox(
-//               width: 200,
-//               child: ElevatedButton(
-//                 onPressed: () {
-//                   Navigator.push(
-//                     context,
-//                     MaterialPageRoute(
-//                       builder: (context) => const PlantLibraryScreen(),
-//                     ),
-//                   );
-//                 },
-//                 style: ElevatedButton.styleFrom(
-//                   backgroundColor: buttonColor,
-//                   foregroundColor: Colors.white,
-//                   padding: const EdgeInsets.symmetric(vertical: 12),
-//                   shape: RoundedRectangleBorder(
-//                     borderRadius: BorderRadius.circular(12),
-//                   ),
-//                 ),
-
-//                 child: const Text(
-//                   'Plant Library',
-//                   style: TextStyle(
-//                     fontSize: 16,
-//                     fontWeight: FontWeight.bold,
-//                     fontFamily: 'Poppins',
-//                   ),
-//                 ),
-//               ),
-//             ),
-//             const SizedBox(height: 16),
-//             SizedBox(
-//               width: 200,
-//               child: ElevatedButton(
-//                 onPressed: () {
-//                   Navigator.push(
-//                     context,
-//                     MaterialPageRoute(
-//                       builder: (context) => const AddNewPlant(),
-//                     ),
-//                   );
-//                 },
-//                 style: ElevatedButton.styleFrom(
-//                   backgroundColor: buttonColor,
-//                   foregroundColor: Colors.white,
-//                   padding: const EdgeInsets.symmetric(vertical: 12),
-//                   shape: RoundedRectangleBorder(
-//                     borderRadius: BorderRadius.circular(12),
-//                   ),
-//                 ),
-//                 child: const Text(
-//                   'Add Plant',
-//                   style: TextStyle(
-//                     fontSize: 16,
-//                     fontWeight: FontWeight.bold,
-//                     fontFamily: 'Poppins',
-//                   ),
-//                 ),
-//               ),
-//             ),
-//             // watering schedule page
-//             const SizedBox(height: 16),
-//             SizedBox(
-//               width: 200,
-//               child: ElevatedButton(
-//                 onPressed: () {
-//                   Navigator.push(
-//                     context,
-//                     MaterialPageRoute(
-//                       builder: (context) => const WateringScheduleScreen(),
-//                     ),
-//                   );
-//                 },
-//                 style: ElevatedButton.styleFrom(
-//                   backgroundColor: buttonColor,
-//                   foregroundColor: Colors.white,
-//                   padding: const EdgeInsets.symmetric(vertical: 12),
-//                   shape: RoundedRectangleBorder(
-//                     borderRadius: BorderRadius.circular(12),
-//                   ),
-//                 ),
-//                 child: const Text(
-//                   'Watering Schedule',
-//                   style: TextStyle(
-//                     fontSize: 16,
-//                     fontWeight: FontWeight.bold,
-//                     fontFamily: 'Poppins',
-//                   ),
-//                 ),
-//               ),
-//             ),
-//             const SizedBox(height: 16),
-//             SizedBox(
-//               width: 200,
-//               child: ElevatedButton(
-//                 onPressed: () async {
-//                   await testPaths();
-//                   ScaffoldMessenger.of(context).showSnackBar(
-//                     SnackBar(content: Text('Check console for test results')),
-//                   );
-//                 },
-//                 child: Text('Test Firestore Paths'),
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
 // }
 
 // class AppPermissions {

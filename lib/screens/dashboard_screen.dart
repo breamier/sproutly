@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:sproutly/auth.dart';
-import 'navbar.dart';
+import '../widgets/navbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sproutly/screens/dev_tools.dart';
+import 'package:sproutly/screens/login_register.dart';
 
 class DashboardScreen extends StatelessWidget {
   DashboardScreen({super.key});
@@ -10,9 +11,13 @@ class DashboardScreen extends StatelessWidget {
   final User? user = Auth().currentUser;
   final userId = FirebaseAuth.instance.currentUser!.uid;
 
-  Future<void> signOut() async {
+  Future<void> signOut(BuildContext context) async {
     try {
       await Auth().signOut();
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+        (route) => false,
+      );
     } catch (e) {
       debugPrint('Sign out failed: $e');
     }
@@ -22,10 +27,10 @@ class DashboardScreen extends StatelessWidget {
     return Text(user?.email ?? 'User email');
   }
 
-  Widget _signOutButton() {
+  Widget _signOutButton(BuildContext context) {
     return ElevatedButton(
       onPressed: () async {
-        await signOut();
+        await signOut(context);
       },
       child: const Text('Sign Out'),
     );
@@ -72,18 +77,8 @@ class DashboardScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                // mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    'assets/sproutly_logo2.png',
-                    height: MediaQuery.of(context).size.height * 0.1,
-                  ),
-                ],
-              ),
-
               _userUid(),
-              _signOutButton(),
+              _signOutButton(context),
               const SizedBox(height: 24),
 
               ElevatedButton(

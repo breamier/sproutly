@@ -20,12 +20,12 @@ import 'package:sproutly/services/database_service.dart';
 //screens
 import 'package:sproutly/screens/dashboard_screen.dart';
 import 'package:sproutly/screens/landing_page.dart';
-import 'package:sproutly/screens/guide_book.dart';
-import 'package:sproutly/screens/add_plant_form.dart';
+import 'package:sproutly/screens/guide_book/guide_book.dart';
+import 'package:sproutly/screens/add_plant/add_plant_form.dart';
 import 'package:sproutly/screens/watering_schedule.dart';
-import 'package:sproutly/screens/plant_library.dart';
+import 'package:sproutly/screens/user_plant_library/plant_library.dart';
 import 'package:sproutly/screens/reminders_screen.dart';
-import 'package:sproutly/screens/growthjournal_screen.dart';
+import 'package:sproutly/screens/growth_journal/growthjournal_screen.dart';
 
 class DevToolsPage extends StatelessWidget {
   final String userId;
@@ -166,6 +166,7 @@ class DevToolsPage extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 16),
             SizedBox(
               width: 200,
               child: ElevatedButton(

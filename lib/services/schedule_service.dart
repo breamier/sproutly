@@ -97,12 +97,11 @@ class ScheduleService {
 
   Future<List<QueryDocumentSnapshot>> getActiveSchedules() async {
     final now = Timestamp.now();
-    final snapshot = await _firestore
-        .collection(_collectionPath)
-        .where('nextNotificationTime', isGreaterThanOrEqualTo: now)
-        .get();
+    final snapshot =
+        await _firestore
+            .collection(_collectionPath)
+            .where('nextNotificationTime', isGreaterThanOrEqualTo: now)
+            .get();
     return snapshot.docs;
   }
 }
-}
-

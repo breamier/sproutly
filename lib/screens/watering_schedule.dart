@@ -69,21 +69,22 @@ class _WateringScheduleScreenState extends State<WateringScheduleScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              items: _plants
-                  .map((doc) {
-                    final data = doc.data();
-                    if (data == null) return null;
-                    final plant = Plant.fromJson(
-                      data as Map<String, dynamic>,
-                      doc.id,
-                    );
-                    return DropdownMenuItem<String>(
-                      value: doc.id,
-                      child: Text(plant.plantName),
-                    );
-                  })
-                  .whereType<DropdownMenuItem<String>>()
-                  .toList(), // remove nulls
+              items:
+                  _plants
+                      .map((doc) {
+                        final data = doc.data();
+                        if (data == null) return null;
+                        final plant = Plant.fromJson(
+                          data as Map<String, dynamic>,
+                          doc.id,
+                        );
+                        return DropdownMenuItem<String>(
+                          value: doc.id,
+                          child: Text(plant.plantName),
+                        );
+                      })
+                      .whereType<DropdownMenuItem<String>>()
+                      .toList(), // remove nulls
               onChanged: (value) {
                 setState(() {
                   _selectedPlantId = value;
@@ -148,5 +149,3 @@ class _WateringScheduleScreenState extends State<WateringScheduleScreen> {
     );
   }
 }
-}
-

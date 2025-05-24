@@ -75,9 +75,8 @@ class _ScheduleSelectorState extends State<ScheduleSelector> {
           ),
           child: MediaQuery(
             data: MediaQuery.of(context).copyWith(
-              alwaysUse24HourFormat: MediaQuery.of(
-                context,
-              ).alwaysUse24HourFormat,
+              alwaysUse24HourFormat:
+                  MediaQuery.of(context).alwaysUse24HourFormat,
             ),
             child: child!,
           ),
@@ -119,9 +118,8 @@ class _ScheduleSelectorState extends State<ScheduleSelector> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xFF747822)
-                      : Colors.grey[200],
+                  color:
+                      isSelected ? const Color(0xFF747822) : Colors.grey[200],
                   shape: BoxShape.circle,
                 ),
                 child: Center(
@@ -166,16 +164,17 @@ class _ScheduleSelectorState extends State<ScheduleSelector> {
               ),
             ),
             onPressed: _isSaving ? null : _saveSchedule,
-            child: _isSaving
-                ? const CircularProgressIndicator(color: Colors.white)
-                : const Text(
-                    'Save Schedule',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+            child:
+                _isSaving
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                      'Save Schedule',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
           ),
         ),
         const SizedBox(height: 16),
@@ -250,5 +249,3 @@ class _ScheduleSelectorState extends State<ScheduleSelector> {
     }
   }
 }
-}
-

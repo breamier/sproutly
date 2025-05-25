@@ -113,10 +113,10 @@ class DevToolsPage extends StatelessWidget {
                       water: 'Medium',
                       sunlight: 'High',
                       careLevel: 'Easy',
-                      lifespan: '1 year',
-                      waterStorage: 'Normal',
                       addedOn: Timestamp.now(),
                       type: 'Indoor',
+                      img:
+                          'https://res.cloudinary.com/dpxhpivoe/image/upload/v1748210816/lpjurgdckyrzkkybsgat.jpg',
                     );
                     await DatabaseService().addPlant(plant);
                     ScaffoldMessenger.of(context).showSnackBar(

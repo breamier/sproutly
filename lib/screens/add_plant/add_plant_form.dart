@@ -81,7 +81,7 @@ class _AddNewPlantState extends State<AddNewPlant> {
       final plant = Plant(
         id: '',
         plantName: _nameController.text,
-        waterStorage: _selectedType,
+        type: _selectedType,
         water: _selectedWater ?? '',
         sunlight: _selectedSunlight ?? '',
         careLevel: _selectedCareLevel ?? '',

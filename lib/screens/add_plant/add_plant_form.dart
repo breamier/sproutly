@@ -1,11 +1,15 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:sproutly/screens/dashboard_screen.dart';
 import 'package:sproutly/services/database_service.dart';
 import 'package:provider/provider.dart';
 import 'package:sproutly/models/plant.dart';
+import 'package:sproutly/cloudinary/upload_image.dart';
 
 class AddNewPlant extends StatefulWidget {
-  const AddNewPlant({super.key});
+  final File? imageFile;
+  const AddNewPlant({super.key, this.imageFile});
 
   @override
   State<AddNewPlant> createState() => _AddNewPlantState();
@@ -16,6 +20,7 @@ class _AddNewPlantState extends State<AddNewPlant> {
   final _nameController = TextEditingController();
   final _dateController = TextEditingController();
   final _timeController = TextEditingController();
+  String? _imageUrl;
 
   bool _isSaving = false;
   String? _selectedType;
@@ -53,12 +58,14 @@ class _AddNewPlantState extends State<AddNewPlant> {
     _nameController.clear();
     _dateController.clear();
     _timeController.clear();
+    _imageUrl = null;
     setState(() {
       _selectedType = null;
       _selectedWater = null;
       _selectedSunlight = null;
       _selectedCareLevel = null;
       _isSaving = false;
+      _imageUrl = null;
     });
   }
 
@@ -68,16 +75,18 @@ class _AddNewPlantState extends State<AddNewPlant> {
     setState(() => _isSaving = true);
 
     try {
+      if (widget.imageFile != null) {
+        _imageUrl = await uploadImageToCloudinary(widget.imageFile!);
+      }
       final plant = Plant(
         id: '',
         plantName: _nameController.text,
-        date: _dateController.text,
-        time: _timeController.text,
         waterStorage: _selectedType,
         water: _selectedWater ?? '',
         sunlight: _selectedSunlight ?? '',
         careLevel: _selectedCareLevel ?? '',
         addedOn: Timestamp.now(),
+        img: _imageUrl ?? '',
       );
 
       final database = Provider.of<DatabaseService>(context, listen: false);
@@ -87,6 +96,11 @@ class _AddNewPlantState extends State<AddNewPlant> {
         _resetForm();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Plant added successfully!')),
+        );
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => DashboardScreen()),
+          (route) => false,
         );
       }
     } catch (e) {
@@ -100,27 +114,27 @@ class _AddNewPlantState extends State<AddNewPlant> {
     }
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
-    if (picked != null) {
-      _dateController.text = "${picked.day}/${picked.month}/${picked.year}";
-    }
-  }
+  // Future<void> _selectDate(BuildContext context) async {
+  //   final picked = await showDatePicker(
+  //     context: context,
+  //     initialDate: DateTime.now(),
+  //     firstDate: DateTime(2000),
+  //     lastDate: DateTime(2100),
+  //   );
+  //   if (picked != null) {
+  //     _dateController.text = "${picked.day}/${picked.month}/${picked.year}";
+  //   }
+  // }
 
-  Future<void> _selectTime(BuildContext context) async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
-    if (picked != null) {
-      _timeController.text = picked.format(context);
-    }
-  }
+  // Future<void> _selectTime(BuildContext context) async {
+  //   final picked = await showTimePicker(
+  //     context: context,
+  //     initialTime: TimeOfDay.now(),
+  //   );
+  //   if (picked != null) {
+  //     _timeController.text = picked.format(context);
+  //   }
+  // }
 
   Widget _buildDropdown({
     required Future<List<String>> future,
@@ -140,15 +154,16 @@ class _AddNewPlantState extends State<AddNewPlant> {
         return DropdownButtonFormField<String>(
           value: value,
           decoration: InputDecoration(labelText: label),
-          items: snapshot.data!
-              .map(
-                (option) =>
-                    DropdownMenuItem(value: option, child: Text(option)),
-              )
-              .toList(),
+          items:
+              snapshot.data!
+                  .map(
+                    (option) =>
+                        DropdownMenuItem(value: option, child: Text(option)),
+                  )
+                  .toList(),
 
-          validator: (value) =>
-              value == null ? 'Please Choose an Option' : null,
+          validator:
+              (value) => value == null ? 'Please Choose an Option' : null,
           onChanged: onChanged,
         );
       },
@@ -175,43 +190,52 @@ class _AddNewPlantState extends State<AddNewPlant> {
                   labelText: 'Name',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) =>
-                    value?.isEmpty ?? true ? 'Please Select Plant Name' : null,
+                validator:
+                    (value) =>
+                        value?.isEmpty ?? true
+                            ? 'Please Select Plant Name'
+                            : null,
               ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _dateController,
-                      decoration: const InputDecoration(
-                        labelText: 'Date',
-                        border: OutlineInputBorder(),
-                        suffixIcon: Icon(Icons.calendar_today),
-                      ),
-                      readOnly: true,
-                      onTap: () => _selectDate(context),
-                      validator: (value) =>
-                          value?.isEmpty ?? true ? 'Please Select Date' : null,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _timeController,
-                      decoration: const InputDecoration(
-                        labelText: 'Time',
-                        border: OutlineInputBorder(),
-                        suffixIcon: Icon(Icons.access_time),
-                      ),
-                      readOnly: true,
-                      onTap: () => _selectTime(context),
-                      validator: (value) =>
-                          value?.isEmpty ?? true ? 'Please Select Time' : null,
-                    ),
-                  ),
-                ],
-              ),
+              // const SizedBox(height: 16),
+              // Row(
+              //   children: [
+              //     Expanded(
+              //       child: TextFormField(
+              //     controller: _dateController,
+              //     decoration: const InputDecoration(
+              //       labelText: 'Date',
+              //       border: OutlineInputBorder(),
+              //       suffixIcon: Icon(Icons.calendar_today),
+              //     ),
+              //     readOnly: true,
+              //     onTap: () => _selectDate(context),
+              //     validator:
+              //         (value) =>
+              //             value?.isEmpty ?? true
+              //                 ? 'Please Select Date'
+              //                 : null,
+              //   ),
+              // ),
+              // const SizedBox(width: 16),
+              // Expanded(
+              //   child: TextFormField(
+              //     controller: _timeController,
+              //         decoration: const InputDecoration(
+              //           labelText: 'Time',
+              //           border: OutlineInputBorder(),
+              //           suffixIcon: Icon(Icons.access_time),
+              //         ),
+              //         readOnly: true,
+              //         onTap: () => _selectTime(context),
+              //         validator:
+              //             (value) =>
+              //                 value?.isEmpty ?? true
+              //                     ? 'Please Select Time'
+              //                     : null,
+              //       ),
+              //     ),
+              //   ],
+              // ),
               const SizedBox(height: 16),
               _buildDropdown(
                 future: _typeOptions,
@@ -238,8 +262,8 @@ class _AddNewPlantState extends State<AddNewPlant> {
                 future: _careOptions,
                 value: _selectedCareLevel,
                 label: 'Care Level',
-                onChanged: (value) =>
-                    setState(() => _selectedCareLevel = value),
+                onChanged:
+                    (value) => setState(() => _selectedCareLevel = value),
               ),
               const SizedBox(height: 24),
               ElevatedButton(
@@ -251,16 +275,17 @@ class _AddNewPlantState extends State<AddNewPlant> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: _isSaving
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                        'Save New Plant',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                child:
+                    _isSaving
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                          'Save New Plant',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
               ),
             ],
           ),

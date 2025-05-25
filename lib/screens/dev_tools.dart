@@ -110,8 +110,6 @@ class DevToolsPage extends StatelessWidget {
                     final plant = Plant(
                       id: '',
                       plantName: 'Test Plant',
-                      date: '2023-10-01',
-                      time: '10:00 AM',
                       water: 'Medium',
                       sunlight: 'High',
                       careLevel: 'Easy',

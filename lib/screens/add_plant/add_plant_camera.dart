@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:sproutly/screens/add_plant/add_plant_form.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:gal/gal.dart';
@@ -13,6 +15,7 @@ class _AddPlantCameraState extends State<AddPlantCamera>
     with WidgetsBindingObserver {
   List<CameraDescription> cameras = [];
   CameraController? cameraController;
+  XFile? _capturedImage;
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -67,12 +70,22 @@ class _AddPlantCameraState extends State<AddPlantCamera>
                 color: Color(0xFF747822),
               ),
               onPressed: () async {
-                try {
-                  XFile picture = await cameraController!.takePicture();
-                  Gal.putImage(picture.path);
-                  print('TAKEN PICTURE: ${picture.path}');
-                } catch (e) {
-                  print('Error taking picture: $e');
+                if (_capturedImage == null) {
+                  try {
+                    XFile picture = await cameraController!.takePicture();
+                    setState(() {
+                      _capturedImage = picture;
+                    });
+                    _showConfirmDialog(picture);
+                    // Gal.putImage(picture.path);
+                    // print('TAKEN PICTURE: ${picture.path}');
+                  } catch (e) {
+                    print('Error taking picture: $e');
+                  }
+                } else {
+                  setState(() {
+                    _capturedImage = null;
+                  });
                 }
               },
             ),
@@ -80,6 +93,50 @@ class _AddPlantCameraState extends State<AddPlantCamera>
         ),
       ),
     );
+  }
+
+  Future<void> _showConfirmDialog(XFile picture) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Save this picture?'),
+            content: Image.file(File(picture.path)),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(false); // Discard
+                },
+                child: const Text('Discard'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(true); // Save
+                },
+                child: const Text('Save'),
+              ),
+            ],
+          ),
+    );
+    if (result == true) {
+      Gal.putImage(picture.path);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Picture saved!')));
+      setState(() {
+        _capturedImage = null; // Reset to camera preview
+      });
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AddNewPlant(imageFile: File(picture.path)),
+        ),
+      );
+    } else {
+      setState(() {
+        _capturedImage = null;
+      });
+    }
   }
 
   Future<void> _setupCameraController() async {

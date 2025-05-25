@@ -20,8 +20,8 @@ class DatabaseService {
         .doc(user.uid)
         .collection('plants')
         .withConverter<Plant>(
-          fromFirestore:
-              (snapshots, _) => Plant.fromJson(snapshots.data()!, snapshots.id),
+          fromFirestore: (snapshots, _) =>
+              Plant.fromJson(snapshots.data()!, snapshots.id),
           toFirestore: (plant, _) => plant.toJson(),
         );
   }
@@ -59,11 +59,10 @@ class DatabaseService {
   // fetching all plants-categories values in firestore
   Future<List<String>> getDropdownOptions(String fieldPath) async {
     try {
-      final doc =
-          await _firestore
-              .collection(plantCategoriesRef)
-              .doc(categoriesIdRef)
-              .get();
+      final doc = await _firestore
+          .collection(plantCategoriesRef)
+          .doc(categoriesIdRef)
+          .get();
 
       if (!doc.exists) return [];
 
@@ -91,5 +90,12 @@ class DatabaseService {
       print('Error fetching $fieldPath: $e');
       return [];
     }
+  }
+
+  Future<void> saveImageUrlToFirestore(String imageUrl) async {
+    await FirebaseFirestore.instance.collection('images').add({
+      'imageUrl': imageUrl,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
   }
 }

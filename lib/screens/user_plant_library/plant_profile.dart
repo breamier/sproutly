@@ -161,15 +161,15 @@ class PlantProfileScreen extends StatelessWidget {
                       children: [
                         _buildCareIcon(
                           iconAsset: 'assets/light_icon.png',
-                          label: 'Bright\nlight',
+                          label: plant.sunlight,
                         ),
                         _buildCareIcon(
                           iconAsset: 'assets/water_icon.png',
-                          label: 'Water\nWeekly',
+                          label: plant.water,
                         ),
                         _buildCareIcon(
                           iconAsset: 'assets/care_icon.png',
-                          label: 'High\nCare',
+                          label: plant.careLevel,
                         ),
                       ],
                     ),

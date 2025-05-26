@@ -114,7 +114,7 @@ class DevToolsPage extends StatelessWidget {
                       sunlight: 'High',
                       careLevel: 'Easy',
                       addedOn: Timestamp.now(),
-                      type: 'Indoor',
+                      type: 'Flower',
                       img:
                           'https://res.cloudinary.com/dpxhpivoe/image/upload/v1748210816/lpjurgdckyrzkkybsgat.jpg',
                     );

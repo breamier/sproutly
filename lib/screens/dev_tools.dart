@@ -22,6 +22,7 @@ import 'package:sproutly/screens/dashboard_screen.dart';
 import 'package:sproutly/screens/landing_page.dart';
 import 'package:sproutly/screens/guide_book/guide_book.dart';
 import 'package:sproutly/screens/add_plant/add_plant_form.dart';
+import 'package:sproutly/screens/add_plant/add_plant_camera.dart';
 import 'package:sproutly/screens/watering_schedule.dart';
 import 'package:sproutly/screens/user_plant_library/plant_library.dart';
 import 'package:sproutly/screens/reminders_screen.dart';
@@ -109,15 +110,13 @@ class DevToolsPage extends StatelessWidget {
                     final plant = Plant(
                       id: '',
                       plantName: 'Test Plant',
-                      date: '2023-10-01',
-                      time: '10:00 AM',
                       water: 'Medium',
                       sunlight: 'High',
                       careLevel: 'Easy',
-                      lifespan: '1 year',
-                      waterStorage: 'Normal',
                       addedOn: Timestamp.now(),
                       type: 'Indoor',
+                      img:
+                          'https://res.cloudinary.com/dpxhpivoe/image/upload/v1748210816/lpjurgdckyrzkkybsgat.jpg',
                     );
                     await DatabaseService().addPlant(plant);
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -142,7 +141,6 @@ class DevToolsPage extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
               SizedBox(
                 width: 200,
                 child: ElevatedButton(
@@ -150,7 +148,7 @@ class DevToolsPage extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => DashboardScreen(),
+                        builder: (context) => const LandingPage(),
                       ),
                     );
                   },
@@ -163,7 +161,35 @@ class DevToolsPage extends StatelessWidget {
                     ),
                   ),
                   child: const Text(
-                    'Dashboard',
+                    'Landing Page',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: 200,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AddPlantCamera()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: buttonColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Add Plant Camera',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

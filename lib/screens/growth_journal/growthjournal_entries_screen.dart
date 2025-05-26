@@ -108,7 +108,7 @@ class GrowthJournalEntriesScreen extends StatelessWidget {
 
   Widget _buildJournalEntry() {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
       decoration: BoxDecoration(
         color: Color(0xFFF8F4F4),
         border: Border.all(color: oliveGreen),
@@ -118,33 +118,9 @@ class GrowthJournalEntriesScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // IMAGE LAYOUT
-          Row(
-            children: [
-              // Left large image
-              Expanded(
-                flex: 2,
-                child: _buildAssetImage('assets/tulips.png', height: 150),
-              ),
-              const SizedBox(width: 8),
-              // Middle large image
-              Expanded(
-                flex: 2,
-                child: _buildAssetImage('assets/hibiscus.png', height: 150),
-              ),
-              const SizedBox(width: 8),
-              // Right stacked images
-              Expanded(
-                flex: 1,
-                child: Column(
-                  children: [
-                    _buildAssetImage('assets/hyacinth.png', height: 70),
-                    const SizedBox(height: 8),
-                    _buildStackedImage('assets/rose.png', height: 70),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          // Single image per entry
+          _buildAssetImage('assets/tulips.png', height: 180),
+
           const SizedBox(height: 12),
           Text('Tulip Growth Stages', style: headingFont),
           const SizedBox(height: 4),
@@ -167,47 +143,49 @@ class GrowthJournalEntriesScreen extends StatelessWidget {
   }
 
   Widget _buildAssetImage(String path, {double height = 100}) {
-    return Container(
-      height: height,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        // borderRadius: BorderRadius.circular(8),
-        image: DecorationImage(image: AssetImage(path), fit: BoxFit.cover),
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        height: height,
+        width: 80,
+        decoration: BoxDecoration(
+          image: DecorationImage(image: AssetImage(path), fit: BoxFit.contain),
+        ),
       ),
     );
   }
 
-  Widget _buildStackedImage(String path, {double height = 100}) {
-    return Stack(
-      children: [
-        Container(
-          height: height,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            // borderRadius: BorderRadius.circular(8),
-            image: DecorationImage(image: AssetImage(path), fit: BoxFit.cover),
-          ),
-        ),
-        Container(
-          height: height,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.4),
-            // borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Center(
-            child: Text(
-              '+2',
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 16,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+  // Widget _buildStackedImage(String path, {double height = 100}) {
+  //   return Stack(
+  //     children: [
+  //       Container(
+  //         height: height,
+  //         width: double.infinity,
+  //         decoration: BoxDecoration(
+  //           // borderRadius: BorderRadius.circular(8),
+  //           image: DecorationImage(image: AssetImage(path), fit: BoxFit.cover),
+  //         ),
+  //       ),
+  //       Container(
+  //         height: height,
+  //         width: double.infinity,
+  //         decoration: BoxDecoration(
+  //           color: Colors.black.withOpacity(0.4),
+  //           // borderRadius: BorderRadius.circular(8),
+  //         ),
+  //         child: const Center(
+  //           child: Text(
+  //             '+2',
+  //             style: TextStyle(
+  //               fontFamily: 'Poppins',
+  //               fontSize: 16,
+  //               color: Colors.white,
+  //               fontWeight: FontWeight.bold,
+  //             ),
+  //           ),
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 }

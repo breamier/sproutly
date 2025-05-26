@@ -80,7 +80,20 @@ class PlantProfileScreen extends StatelessWidget {
                           height: 230,
                           child:
                               plant.img != null && plant.img!.isNotEmpty
-                                  ? Image.network(plant.img!, fit: BoxFit.cover)
+                                  ? Image.network(
+                                    "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSYlCenUZLlhRjnV551Bi8JuJvSXjV_ITnmZh6TdWn6887DisIYpaqIXgFmONuZzY2HpfeHGjE1KVlvYPS0L3LHnw",
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            Container(
+                                              color: Colors.grey[300],
+                                              child: const Icon(
+                                                Icons.broken_image,
+                                                size: 60,
+                                                color: Color(0xFF747822),
+                                              ),
+                                            ),
+                                  )
                                   : Container(
                                     color: Colors.grey[300],
                                     child: const Icon(

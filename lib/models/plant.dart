@@ -34,6 +34,7 @@ class Plant {
       id: id,
       plantName: json['plantName'] as String? ?? 'Unknown Plant',
       water: json['water'] as String? ?? '',
+      img: json['img'] as String? ?? '',
       sunlight: json['sunlight'] as String? ?? '',
       careLevel: json['careLevel'] as String? ?? '',
       addedOn: timestamp,

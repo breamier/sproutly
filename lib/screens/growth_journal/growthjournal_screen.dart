@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sproutly/main.dart';
+import 'package:sproutly/screens/growth_journal/growthjournal_entries_screen.dart';
 
 class GrowthJournalScreen extends StatelessWidget {
   const GrowthJournalScreen({super.key});
@@ -29,147 +30,173 @@ class GrowthJournalScreen extends StatelessWidget {
 
   // Example mock image paths
   final List<String> imagePaths = const [
-    'assets/tulips.png',
-    'assets/hyacinth.png',
-    'assets/tulips.png',
-    'assets/hyacinth.png',
-    'assets/tulips.png',
-    'assets/hyacinth.png',
+    // 'assets/tulips.png',
+    // 'assets/hyacinth.png',
+    // 'assets/tulips.png',
+    // 'assets/hyacinth.png',
+    // 'assets/tulips.png',
+    // 'assets/hyacinth.png',
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
+      resizeToAvoidBottomInset: true,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF8C8F3E).withOpacity(0.25),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0xFF8C8F3E),
-                      width: 2,
+                // Header
+                Row(
+                  children: [
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF8C8F3E).withOpacity(0.25),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF8C8F3E),
+                          width: 2,
+                        ),
+                      ),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SproutlyApp(),
+                            ),
+                          );
+                        },
+                        child: const Icon(
+                          Icons.chevron_left,
+                          color: Color(0xFF8C8F3E),
+                          size: 36,
+                        ),
+                      ),
                     ),
+                    const SizedBox(width: 12),
+                    Text(
+                      "Growth Journal",
+                      style: TextStyle(
+                        fontFamily: 'Curvilingus',
+                        fontWeight: FontWeight.w700,
+                        fontSize: MediaQuery.of(context).size.width * 0.08,
+                        color: oliveGreen,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 25),
+
+                const Text("Tulip Notes", style: headingFont),
+                const SizedBox(height: 12),
+
+                Container(
+                  width: double.infinity,
+                  height: 300,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 40,
+                    vertical: 18,
                   ),
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.pushReplacement(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: oliveGreen),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Title',
+                          hintStyle: headingFont,
+                          border: InputBorder.none,
+                        ),
+                        style: headingFont,
+                      ),
+                      SizedBox(height: 8),
+                      Flexible(
+                        child: TextField(
+                          maxLines: null,
+                          expands: true,
+                          style: bodyFont,
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+                const Text("Photos", style: headingFont),
+                const SizedBox(height: 12),
+
+                SizedBox(
+                  height: MediaQuery.of(context).size.width * 0.2 * 1.30,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: imagePaths.length + 1,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(width: 8),
+                    itemBuilder: (context, index) {
+                      if (index < imagePaths.length) {
+                        return _buildPhoto(context, imagePaths[index]);
+                      } else {
+                        return _buildAddPhotoBox(context);
+                      }
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const SproutlyApp(),
+                          builder: (context) => GrowthJournalEntriesScreen(),
                         ),
                       );
                     },
-                    child: const Icon(
-                      Icons.chevron_right,
-                      color: Color(0xFF8C8F3E),
-                      size: 36,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: oliveGreen,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 12,
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  "Growth Journal",
-                  style: TextStyle(
-                    fontFamily: 'Curvilingus',
-                    fontWeight: FontWeight.w700,
-                    fontSize: MediaQuery.of(context).size.width * 0.08,
-                    color: oliveGreen,
+                    child: const Text(
+                      "Save  Journal Entry",
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
-
-            const SizedBox(height: 25),
-
-            const Text("Notes", style: headingFont),
-            const SizedBox(height: 12),
-
-            Container(
-              width: double.infinity,
-              height: 300,
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
-              decoration: BoxDecoration(
-                border: Border.all(color: oliveGreen),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Title", style: headingFont),
-                  SizedBox(height: 8),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Text(
-                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
-                        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. "
-                        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-                        style: bodyFont,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-            const Text("Photos", style: headingFont),
-            const SizedBox(height: 12),
-
-            SizedBox(
-              height: MediaQuery.of(context).size.width * 0.2 * 1.30,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: imagePaths.length + 1,
-                separatorBuilder: (context, index) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  if (index < imagePaths.length) {
-                    return _buildPhoto(context, imagePaths[index]);
-                  } else {
-                    return _buildAddPhotoBox(context);
-                  }
-                },
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  // TODO: Implement save logic
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: oliveGreen,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 12,
-                  ),
-                ),
-                child: const Text(
-                  "Save  Journal Entry",
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -198,7 +225,7 @@ class GrowthJournalScreen extends StatelessWidget {
     return SizedBox(
       width: boxWidth,
       child: AspectRatio(
-        aspectRatio: 3 / 4, // Matches image aspect ratio
+        aspectRatio: 3 / 4,
         child: Container(
           decoration: BoxDecoration(
             border: Border.all(color: const Color.fromARGB(255, 136, 123, 123)),

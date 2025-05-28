@@ -6,7 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sproutly/widget_tree.dart';
-
+import 'screens/dashboard_screen.dart';
 //services
 import 'services/database_service.dart';
 import 'services/schedule_service.dart';
@@ -72,8 +72,7 @@ class SproutlyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      // home: HomeScreen(),
-      home: const WidgetTree(),
+       home: DashboardScreen(),
     );
   }
 }

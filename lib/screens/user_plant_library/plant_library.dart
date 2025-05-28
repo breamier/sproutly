@@ -71,7 +71,7 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
                 'Your Plants',
                 style: TextStyle(
                   fontFamily: 'Curvilingus',
-                  fontSize: 50,
+                  fontSize: 38,
                   color: oliveTitleColor,
                   fontWeight: FontWeight.bold,
                 ),
@@ -91,11 +91,12 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
                     Expanded(
                       child: TextField(
                         controller: _searchController,
+                        style: TextStyle(color: oliveTitleColor),
                         decoration: const InputDecoration(
                           hintText: 'Search',
                           hintStyle: TextStyle(color: Color(0xFF9A9D6B)),
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(vertical: 15),
+                          contentPadding: EdgeInsets.symmetric(vertical: 12),
                         ),
                       ),
                     ),

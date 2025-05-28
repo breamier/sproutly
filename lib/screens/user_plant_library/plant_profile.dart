@@ -16,218 +16,232 @@ class PlantProfileScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: FutureBuilder<Plant?>(
-          future: DatabaseService().getPlantById(plantId),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (!snapshot.hasData || snapshot.data == null) {
-              return const Center(child: Text('Plant not found'));
-            }
-            final plant = snapshot.data!;
-
-            return SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE8E8D5),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: oliveTitleColor,
-                              width: 1.5,
-                            ),
-                          ),
-                          child: IconButton(
-                            icon: const Icon(
-                              Icons.arrow_back,
-                              color: oliveTitleColor,
-                            ),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            padding: EdgeInsets.zero,
-                          ),
-                        ),
-                        const SizedBox(width: 15),
-                        Text(
-                          'Plant Profile',
-                          style: TextStyle(
-                            fontFamily: 'Curvilingus',
-                            fontSize: 34,
-                            color: oliveTitleColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+        child: Column(
+          children: [
+            // Fixed App Bar
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 20.0,
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8E8D5),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: oliveTitleColor, width: 1.5),
                     ),
-
-                    const SizedBox(height: 25),
-
-                    Center(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: SizedBox(
-                          width: 230,
-                          height: 230,
-                          child:
-                              plant.img != null && plant.img!.isNotEmpty
-                                  ? Image.network(
-                                    plant.img!,
-                                    fit: BoxFit.cover,
-                                    errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            Container(
-                                              color: Colors.grey[300],
-                                              child: const Icon(
-                                                Icons.broken_image,
-                                                size: 60,
-                                                color: Color(0xFF747822),
-                                              ),
-                                            ),
-                                  )
-                                  : Container(
-                                    color: Colors.grey[300],
-                                    child: const Icon(
-                                      Icons.local_florist,
-                                      size: 60,
-                                      color: oliveTitleColor,
-                                    ),
-                                  ),
-                        ),
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back,
+                        color: oliveTitleColor,
                       ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      padding: EdgeInsets.zero,
                     ),
-
-                    const SizedBox(height: 30),
-
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          plant.plantName,
-                          style: TextStyle(
-                            fontFamily: 'Curvilingus',
-                            fontSize: 40,
-                            color: oliveTitleColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          plant.type!,
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 20,
-                            color: oliveTitleColor,
-                          ),
-                        ),
-                      ],
+                  ),
+                  const SizedBox(width: 15),
+                  Text(
+                    'Plant Profile',
+                    style: TextStyle(
+                      fontFamily: 'Curvilingus',
+                      fontSize: 34,
+                      color: oliveTitleColor,
+                      fontWeight: FontWeight.bold,
                     ),
+                  ),
+                ],
+              ),
+            ),
 
-                    const SizedBox(height: 25),
+            // Scrollable Content
+            Expanded(
+              child: FutureBuilder<Plant?>(
+                future: DatabaseService().getPlantById(plantId),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (!snapshot.hasData || snapshot.data == null) {
+                    return const Center(child: Text('Plant not found'));
+                  }
+                  final plant = snapshot.data!;
 
-                    // Tip container
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 15,
-                        horizontal: 20,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(25),
-                        border: Border.all(color: oliveTitleColor, width: 1.5),
-                      ),
-                      child: Row(
+                  return SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Image.asset(
-                            'assets/knowledge_icon.png',
-                            height: 24,
-                            width: 24,
-                            color: oliveTitleColor,
-                          ),
-                          const SizedBox(width: 15),
-                          Expanded(
-                            child: Text(
-                              'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. commodo ligula eget dolor',
-                              style: TextStyle(
-                                fontFamily: 'Poppins',
-                                fontSize: 14,
-                                color: oliveTitleColor,
+                          const SizedBox(height: 5),
+
+                          Center(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: SizedBox(
+                                width: 230,
+                                height: 230,
+                                child:
+                                    plant.img != null && plant.img!.isNotEmpty
+                                        ? Image.network(
+                                          plant.img!,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  Container(
+                                                    color: Colors.grey[300],
+                                                    child: const Icon(
+                                                      Icons.broken_image,
+                                                      size: 60,
+                                                      color: Color(0xFF747822),
+                                                    ),
+                                                  ),
+                                        )
+                                        : Container(
+                                          color: Colors.grey[300],
+                                          child: const Icon(
+                                            Icons.local_florist,
+                                            size: 60,
+                                            color: oliveTitleColor,
+                                          ),
+                                        ),
                               ),
                             ),
                           ),
+
+                          const SizedBox(height: 30),
+
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                plant.plantName,
+                                style: TextStyle(
+                                  fontFamily: 'Curvilingus',
+                                  fontSize: 40,
+                                  color: oliveTitleColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const Spacer(),
+                              Text(
+                                plant.type!,
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 20,
+                                  color: oliveTitleColor,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 25),
+
+                          // Tip container
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 15,
+                              horizontal: 20,
+                            ),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(25),
+                              border: Border.all(
+                                color: oliveTitleColor,
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Image.asset(
+                                  'assets/knowledge_icon.png',
+                                  height: 24,
+                                  width: 24,
+                                  color: oliveTitleColor,
+                                ),
+                                const SizedBox(width: 15),
+                                Expanded(
+                                  child: Text(
+                                    'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. commodo ligula eget dolor',
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: 14,
+                                      color: oliveTitleColor,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 30),
+
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _buildCareIcon(
+                                iconAsset: 'assets/light_icon.png',
+                                label: plant.sunlight,
+                              ),
+                              _buildCareIcon(
+                                iconAsset: 'assets/water_icon.png',
+                                label: plant.water,
+                              ),
+                              _buildCareIcon(
+                                iconAsset: 'assets/care_icon.png',
+                                label: plant.careLevel,
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 40),
+
+                          _buildActionButton(
+                            context: context,
+                            label: 'Plant Issues',
+                            iconAsset: 'assets/edit_icon.png',
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder:
+                                    (context) =>
+                                        PlantIssuesScreen(plantId: plant.id),
+                              );
+                            },
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          _buildActionButton(
+                            context: context,
+                            label: 'Growth Journal',
+                            iconAsset: 'assets/journal_icon.png',
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => GrowthJournalEntriesScreen(
+                                        plantId: plant.id,
+                                      ),
+                                ),
+                              );
+                            },
+                          ),
+
+                          const SizedBox(height: 30),
                         ],
                       ),
                     ),
-
-                    const SizedBox(height: 30),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _buildCareIcon(
-                          iconAsset: 'assets/light_icon.png',
-                          label: plant.sunlight,
-                        ),
-                        _buildCareIcon(
-                          iconAsset: 'assets/water_icon.png',
-                          label: plant.water,
-                        ),
-                        _buildCareIcon(
-                          iconAsset: 'assets/care_icon.png',
-                          label: plant.careLevel,
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 40),
-
-                    _buildActionButton(
-                      context: context,
-                      label: 'Plant Issues',
-                      iconAsset: 'assets/edit_icon.png',
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder:
-                              (context) => PlantIssuesScreen(plantId: plant.id),
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    _buildActionButton(
-                      context: context,
-                      label: 'Growth Journal',
-                      iconAsset: 'assets/journal_icon.png',
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => GrowthJournalEntriesScreen(
-                                  plantId: plant.id,
-                                ),
-                          ),
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 30),
-                  ],
-                ),
+                  );
+                },
               ),
-            );
-          },
+            ),
+          ],
         ),
       ),
     );

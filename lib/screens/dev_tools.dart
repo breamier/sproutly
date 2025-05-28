@@ -191,8 +191,9 @@ class DevToolsPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
+
                   child: const Text(
-                    'Add Plant Camera',
+                    'Growth Journal Entries',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -288,7 +289,7 @@ class DevToolsPage extends StatelessWidget {
                   ),
 
                   child: const Text(
-                    'Reminders Screen',
+                    'Reminders',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

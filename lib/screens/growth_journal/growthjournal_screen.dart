@@ -23,7 +23,7 @@ class GrowthJournalScreen extends StatefulWidget {
   static const TextStyle headingFont = TextStyle(
     fontFamily: 'Poppins',
     fontWeight: FontWeight.w700,
-    fontSize: 24,
+    fontSize: 22,
     color: oliveGreen,
   );
 
@@ -98,56 +98,61 @@ class _GrowthJournalScreenState extends State<GrowthJournalScreen> {
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
-          child: SingleChildScrollView(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Row(
-                  children: [
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF8C8F3E).withOpacity(0.25),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: const Color(0xFF8C8F3E),
-                          width: 2,
-                        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF8C8F3E).withOpacity(0.25),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFF8C8F3E),
+                        width: 2,
                       ),
-                      child: InkWell(
-                        onTap: () {
+                    ),
+                    child: InkWell(
+                      onTap: () {
                           Navigator.pop(context);
-                        },
-                        child: const Icon(
-                          Icons.chevron_left,
-                          color: Color(0xFF8C8F3E),
-                          size: 36,
-                        ),
+                      },
+                      child: const Icon(
+                        Icons.chevron_left,
+                        color: Color(0xFF8C8F3E),
+                        size: 36,
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Text(
-                      "Growth Journal",
-                      style: TextStyle(
-                        fontFamily: 'Curvilingus',
-                        fontWeight: FontWeight.w700,
-                        fontSize: MediaQuery.of(context).size.width * 0.08,
-                        color: GrowthJournalScreen.oliveGreen,
-                      ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    "Growth Journal",
+                    style: TextStyle(
+                      fontFamily: 'Curvilingus',
+                      fontWeight: FontWeight.w700,
+                      fontSize: MediaQuery.of(context).size.width * 0.08,
+                      color: GrowthJournalScreen.oliveGreen,
                     ),
-                  ],
+                  ),
+                ],
+              ),
+            ),
+            
+            // Scrollable Content
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  left: 24,
+                  right: 24,
+                  top: 20,
+                  bottom: MediaQuery.of(context).viewInsets.bottom + 24,
                 ),
-
-                const SizedBox(height: 25),
-
-                FutureBuilder(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    FutureBuilder(
                   future: DatabaseService().getPlantById(widget.plantId),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -181,22 +186,20 @@ class _GrowthJournalScreenState extends State<GrowthJournalScreen> {
                     border: Border.all(color: GrowthJournalScreen.oliveGreen),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Column(
+                  child: const Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       TextField(
-                        controller: _titleController,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           hintText: 'Title',
                           hintStyle: GrowthJournalScreen.headingFont,
                           border: InputBorder.none,
                         ),
                         style: GrowthJournalScreen.headingFont,
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       Flexible(
                         child: TextField(
-                          controller: _notesController,
                           maxLines: null,
                           expands: true,
                           style: GrowthJournalScreen.bodyFont,
@@ -220,8 +223,8 @@ class _GrowthJournalScreenState extends State<GrowthJournalScreen> {
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: imagePaths.length + 1,
-                    separatorBuilder:
-                        (context, index) => const SizedBox(width: 8),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(width: 8),
                     itemBuilder: (context, index) {
                       if (index < imagePaths.length) {
                         return _buildPhoto(context, imagePaths[index]);
@@ -251,11 +254,12 @@ class _GrowthJournalScreenState extends State<GrowthJournalScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 15),
+                    const SizedBox(height: 15),
 
                 Center(
                   child: ElevatedButton(
-                    onPressed: _submitJournalEntry,
+                    onPressed:_submitJournalEntry,
+                     
                     style: ElevatedButton.styleFrom(
                       backgroundColor: GrowthJournalScreen.oliveGreen,
                       shape: RoundedRectangleBorder(

@@ -70,11 +70,10 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Header with Back and Edit Button
               Row(
                 children: [
                   GestureDetector(
@@ -224,7 +223,6 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
                     setState(() {
                       isEditing = false;
                     });
-                    // Optionally trigger a save logic callback
                   },
                   child: const Text(
                     'Save Journal Entry',

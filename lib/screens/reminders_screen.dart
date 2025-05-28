@@ -7,14 +7,14 @@ class RemindersScreen extends StatelessWidget {
   static const TextStyle titleFont = TextStyle(
     fontFamily: 'Curvilingus',
     fontWeight: FontWeight.w700,
-    fontSize: 50,
+    fontSize: 34,
     color: Color(0xFF747822),
   );
 
   static const TextStyle headingFont = TextStyle(
     fontFamily: 'Poppins',
     fontWeight: FontWeight.w700,
-    fontSize: 24,
+    fontSize: 22,
     color: Color(0xFF747822),
   );
 
@@ -29,19 +29,17 @@ class RemindersScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
-                    width: 50,
-                    height: 50,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       color: const Color(0xFF8C8F3E).withOpacity(0.25),
                       shape: BoxShape.circle,
@@ -70,81 +68,89 @@ class RemindersScreen extends StatelessWidget {
                   Text("Reminders", style: titleFont),
                 ],
               ),
+            ),
 
-              const SizedBox(height: 40),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Today's Reminders
+                    Text("Today's Reminders", style: headingFont),
+                    const SizedBox(height: 12),
+                    ReminderCard(
+                      task: 'Water the Rose',
+                      time: 'May 1, 2025 10:00 AM',
+                    ),
+                    const SizedBox(height: 8),
+                    ReminderCard(
+                      task: 'Give sunlight to Tulip',
+                      time: 'May 1, 2025 11:30 AM',
+                    ),
 
-              // Today's Reminders
-              Text("Today's Reminders", style: headingFont),
-              const SizedBox(height: 12),
-              ReminderCard(
-                task: 'Water the Rose',
-                time: 'May 1, 2025 10:00 AM',
-              ),
-              const SizedBox(height: 8),
-              ReminderCard(
-                task: 'Give sunlight to Tulip',
-                time: 'May 1, 2025 11:30 AM',
-              ),
+                    const SizedBox(height: 32),
 
-              const SizedBox(height: 32),
+                    // Upcoming Reminders
+                    Text("Upcoming Reminders", style: headingFont),
+                    const SizedBox(height: 12),
+                    ReminderCard(
+                      task:
+                          'STEAm THUNDER BY SVT HAPPY 10TH YEAR ANNIVERSARY BABIES KO STEAm THUNDER BY SVT HAPPY 10TH YEAR ANNIVERSARY BABIES KO',
+                      time: 'May 2, 2025 9:00 AM',
+                    ),
+                    const SizedBox(height: 8),
+                    ReminderCard(
+                      task: 'Fertilize the Rose',
+                      time: 'May 3, 2025 1:00 PM',
+                    ),
+                    const SizedBox(height: 8),
+                    ReminderCard(
+                      task: 'Fertilize the Rose',
+                      time: 'May 3, 2025 1:00 PM',
+                    ),
+                    const SizedBox(height: 8),
+                    ReminderCard(
+                      task: 'Fertilize the Rose',
+                      time: 'May 3, 2025 1:00 PM',
+                    ),
 
-              // Upcoming Reminders
-              Text("Upcoming Reminders", style: headingFont),
-              const SizedBox(height: 12),
-              ReminderCard(
-                task:
-                    'STEAm THUNDER BY SVT HAPPY 10TH YEAR ANNIVERSARY BABIES KO STEAm THUNDER BY SVT HAPPY 10TH YEAR ANNIVERSARY BABIES KO',
-                time: 'May 2, 2025 9:00 AM',
-              ),
-              const SizedBox(height: 8),
-              ReminderCard(
-                task: 'Fertilize the Rose',
-                time: 'May 3, 2025 1:00 PM',
-              ),
-              const SizedBox(height: 8),
-              ReminderCard(
-                task: 'Fertilize the Rose',
-                time: 'May 3, 2025 1:00 PM',
-              ),
-              const SizedBox(height: 8),
-              ReminderCard(
-                task: 'Fertilize the Rose',
-                time: 'May 3, 2025 1:00 PM',
-              ),
+                    ReminderCard(
+                      task: 'Fertilize the Rose',
+                      time: 'May 3, 2025 1:00 PM',
+                    ),
+                    const SizedBox(height: 8),
+                    ReminderCard(
+                      task: 'Fertilize the Rose',
+                      time: 'May 3, 2025 1:00 PM',
+                    ),
 
-              ReminderCard(
-                task: 'Fertilize the Rose',
-                time: 'May 3, 2025 1:00 PM',
-              ),
-              const SizedBox(height: 8),
-              ReminderCard(
-                task: 'Fertilize the Rose',
-                time: 'May 3, 2025 1:00 PM',
-              ),
+                    ReminderCard(
+                      task: 'Fertilize the Rose',
+                      time: 'May 3, 2025 1:00 PM',
+                    ),
+                    const SizedBox(height: 8),
+                    ReminderCard(
+                      task: 'Fertilize the Rose',
+                      time: 'May 3, 2025 1:00 PM',
+                    ),
 
-              ReminderCard(
-                task: 'Fertilize the Rose',
-                time: 'May 3, 2025 1:00 PM',
-              ),
-              const SizedBox(height: 8),
-              ReminderCard(
-                task: 'Fertilize the Rose',
-                time: 'May 3, 2025 1:00 PM',
-              ),
+                    ReminderCard(
+                      task: 'Fertilize the Rose',
+                      time: 'May 3, 2025 1:00 PM',
+                    ),
+                    const SizedBox(height: 8),
+                    ReminderCard(
+                      task: 'Fertilize the Rose',
+                      time: 'May 3, 2025 1:00 PM',
+                    ),
 
-              ReminderCard(
-                task: 'Fertilize the Rose',
-                time: 'May 3, 2025 1:00 PM',
+                    const SizedBox(height: 32),
+                  ],
+                ),
               ),
-              const SizedBox(height: 8),
-              ReminderCard(
-                task: 'Fertilize the Rose',
-                time: 'May 3, 2025 1:00 PM',
-              ),
-
-              const SizedBox(height: 32),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

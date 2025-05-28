@@ -193,7 +193,7 @@ class DevToolsPage extends StatelessWidget {
                   ),
 
                   child: const Text(
-                    'Growth Journal Entries',
+                    'Add Plant Camera',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -207,13 +207,13 @@ class DevToolsPage extends StatelessWidget {
                 width: 200,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => const GrowthJournalEntriesScreen(),
-                      ),
-                    );
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(
+                    //     builder:
+                    //         (context) => const GrowthJournalEntriesScreen(),
+                    //   ),
+                    // );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: buttonColor,

@@ -101,7 +101,10 @@ class _GrowthJournalScreenState extends State<GrowthJournalScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 5.0,
+              ),
               child: Row(
                 children: [
                   Container(
@@ -117,7 +120,7 @@ class _GrowthJournalScreenState extends State<GrowthJournalScreen> {
                     ),
                     child: InkWell(
                       onTap: () {
-                          Navigator.pop(context);
+                        Navigator.pop(context);
                       },
                       child: const Icon(
                         Icons.chevron_left,
@@ -139,7 +142,7 @@ class _GrowthJournalScreenState extends State<GrowthJournalScreen> {
                 ],
               ),
             ),
-            
+
             // Scrollable Content
             Expanded(
               child: SingleChildScrollView(
@@ -153,137 +156,147 @@ class _GrowthJournalScreenState extends State<GrowthJournalScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     FutureBuilder(
-                  future: DatabaseService().getPlantById(widget.plantId),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Text(
-                        "Loading...",
-                        style: GrowthJournalScreen.headingFont,
-                      );
-                    }
-                    if (!snapshot.hasData || snapshot.data == null) {
-                      return const Text(
-                        "Plant not found",
-                        style: GrowthJournalScreen.headingFont,
-                      );
-                    }
-                    final plant = snapshot.data!;
-                    return Text(
-                      "${plant.plantName} Notes",
-                      style: GrowthJournalScreen.headingFont,
-                    );
-                  },
-                ),
-
-                Container(
-                  width: double.infinity,
-                  height: 300,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 40,
-                    vertical: 18,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: GrowthJournalScreen.oliveGreen),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Title',
-                          hintStyle: GrowthJournalScreen.headingFont,
-                          border: InputBorder.none,
-                        ),
-                        style: GrowthJournalScreen.headingFont,
-                      ),
-                      SizedBox(height: 8),
-                      Flexible(
-                        child: TextField(
-                          maxLines: null,
-                          expands: true,
-                          style: GrowthJournalScreen.bodyFont,
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            isDense: true,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-                const Text("Photos", style: GrowthJournalScreen.headingFont),
-                const SizedBox(height: 12),
-
-                SizedBox(
-                  height: MediaQuery.of(context).size.width * 0.2 * 1.30,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: imagePaths.length + 1,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(width: 8),
-                    itemBuilder: (context, index) {
-                      if (index < imagePaths.length) {
-                        return _buildPhoto(context, imagePaths[index]);
-                      } else {
-                        return GestureDetector(
-                          onTap: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => AddPlantCamera(
-                                      addPlant: false,
-                                      onImageSelected: (File imageFile) {
-                                        setState(() {
-                                          imagePaths.add(imageFile.path);
-                                        });
-                                      },
-                                    ),
-                              ),
-                            );
-                            print("Image selected: ${imagePaths.first}");
-                          },
-                          child: _buildAddPhotoBox(context),
+                      future: DatabaseService().getPlantById(widget.plantId),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Text(
+                            "Loading...",
+                            style: GrowthJournalScreen.headingFont,
+                          );
+                        }
+                        if (!snapshot.hasData || snapshot.data == null) {
+                          return const Text(
+                            "Plant not found",
+                            style: GrowthJournalScreen.headingFont,
+                          );
+                        }
+                        final plant = snapshot.data!;
+                        return Text(
+                          "${plant.plantName} Notes",
+                          style: GrowthJournalScreen.headingFont,
                         );
-                      }
-                    },
-                  ),
-                ),
+                      },
+                    ),
+
+                    Container(
+                      width: double.infinity,
+                      height: 300,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 40,
+                        vertical: 18,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: GrowthJournalScreen.oliveGreen,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextField(
+                            controller: _titleController,
+                            decoration: InputDecoration(
+                              hintText: 'Title',
+                              hintStyle: GrowthJournalScreen.headingFont,
+                              border: InputBorder.none,
+                            ),
+                            style: GrowthJournalScreen.headingFont,
+                          ),
+                          SizedBox(height: 8),
+                          Flexible(
+                            child: TextField(
+                              controller: _notesController,
+                              maxLines: null,
+                              expands: true,
+                              style: GrowthJournalScreen.bodyFont,
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+                    const Text(
+                      "Photos",
+                      style: GrowthJournalScreen.headingFont,
+                    ),
+                    const SizedBox(height: 12),
+
+                    SizedBox(
+                      height: MediaQuery.of(context).size.width * 0.2 * 1.30,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: imagePaths.length + 1,
+                        separatorBuilder:
+                            (context, index) => const SizedBox(width: 8),
+                        itemBuilder: (context, index) {
+                          if (index < imagePaths.length) {
+                            return _buildPhoto(context, imagePaths[index]);
+                          } else {
+                            return GestureDetector(
+                              onTap: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => AddPlantCamera(
+                                          addPlant: false,
+                                          onImageSelected: (File imageFile) {
+                                            setState(() {
+                                              imagePaths.add(imageFile.path);
+                                            });
+                                          },
+                                        ),
+                                  ),
+                                );
+                                print("Image selected: ${imagePaths.first}");
+                              },
+                              child: _buildAddPhotoBox(context),
+                            );
+                          }
+                        },
+                      ),
+                    ),
 
                     const SizedBox(height: 15),
 
-                Center(
-                  child: ElevatedButton(
-                    onPressed:_submitJournalEntry,
-                     
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: GrowthJournalScreen.oliveGreen,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 12,
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: _submitJournalEntry,
+
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: GrowthJournalScreen.oliveGreen,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 32,
+                            vertical: 12,
+                          ),
+                        ),
+                        child: const Text(
+                          "Save  Journal Entry",
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
-                    child: const Text(
-                      "Save  Journal Entry",
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

@@ -145,7 +145,7 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
               const SizedBox(height: 16),
 
               // Image
-              Image.asset(
+              Image.network(
                 widget.imagePath,
                 width: screenWidth * 0.3,
                 fit: BoxFit.contain,

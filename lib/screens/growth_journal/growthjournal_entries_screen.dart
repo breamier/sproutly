@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:sproutly/screens/growth_journal/growth_journal_indiv_entry.dart';
+import 'package:sproutly/screens/growth_journal/growthjournal_screen.dart';
+import 'package:sproutly/services/database_service.dart';
+import 'package:sproutly/models/plant_journal_entry.dart';
+import 'package:intl/intl.dart';
 
 const Color oliveGreen = Color(0xFF747822);
 
@@ -43,13 +47,13 @@ class _GrowthJournalEntriesScreenState
         backgroundColor: oliveGreen,
         shape: const CircleBorder(),
         onPressed: () {
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(
-          //     builder:
-          //         (context) => GrowthJournalEntriesScreen(plantId: plant.id),
-          //   ),
-          // );
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) => GrowthJournalScreen(plantId: widget.plantId),
+            ),
+          );
         },
         child: const Icon(Icons.add, size: 32, color: Colors.white),
       ),
@@ -102,12 +106,28 @@ class _GrowthJournalEntriesScreenState
               Text('My Entries', style: headingFont.copyWith(fontSize: 22)),
               const SizedBox(height: 16),
               Expanded(
-                child: ListView(
-                  children: [
-                    _buildJournalEntry(context),
-                    const SizedBox(height: 16),
-                    _buildJournalEntry(context),
-                  ],
+                child: StreamBuilder(
+                  stream: DatabaseService().getJournalEntries(widget.plantId),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return const Center(
+                        child: Text('No journal entries yet.'),
+                      );
+                    }
+                    final entries =
+                        snapshot.data!.docs.map((doc) => doc.data()).toList();
+                    return ListView.separated(
+                      itemCount: entries.length,
+                      separatorBuilder:
+                          (context, index) => const SizedBox(height: 16),
+                      itemBuilder:
+                          (context, index) =>
+                              _buildJournalEntry(context, entries[index]),
+                    );
+                  },
                 ),
               ),
             ],
@@ -117,19 +137,23 @@ class _GrowthJournalEntriesScreenState
     );
   }
 
-  Widget _buildJournalEntry(BuildContext context) {
+  Widget _buildJournalEntry(BuildContext context, PlantJournalEntry entry) {
+    final formattedDate = DateFormat(
+      'MMMM d, y, h:mm a',
+    ).format(entry.createdAt.toDate());
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder:
-                (context) => const GrowthJournalIndivEntry(
-                  title: 'Tulip Growth Stages',
-                  description:
-                      'Documenting the journey from bud to bloom. Potted tulips showing healthy development.',
-                  imagePath: 'assets/tulips.png',
-                  date: 'May 1, 2025, 11:30 AM',
+                (context) => GrowthJournalIndivEntry(
+                  title: entry.title,
+                  description: entry.notes,
+                  imagePath:
+                      entry.imageUrls.isNotEmpty ? entry.imageUrls.first : '',
+                  date: formattedDate,
                 ),
           ),
         );
@@ -144,17 +168,14 @@ class _GrowthJournalEntriesScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildAssetImage('assets/tulips.png', height: 180),
+            _buildJournalImages(entry.imageUrls),
             const SizedBox(height: 12),
-            Text('Tulip Growth Stages', style: headingFont),
+            Text(entry.title, style: headingFont),
             const SizedBox(height: 4),
-            Text(
-              'Documenting the journey from bud to bloom. Potted tulips showing healthy development.',
-              style: bodyFont,
-            ),
+            Text(entry.notes, maxLines: 3, style: bodyFont),
             const SizedBox(height: 8),
-            const Text(
-              'May 1, 2025, 11:30 AM',
+            Text(
+              formattedDate,
               style: TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 10,
@@ -167,15 +188,83 @@ class _GrowthJournalEntriesScreenState
     );
   }
 
-  Widget _buildAssetImage(String path, {double height = 100}) {
-    return Container(
-      height: height,
-      width: 80,
-      margin: EdgeInsets.zero,
-      padding: EdgeInsets.zero,
-      decoration: BoxDecoration(
-        image: DecorationImage(image: AssetImage(path), fit: BoxFit.contain),
-      ),
+  Widget _buildJournalImages(List<String> imageUrls) {
+    if (imageUrls.isEmpty) {
+      return Container(
+        height: 150,
+        color: Colors.grey[300],
+        child: const Center(child: Icon(Icons.image, size: 40)),
+      );
+    }
+
+    // Show up to 4 images, others are +extra
+    final imagesToShow = imageUrls.take(4).toList();
+    final extraCount = imageUrls.length - imagesToShow.length;
+
+    return Row(
+      children: [
+        for (int i = 0; i < imagesToShow.length; i++) ...[
+          Expanded(
+            flex: 2,
+            child: Container(
+              height: 150,
+              margin: EdgeInsets.only(
+                right: i < imagesToShow.length - 1 ? 8 : 0,
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  imagesToShow[i],
+                  fit: BoxFit.cover,
+                  errorBuilder:
+                      (context, error, stackTrace) => Container(
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.broken_image),
+                      ),
+                ),
+              ),
+            ),
+          ),
+        ],
+        if (extraCount > 0)
+          Expanded(
+            flex: 1,
+            child: Stack(
+              children: [
+                Container(
+                  height: 150,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    image: DecorationImage(
+                      image: NetworkImage(imageUrls[3]),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 150,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.4),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '+$extraCount',
+                      style: const TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 24,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
     );
   }
 }

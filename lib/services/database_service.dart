@@ -133,6 +133,10 @@ class DatabaseService {
     await _plantJournalRef(plantId).add(plantJournalEntry);
   }
 
+  Stream<QuerySnapshot<PlantJournalEntry>> getJournalEntries(String plantId) {
+    return _plantJournalRef(plantId).snapshots();
+  }
+
   // fetching all plants-categories values in firestore
   Future<List<String>> getDropdownOptions(String fieldPath) async {
     try {

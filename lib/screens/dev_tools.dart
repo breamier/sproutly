@@ -141,35 +141,6 @@ class DevToolsPage extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(
-                width: 200,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LandingPage(),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: buttonColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Landing Page',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
-                ),
-              ),
               const SizedBox(height: 16),
               SizedBox(
                 width: 200,
@@ -220,7 +191,7 @@ class DevToolsPage extends StatelessWidget {
                   ),
 
                   child: const Text(
-                    'Growth Journal Screen',
+                    'Growth Journal',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -229,8 +200,6 @@ class DevToolsPage extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-
               const SizedBox(height: 16),
               SizedBox(
                 width: 200,
@@ -284,7 +253,7 @@ class DevToolsPage extends StatelessWidget {
                   ),
 
                   child: const Text(
-                    'Reminders Screen',
+                    'Reminders',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

@@ -89,6 +89,7 @@ flutter:
     - assets/light_icon.png
     - assets/water_icon.png
     - assets/care_icon.png
+    - assets/plant_icon.png
     - assets/resolved_icon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see

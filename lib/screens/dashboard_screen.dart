@@ -4,6 +4,7 @@ import '../widgets/navbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sproutly/screens/dev_tools.dart';
 import 'package:sproutly/screens/login_register.dart';
+import 'dart:async';
 
 class DashboardScreen extends StatelessWidget {
   DashboardScreen({super.key});
@@ -183,124 +184,190 @@ class _TipsWidgetState extends State<TipsWidget> {
 
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  Timer? _autoScrollTimer;
 
   static const TextStyle bodyFont = TextStyle(
     fontSize: 16,
     color: Colors.black,
   );
 
+  @override
+  void initState() {
+    super.initState();
+    _startAutoScroll();
+  }
+
+  @override
+  void dispose() {
+    _autoScrollTimer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _startAutoScroll() {
+    _autoScrollTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (mounted) {
+        int nextPage = (_currentPage + 1) % tips.length;
+        _pageController.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
+  void _stopAutoScroll() {
+    _autoScrollTimer?.cancel();
+  }
+
+  void _resumeAutoScroll() {
+    _autoScrollTimer?.cancel();
+    _startAutoScroll();
+  }
+
   void _goToPrevious() {
+    _stopAutoScroll();
     if (_currentPage > 0) {
       _pageController.previousPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
+    } else {
+      // Go to last page if at first page
+      _pageController.animateToPage(
+        tips.length - 1,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
     }
+    // Resume auto-scroll after 3 seconds of user interaction
+    Timer(const Duration(seconds: 3), () {
+      if (mounted) _resumeAutoScroll();
+    });
   }
 
   void _goToNext() {
+    _stopAutoScroll();
     if (_currentPage < tips.length - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
+    } else {
+      // Go to first page if at last page
+      _pageController.animateToPage(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
     }
+    // Resume auto-scroll after 3 seconds of user interaction
+    Timer(const Duration(seconds: 3), () {
+      if (mounted) _resumeAutoScroll();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF2EFEF),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          // Header with icon
-          Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+    return GestureDetector(
+      onTap: () {
+        // Pause auto-scroll when user taps the widget
+        _stopAutoScroll();
+        Timer(const Duration(seconds: 3), () {
+          if (mounted) _resumeAutoScroll();
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF2EFEF),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            // Header with icon
+            Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.lightbulb_outline, color: Color(0xFF4B5502)),
+                  const SizedBox(width: 8),
+                  Text('Tips', style: DashboardScreen.headingFont),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Slider with arrows
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.lightbulb_outline, color: Color(0xFF4B5502)),
-                const SizedBox(width: 8),
-                Text('Tips', style: DashboardScreen.headingFont),
-              ],
-            ),
-          ),
+                // Left arrow
+                IconButton(
+                  onPressed: _goToPrevious,
+                  icon: const Icon(Icons.arrow_back_ios, size: 20),
+                  color: Colors.black,
+                ),
 
-          const SizedBox(height: 16),
-
-          // Slider with arrows
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Left arrow
-              IconButton(
-                onPressed: _goToPrevious,
-                icon: const Icon(Icons.arrow_back_ios, size: 20),
-                color: _currentPage == 0 ? Colors.grey : Colors.black,
-              ),
-
-              // Tip content
-              Expanded(
-                child: SizedBox(
-                  height: 60,
-                  child: PageView.builder(
-                    controller: _pageController,
-                    itemCount: tips.length,
-                    onPageChanged: (index) {
-                      setState(() {
-                        _currentPage = index;
-                      });
-                    },
-                    itemBuilder: (context, index) {
-                      return Center(
-                        child: Text(
-                          tips[index],
-                          style: bodyFont,
-                          textAlign: TextAlign.center,
-                        ),
-                      );
-                    },
+                // Tip content
+                Expanded(
+                  child: SizedBox(
+                    height: 60,
+                    child: PageView.builder(
+                      controller: _pageController,
+                      itemCount: tips.length,
+                      onPageChanged: (index) {
+                        setState(() {
+                          _currentPage = index;
+                        });
+                      },
+                      itemBuilder: (context, index) {
+                        return Center(
+                          child: Text(
+                            tips[index],
+                            style: bodyFont,
+                            textAlign: TextAlign.center,
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
-              ),
 
-              // Right arrow
-              IconButton(
-                onPressed: _goToNext,
-                icon: const Icon(Icons.arrow_forward_ios, size: 20),
-                color:
-                    _currentPage == tips.length - 1
-                        ? Colors.grey
-                        : Colors.black,
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-
-          // Dot indicator
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(tips.length, (index) {
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color:
-                      _currentPage == index
-                          ? const Color(0xFF4B5502)
-                          : Colors.grey[400],
+                // Right arrow
+                IconButton(
+                  onPressed: _goToNext,
+                  icon: const Icon(Icons.arrow_forward_ios, size: 20),
+                  color: Colors.black,
                 ),
-              );
-            }),
-          ),
-        ],
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
+            // Dot indicator
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(tips.length, (index) {
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color:
+                        _currentPage == index
+                            ? const Color(0xFF4B5502)
+                            : Colors.grey[400],
+                  ),
+                );
+              }),
+            ),
+          ],
+        ),
       ),
     );
   }

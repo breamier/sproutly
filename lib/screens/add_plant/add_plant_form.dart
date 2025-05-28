@@ -18,8 +18,6 @@ class AddNewPlant extends StatefulWidget {
 class _AddNewPlantState extends State<AddNewPlant> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _dateController = TextEditingController();
-  final _timeController = TextEditingController();
   String? _imageUrl;
 
   bool _isSaving = false;
@@ -48,16 +46,12 @@ class _AddNewPlantState extends State<AddNewPlant> {
   @override
   void dispose() {
     _nameController.dispose();
-    _dateController.dispose();
-    _timeController.dispose();
     super.dispose();
   }
 
   // reset after submitting form
   void _resetForm() {
     _nameController.clear();
-    _dateController.clear();
-    _timeController.clear();
     _imageUrl = null;
     setState(() {
       _selectedType = null;
@@ -114,178 +108,294 @@ class _AddNewPlantState extends State<AddNewPlant> {
     }
   }
 
-  // Future<void> _selectDate(BuildContext context) async {
-  //   final picked = await showDatePicker(
-  //     context: context,
-  //     initialDate: DateTime.now(),
-  //     firstDate: DateTime(2000),
-  //     lastDate: DateTime(2100),
-  //   );
-  //   if (picked != null) {
-  //     _dateController.text = "${picked.day}/${picked.month}/${picked.year}";
-  //   }
-  // }
-
-  // Future<void> _selectTime(BuildContext context) async {
-  //   final picked = await showTimePicker(
-  //     context: context,
-  //     initialTime: TimeOfDay.now(),
-  //   );
-  //   if (picked != null) {
-  //     _timeController.text = picked.format(context);
-  //   }
-  // }
-
   Widget _buildDropdown({
     required Future<List<String>> future,
     required String? value,
     required String label,
+    required String iconPath,
     required ValueChanged<String?> onChanged,
   }) {
-    return FutureBuilder<List<String>>(
-      future: future,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
-        }
-        if (snapshot.hasError || !snapshot.hasData) {
-          return const Text('Failed to load options');
-        }
-        return DropdownButtonFormField<String>(
-          value: value,
-          decoration: InputDecoration(labelText: label),
-          items:
-              snapshot.data!
-                  .map(
-                    (option) =>
-                        DropdownMenuItem(value: option, child: Text(option)),
-                  )
-                  .toList(),
-
-          validator:
-              (value) => value == null ? 'Please Choose an Option' : null,
-          onChanged: onChanged,
-        );
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Image.asset(
+              iconPath,
+              width: 26,
+              height: 26,
+              color: const Color(0xFF747822),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 18,
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF747822),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        FutureBuilder<List<String>>(
+          future: future,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Container(
+                height: 56,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8F9FA),
+                  border: Border.all(color: const Color(0xFF747822), width: 2),
+                  borderRadius: BorderRadius.circular(28),
+                ),
+                child: const Center(child: CircularProgressIndicator()),
+              );
+            }
+            if (snapshot.hasError || !snapshot.hasData) {
+              return Container(
+                height: 56,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8F9FA),
+                  border: Border.all(color: const Color(0xFF8B9D3A), width: 2),
+                  borderRadius: BorderRadius.circular(28),
+                ),
+                child: const Center(child: Text('Failed to load options')),
+              );
+            }
+            return Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8F9FA),
+                border: Border.all(color: const Color(0xFF8C8F3E), width: 2),
+                borderRadius: BorderRadius.circular(28),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButtonFormField<String>(
+                  value: value,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  ),
+                  hint: Text(
+                    'Select $label',
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 16,
+                    ),
+                  ),
+                  icon: const Icon(
+                    Icons.keyboard_arrow_down,
+                    color: Color(0xFF747822),
+                    size: 24,
+                  ),
+                  items: snapshot.data!
+                      .map(
+                        (option) => DropdownMenuItem(
+                          value: option,
+                          child: Text(
+                            option,
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                  validator: (value) => value == null ? 'Please choose an option' : null,
+                  onChanged: onChanged,
+                ),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: const Text('Add Plant'),
+        elevation: 0,
+        toolbarHeight: 75, 
+        leadingWidth: 75, 
+        leading: Container(
+          margin: const EdgeInsets.all(16), 
+          decoration: BoxDecoration(
+            color: const Color(0xFFE8E8D5),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(
+              color: const Color(0xFF747822),
+              width: 1.5,
+            ),
+          ),
+          child: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios_new,
+              color: Color(0xFF747822),
+              size: 18,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        title: Padding(
+          padding: const EdgeInsets.only(top: 8), // Add top padding to title
+          child: const Text(
+            'New Plant',
+            style: TextStyle(
+              fontSize: 32,
+              fontFamily: 'Curvilingus',
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF747822),
+            ),
+          ),
+        ),
+        titleSpacing: 8, // Add spacing between leading and title
+        centerTitle: false,
       ),
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(24),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  border: OutlineInputBorder(),
-                ),
-                validator:
-                    (value) =>
-                        value?.isEmpty ?? true
-                            ? 'Please Select Plant Name'
-                            : null,
+              // Name field
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Image.asset(
+                        'assets/plant_icon.png',
+                        width: 26,
+                        height: 26,
+                        color: const Color(0xFF747822),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Name',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF747822),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8F9FA),
+                      border: Border.all(color: const Color(0xFF8C8F3E), width: 2),
+                      borderRadius: BorderRadius.circular(28),
+                    ),
+                    child: TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        hintText: 'Enter plant name',
+                        hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
+                      ),
+                      style: const TextStyle(fontSize: 16),
+                      validator: (value) =>
+                          value?.isEmpty ?? true ? 'Please enter plant name' : null,
+                    ),
+                  ),
+                ],
               ),
-              // const SizedBox(height: 16),
-              // Row(
-              //   children: [
-              //     Expanded(
-              //       child: TextFormField(
-              //     controller: _dateController,
-              //     decoration: const InputDecoration(
-              //       labelText: 'Date',
-              //       border: OutlineInputBorder(),
-              //       suffixIcon: Icon(Icons.calendar_today),
-              //     ),
-              //     readOnly: true,
-              //     onTap: () => _selectDate(context),
-              //     validator:
-              //         (value) =>
-              //             value?.isEmpty ?? true
-              //                 ? 'Please Select Date'
-              //                 : null,
-              //   ),
-              // ),
-              // const SizedBox(width: 16),
-              // Expanded(
-              //   child: TextFormField(
-              //     controller: _timeController,
-              //         decoration: const InputDecoration(
-              //           labelText: 'Time',
-              //           border: OutlineInputBorder(),
-              //           suffixIcon: Icon(Icons.access_time),
-              //         ),
-              //         readOnly: true,
-              //         onTap: () => _selectTime(context),
-              //         validator:
-              //             (value) =>
-              //                 value?.isEmpty ?? true
-              //                     ? 'Please Select Time'
-              //                     : null,
-              //       ),
-              //     ),
-              //   ],
-              // ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
+
+              // Type dropdown
               _buildDropdown(
                 future: _typeOptions,
                 value: _selectedType,
                 label: 'Type',
+                iconPath: 'assets/plant_icon.png',
                 onChanged: (value) => setState(() => _selectedType = value),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
+
+              // Water dropdown
               _buildDropdown(
                 future: _waterOptions,
                 value: _selectedWater,
                 label: 'Water',
+                iconPath: 'assets/water_icon.png',
                 onChanged: (value) => setState(() => _selectedWater = value),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
+
+              // Sunlight dropdown
               _buildDropdown(
                 future: _sunlightOptions,
                 value: _selectedSunlight,
                 label: 'Sunlight',
+                iconPath: 'assets/light_icon.png',
                 onChanged: (value) => setState(() => _selectedSunlight = value),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
+
+              // Care Level dropdown
               _buildDropdown(
                 future: _careOptions,
                 value: _selectedCareLevel,
                 label: 'Care Level',
-                onChanged:
-                    (value) => setState(() => _selectedCareLevel = value),
+                iconPath: 'assets/care_icon.png',
+                onChanged: (value) => setState(() => _selectedCareLevel = value),
               ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _isSaving ? null : _submitForm,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF747822),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 40),
+
+              // Submit button
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _isSaving ? null : _submitForm,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF747822),
+                    disabledBackgroundColor: Colors.grey,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
+                    ),
+                    elevation: 0,
                   ),
-                ),
-                child:
-                    _isSaving
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text(
-                          'Save New Plant',
+                  child: _isSaving
+                      ? const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            ),
+                            SizedBox(width: 12),
+                            Text(
+                              'Saving...',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        )
+                      : const Text(
+                          'Save new plant',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 18,
+                            fontFamily: 'Poppins',
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
                         ),
+                ),
               ),
             ],
           ),

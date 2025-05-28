@@ -59,7 +59,7 @@ class _GuideBookScreenState extends State<GuideBookScreen> {
               Text(
                 'Guide Book',
                 style: TextStyle(
-                  fontSize: 50,
+                  fontSize: 40,
                   fontWeight: FontWeight.bold,
                   color: textColor,
                   fontFamily: 'Curvilingus',
@@ -81,11 +81,12 @@ class _GuideBookScreenState extends State<GuideBookScreen> {
                       child: TextField(
                         controller: _searchController,
                         onChanged: _onSearchChanged,
+                        style: TextStyle(color: textColor),
                         decoration: const InputDecoration(
                           hintText: 'Search',
                           hintStyle: TextStyle(color: Color(0xFF9A9D6B)),
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(vertical: 15),
+                          contentPadding: EdgeInsets.symmetric(vertical: 12),
                         ),
                       ),
                     ),

@@ -40,7 +40,7 @@ class GrowthJournalEntriesScreen extends StatelessWidget {
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -48,8 +48,8 @@ class GrowthJournalEntriesScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
-                    width: 50,
-                    height: 50,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       color: const Color(0xFF8C8F3E).withOpacity(0.25),
                       shape: BoxShape.circle,
@@ -89,7 +89,7 @@ class GrowthJournalEntriesScreen extends StatelessWidget {
               ),
 
               const SizedBox(height: 25),
-              Text('My Entries', style: headingFont.copyWith(fontSize: 24)),
+              Text('My Entries', style: headingFont.copyWith(fontSize: 22)),
               const SizedBox(height: 16),
               Expanded(
                 child: ListView(

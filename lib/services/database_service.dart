@@ -137,6 +137,16 @@ class DatabaseService {
     return _plantJournalRef(plantId).snapshots();
   }
 
+  Future<void> updateJournalEntry(
+    String plantId,
+    String journalId,
+    PlantJournalEntry updatedEntry,
+  ) async {
+    await _plantJournalRef(
+      plantId,
+    ).doc(journalId).update(updatedEntry.toJson());
+  }
+
   // fetching all plants-categories values in firestore
   Future<List<String>> getDropdownOptions(String fieldPath) async {
     try {

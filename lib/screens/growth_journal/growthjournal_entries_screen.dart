@@ -147,14 +147,7 @@ class _GrowthJournalEntriesScreenState
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder:
-                (context) => GrowthJournalIndivEntry(
-                  title: entry.title,
-                  description: entry.notes,
-                  imagePath:
-                      entry.imageUrls.isNotEmpty ? entry.imageUrls.first : '',
-                  date: formattedDate,
-                ),
+            builder: (context) => GrowthJournalIndivEntry(entry: entry),
           ),
         );
       },

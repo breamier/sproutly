@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sproutly/models/plant.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sproutly/models/plant_issue.dart';
 
 const String USERS_COLLECTION_REF = "Users";
 const String plantCategoriesRef = "plants-categories";
@@ -20,11 +21,12 @@ class DatabaseService {
         .doc(user.uid)
         .collection('plants')
         .withConverter<Plant>(
-          fromFirestore: (snapshots, _) =>
-              Plant.fromJson(snapshots.data()!, snapshots.id),
+          fromFirestore:
+              (snapshots, _) => Plant.fromJson(snapshots.data()!, snapshots.id),
           toFirestore: (plant, _) => plant.toJson(),
         );
   }
+
   // DatabaseService() {
   //   if (user == null) {
   //     throw Exception('No user logged in');
@@ -39,7 +41,25 @@ class DatabaseService {
   //         toFirestore: (plant, _) => plant.toJson(),
   //       );
   // }
+  CollectionReference<PlantIssue> _plantIssueRef(String plantId) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('No user logged in');
+    }
+    return _firestore
+        .collection(USERS_COLLECTION_REF)
+        .doc(user.uid)
+        .collection('plants')
+        .doc(plantId)
+        .collection('plant_issues')
+        .withConverter<PlantIssue>(
+          fromFirestore:
+              (snap, _) => PlantIssue.fromJson(snap.data()!, snap.id),
+          toFirestore: (issue, _) => issue.toJson(),
+        );
+  }
 
+  // ----------------------- PLANTS -----------------------
   Stream<QuerySnapshot> getPlants() {
     return _plantsRef.snapshots();
   }
@@ -56,13 +76,44 @@ class DatabaseService {
     _plantsRef.doc(plantId).delete();
   }
 
+  Future<Plant?> getPlantById(String plantId) async {
+    final doc = await _plantsRef.doc(plantId).get();
+    if (doc.exists) {
+      return doc.data();
+    }
+    return null;
+  }
+
+  // ----------------------- PLANT ISSUES -----------------------
+
+  Future<void> addPlantIssue(String plantId, PlantIssue issue) async {
+    await _plantIssueRef(plantId).add(issue);
+  }
+
+  Stream<QuerySnapshot<PlantIssue>> getPlantIssues(String plantId) {
+    return _plantIssueRef(plantId).snapshots();
+  }
+
+  Future<void> updatePlantIssue(
+    String plantId,
+    String issueId,
+    PlantIssue issue,
+  ) async {
+    await _plantIssueRef(plantId).doc(issueId).update(issue.toJson());
+  }
+
+  Future<void> deletePlantIssue(String plantId, String issueId) async {
+    await _plantIssueRef(plantId).doc(issueId).delete();
+  }
+
   // fetching all plants-categories values in firestore
   Future<List<String>> getDropdownOptions(String fieldPath) async {
     try {
-      final doc = await _firestore
-          .collection(plantCategoriesRef)
-          .doc(categoriesIdRef)
-          .get();
+      final doc =
+          await _firestore
+              .collection(plantCategoriesRef)
+              .doc(categoriesIdRef)
+              .get();
 
       if (!doc.exists) return [];
 

@@ -4,6 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:gal/gal.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image/image.dart' as img;
 
 class AddPlantCamera extends StatefulWidget {
   const AddPlantCamera({super.key});
@@ -128,10 +129,34 @@ class _AddPlantCameraState extends State<AddPlantCamera>
     );
   }
 
+  // Future<File> _cropToSquare(File file) async {
+  //   final bytes = await file.readAsBytes();
+  //   img.Image? original = img.decodeImage(bytes);
+  //   if (original == null) return file;
+
+  //   int size =
+  //       original.width < original.height ? original.width : original.height;
+  //   int offsetX = (original.width - size) ~/ 2;
+  //   int offsetY = (original.height - size) ~/ 2;
+
+  //   img.Image cropped = img.copyCrop(
+  //     original,
+  //     x: offsetX,
+  //     y: offsetY,
+  //     width: size,
+  //     height: size,
+  //   );
+  //   final croppedBytes = img.encodeJpg(cropped);
+
+  //   final croppedFile = await file.writeAsBytes(croppedBytes, flush: true);
+  //   return croppedFile;
+  // }
+
   Future<void> _showConfirmDialog(
     File imageFile, {
     required bool fromCamera,
   }) async {
+    // File squareFile = await _cropToSquare(imageFile);
     final result = await showDialog<bool>(
       context: context,
       builder:

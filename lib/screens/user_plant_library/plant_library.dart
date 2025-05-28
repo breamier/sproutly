@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sproutly/screens/user_plant_library/plant_profile.dart';
+import 'package:sproutly/models/plant.dart';
+import 'package:sproutly/services/database_service.dart';
 
 class PlantLibraryScreen extends StatefulWidget {
   const PlantLibraryScreen({super.key});
@@ -110,28 +112,62 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
               ),
               const SizedBox(height: 24),
               // Grid of plants
-              filteredPlants.isEmpty
-                  ? Expanded(
-                    child: Center(
-                      child: Text(
-                        'No plants found',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 18,
-                          color: oliveTitleColor,
+              Expanded(
+                child: StreamBuilder(
+                  stream: DatabaseService().getPlants(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'No plants found',
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 18,
+                            color: oliveTitleColor,
+                          ),
                         ),
-                      ),
-                    ),
-                  )
-                  : Expanded(
-                    child: GridView.count(
+                      );
+                    }
+
+                    // Map Firestore docs to Plant objects
+                    final List<Plant> plants =
+                        snapshot.data!.docs
+                            .map<Plant>((doc) => doc.data() as Plant)
+                            .where((plant) {
+                              final name = plant.plantName.toLowerCase();
+                              final type = (plant.type ?? '').toLowerCase();
+                              final query = _searchQuery.toLowerCase();
+                              return name.contains(query) ||
+                                  type.contains(query);
+                            })
+                            .toList();
+
+                    if (plants.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'No plants match your search',
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 18,
+                            color: oliveTitleColor,
+                          ),
+                        ),
+                      );
+                    }
+
+                    return GridView.count(
                       crossAxisCount: 2,
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 24,
                       childAspectRatio: 0.75,
-                      children: _buildPlantItems(),
-                    ),
-                  ),
+                      children: _buildPlantItems(plants),
+                    );
+                  },
+                ),
+              ),
             ],
           ),
         ),
@@ -139,14 +175,14 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
     );
   }
 
-  List<Widget> _buildPlantItems() {
-    return filteredPlants.map((plant) {
+  List<Widget> _buildPlantItems(List<Plant> plants) {
+    return plants.map((plant) {
       return GestureDetector(
         onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => PlantProfileScreen(plant: plant),
+              builder: (context) => PlantProfileScreen(plantId: plant.id),
             ),
           );
         },
@@ -156,12 +192,22 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
             Expanded(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: Image.asset(plant['image'] as String, fit: BoxFit.cover),
+                child:
+                    plant.img != null && plant.img!.isNotEmpty
+                        ? Image.network(plant.img!, fit: BoxFit.cover)
+                        : Container(
+                          color: Colors.grey[300],
+                          child: const Icon(
+                            Icons.local_florist,
+                            size: 60,
+                            color: Color(0xFF747822),
+                          ),
+                        ),
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              plant['name'] as String,
+              plant.plantName,
               style: const TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 20,
@@ -170,7 +216,7 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
               ),
             ),
             Text(
-              plant['type'] as String,
+              plant.type ?? '',
               style: const TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 16,

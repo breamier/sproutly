@@ -1,12 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:sproutly/models/plant_issue.dart';
+import 'package:sproutly/services/database_service.dart';
 
 class PlantIssuesScreen extends StatefulWidget {
-  final Map<String, dynamic> plant;
+  final String plantId;
 
-  const PlantIssuesScreen({
-    super.key,
-    required this.plant,
-  });
+  const PlantIssuesScreen({super.key, required this.plantId});
 
   @override
   State<PlantIssuesScreen> createState() => _PlantIssuesScreenState();
@@ -15,13 +15,7 @@ class PlantIssuesScreen extends StatefulWidget {
 class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
   final Color oliveTitleColor = const Color(0xFF747822);
   final Color lightBackgroundColor = const Color(0xFFF7F7F2);
-  final List<String> _currentIssues = ['Wiltering', 'Overwatering', 'Yellowing of leaves'];
-  final List<String> _resolvedIssues = [
-    'Black spots',
-    'Bacterial wilt',
-    'Insufficient or excessive sunlight',
-    'Poor soil composition'
-  ];
+
   bool _showResolvedIssues = false;
   final TextEditingController _newIssueController = TextEditingController();
 
@@ -34,66 +28,75 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
   void _addNewIssue() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'Add New Plant Issue',
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-            color: oliveTitleColor,
-          ),
-        ),
-        content: TextField(
-          controller: _newIssueController,
-          decoration: InputDecoration(
-            hintText: 'Type plant issue here',
-            hintStyle: TextStyle(
-              fontFamily: 'Poppins',
-              color: oliveTitleColor.withOpacity(0.5),
+      builder:
+          (context) => AlertDialog(
+            title: Text(
+              'Add New Plant Issue',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: oliveTitleColor,
+              ),
             ),
-            focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: oliveTitleColor),
+            content: TextField(
+              controller: _newIssueController,
+              decoration: InputDecoration(
+                hintText: 'Type plant issue here',
+                hintStyle: TextStyle(
+                  fontFamily: 'Poppins',
+                  color: oliveTitleColor.withOpacity(0.5),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: oliveTitleColor),
+                ),
+              ),
+              style: TextStyle(fontFamily: 'Poppins', color: oliveTitleColor),
             ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Cancel', style: TextStyle(color: oliveTitleColor)),
+              ),
+              TextButton(
+                onPressed: () async {
+                  if (_newIssueController.text.isNotEmpty) {
+                    // Add issue to firestore mwehehe
+                    final issue = PlantIssue(
+                      id: '',
+                      plantId: widget.plantId,
+                      issueDescription: _newIssueController.text,
+                      resolved: false,
+                      createdAt: Timestamp.now(),
+                    );
+
+                    await DatabaseService().addPlantIssue(
+                      widget.plantId,
+                      issue,
+                    );
+                    setState(() {
+                      // _currentIssues.add(_newIssueController.text);
+                      _newIssueController.clear();
+                    });
+                    Navigator.pop(context);
+                  }
+                },
+                child: Text('Add', style: TextStyle(color: oliveTitleColor)),
+              ),
+            ],
           ),
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            color: oliveTitleColor,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: oliveTitleColor),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              if (_newIssueController.text.isNotEmpty) {
-                setState(() {
-                  _currentIssues.add(_newIssueController.text);
-                  _newIssueController.clear();
-                });
-                Navigator.pop(context);
-              }
-            },
-            child: Text(
-              'Add',
-              style: TextStyle(color: oliveTitleColor),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
-  void _markAsResolved(int index) {
-    setState(() {
-      final resolvedIssue = _currentIssues.removeAt(index);
-      _resolvedIssues.add(resolvedIssue);
-    });
+  Future<void> _markAsResolved(String issueId, PlantIssue issue) async {
+    final updated = PlantIssue(
+      id: issue.id,
+      plantId: issue.plantId,
+      issueDescription: issue.issueDescription,
+      resolved: true,
+      createdAt: issue.createdAt,
+    );
+    await DatabaseService().updatePlantIssue(widget.plantId, issueId, updated);
   }
 
   @override
@@ -155,27 +158,75 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
                 ),
                 const SizedBox(height: 15),
                 Expanded(
-                  child: ListView.builder(
-                    itemCount: _resolvedIssues.length,
-                    itemBuilder: (context, index) {
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 15,
-                          horizontal: 20,
-                        ),
-                        decoration: BoxDecoration(
-                          color: lightBackgroundColor,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          _resolvedIssues[index],
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 16,
-                            color: oliveTitleColor,
+                  child: StreamBuilder(
+                    stream: DatabaseService().getPlantIssues(widget.plantId),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return Center(
+                          child: Column(
+                            children: [
+                              Text(
+                                'No resolved issues found',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 18,
+                                  color: oliveTitleColor,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
+                        );
+                      }
+
+                      final List<PlantIssue> resolvedIssues =
+                          snapshot.data!.docs
+                              .where((doc) => (doc.data().resolved))
+                              .map((doc) => doc.data())
+                              .toList();
+
+                      if (resolvedIssues.isEmpty) {
+                        return Center(
+                          child: Column(
+                            children: [
+                              Text(
+                                'No plants issues found',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 18,
+                                  color: oliveTitleColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+
+                      return ListView.builder(
+                        itemCount: resolvedIssues.length,
+                        itemBuilder: (context, index) {
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 15,
+                              horizontal: 20,
+                            ),
+                            decoration: BoxDecoration(
+                              color: lightBackgroundColor,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              resolvedIssues[index].issueDescription,
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 16,
+                                color: oliveTitleColor,
+                              ),
+                            ),
+                          );
+                        },
                       );
                     },
                   ),
@@ -185,8 +236,8 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
           ),
         ),
       );
-    } 
-    
+    }
+
     return Dialog(
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(
@@ -232,59 +283,65 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
               constraints: BoxConstraints(
                 maxHeight: MediaQuery.of(context).size.height * 0.5,
               ),
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: _currentIssues.length + 1,
-                itemBuilder: (context, index) {
-                  if (index < _currentIssues.length) {
-                    return Column(
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                _currentIssues[index],
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: 16,
-                                  color: oliveTitleColor,
-                                ),
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () => _markAsResolved(index),
-                              child: Container(
-                                width: 24,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: oliveTitleColor,
-                                    width: 1.5,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Divider(
-                          color: oliveTitleColor.withOpacity(0.3),
-                          thickness: 1,
-                        ),
-                        const SizedBox(height: 10),
-                      ],
-                    );
-                  } else {
-                    return GestureDetector(
-                      onTap: _addNewIssue,
-                      child: Row(
+              child: StreamBuilder(
+                stream: DatabaseService().getPlantIssues(widget.plantId),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return Center(
+                      child: Column(
                         children: [
                           Text(
-                            "+ Add a new plant issue",
+                            'No plant issues found',
                             style: TextStyle(
                               fontFamily: 'Poppins',
-                              fontSize: 16,
+                              fontSize: 18,
+                              color: oliveTitleColor,
+                            ),
+                          ),
+                          Spacer(),
+                          Divider(
+                            color: oliveTitleColor.withOpacity(0.3),
+                            thickness: 1,
+                          ),
+                          const SizedBox(height: 10),
+                          GestureDetector(
+                            onTap: _addNewIssue,
+                            child: Row(
+                              children: [
+                                Text(
+                                  "+ Add a new plant issue",
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 16,
+                                    color: oliveTitleColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  final List<PlantIssue> issues =
+                      snapshot.data!.docs
+                          .where((doc) => !(doc.data().resolved))
+                          .map((doc) => doc.data())
+                          .toList();
+
+                  if (issues.isEmpty) {
+                    return Center(
+                      child: Column(
+                        children: [
+                          Text(
+                            'No plants issues found',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 18,
                               color: oliveTitleColor,
                             ),
                           ),
@@ -292,6 +349,69 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
                       ),
                     );
                   }
+
+                  return ListView.builder(
+                    itemCount: issues.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index < issues.length) {
+                        final issue = issues[index];
+                        return Column(
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    issue.issueDescription,
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: 16,
+                                      color: oliveTitleColor,
+                                    ),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () => _markAsResolved(issue.id, issue),
+                                  child: Container(
+                                    width: 24,
+                                    height: 24,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: oliveTitleColor,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Divider(
+                              color: oliveTitleColor.withOpacity(0.3),
+                              thickness: 1,
+                            ),
+                            const SizedBox(height: 10),
+                          ],
+                        );
+                      } else {
+                        return GestureDetector(
+                          onTap: _addNewIssue,
+                          child: Row(
+                            children: [
+                              Text(
+                                "+ Add a new plant issue",
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 16,
+                                  color: oliveTitleColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                    },
+                  );
                 },
               ),
             ),

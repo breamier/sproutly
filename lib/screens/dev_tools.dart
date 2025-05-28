@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:sproutly/models/plant.dart';
+import 'package:sproutly/screens/growth_journal/growthjournal_entries_screen.dart';
 
 //imports
 // import 'package:flutter/material.dart';
@@ -177,7 +178,9 @@ class DevToolsPage extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => AddPlantCamera()),
+                      MaterialPageRoute(
+                        builder: (context) => AddPlantCamera(addPlant: true),
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -206,7 +209,8 @@ class DevToolsPage extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const GrowthJournalScreen(),
+                        builder:
+                            (context) => const GrowthJournalEntriesScreen(),
                       ),
                     );
                   },
@@ -220,7 +224,7 @@ class DevToolsPage extends StatelessWidget {
                   ),
 
                   child: const Text(
-                    'Growth Journal Screen',
+                    'Growth Journal Entries',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

@@ -75,7 +75,6 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
                       issue,
                     );
                     setState(() {
-                      // _currentIssues.add(_newIssueController.text);
                       _newIssueController.clear();
                     });
                     Navigator.pop(context);
@@ -343,6 +342,27 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
                               fontFamily: 'Poppins',
                               fontSize: 18,
                               color: oliveTitleColor,
+                            ),
+                          ),
+                          Spacer(),
+                          Divider(
+                            color: oliveTitleColor.withOpacity(0.3),
+                            thickness: 1,
+                          ),
+                          const SizedBox(height: 10),
+                          GestureDetector(
+                            onTap: _addNewIssue,
+                            child: Row(
+                              children: [
+                                Text(
+                                  "+ Add a new plant issue",
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 16,
+                                    color: oliveTitleColor,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],

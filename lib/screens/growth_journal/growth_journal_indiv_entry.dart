@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sproutly/main.dart';
 
 const Color oliveGreen = Color(0xFF747822);
 
@@ -132,17 +131,17 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
               // Editable Title
               isEditing
                   ? TextField(
-                      controller: _titleController,
-                      style: headingFont.copyWith(fontSize: screenWidth * 0.05),
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Title',
-                      ),
-                    )
-                  : Text(
-                      _titleController.text,
-                      style: headingFont.copyWith(fontSize: screenWidth * 0.05),
+                    controller: _titleController,
+                    style: headingFont.copyWith(fontSize: screenWidth * 0.05),
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Title',
                     ),
+                  )
+                  : Text(
+                    _titleController.text,
+                    style: headingFont.copyWith(fontSize: screenWidth * 0.05),
+                  ),
 
               const SizedBox(height: 16),
 
@@ -186,22 +185,22 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
                     // Editable or Static Description
                     isEditing
                         ? TextField(
-                            controller: _descriptionController,
-                            style: bodyFont.copyWith(
-                              fontSize: screenWidth * 0.035,
-                            ),
-                            maxLines: null,
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              hintText: 'Write your journal entry...',
-                            ),
-                          )
-                        : Text(
-                            _descriptionController.text,
-                            style: bodyFont.copyWith(
-                              fontSize: screenWidth * 0.035,
-                            ),
+                          controller: _descriptionController,
+                          style: bodyFont.copyWith(
+                            fontSize: screenWidth * 0.035,
                           ),
+                          maxLines: null,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: 'Write your journal entry...',
+                          ),
+                        )
+                        : Text(
+                          _descriptionController.text,
+                          style: bodyFont.copyWith(
+                            fontSize: screenWidth * 0.035,
+                          ),
+                        ),
                   ],
                 ),
               ),

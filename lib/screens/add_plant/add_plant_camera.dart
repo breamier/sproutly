@@ -7,7 +7,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 
 class AddPlantCamera extends StatefulWidget {
-  const AddPlantCamera({super.key});
+  final bool addPlant; // Flag to determine if it's for adding a plant
+  final void Function(File imageFile)? onImageSelected;
+
+  const AddPlantCamera({super.key, this.addPlant = true, this.onImageSelected});
 
   @override
   State<AddPlantCamera> createState() => _AddPlantCameraState();
@@ -190,12 +193,19 @@ class _AddPlantCameraState extends State<AddPlantCamera>
           _pickedImage = null;
         });
       }
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => AddNewPlant(imageFile: imageFile),
-        ),
-      );
+      if (widget.addPlant) {
+        await cameraController?.dispose();
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AddNewPlant(imageFile: imageFile),
+          ),
+        );
+      } else if (widget.onImageSelected != null) {
+        widget.onImageSelected!(imageFile);
+        await cameraController?.dispose();
+        Navigator.pop(context); // Go back to journal entry screen
+      }
     } else {
       setState(() {
         _capturedImage = null;

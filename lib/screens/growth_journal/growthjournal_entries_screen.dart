@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sproutly/main.dart';
 import 'package:sproutly/screens/growth_journal/growth_journal_indiv_entry.dart';
 
 const Color oliveGreen = Color(0xFF747822);
@@ -60,12 +59,7 @@ class GrowthJournalEntriesScreen extends StatelessWidget {
                     ),
                     child: InkWell(
                       onTap: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const SproutlyApp(),
-                          ),
-                        );
+                        Navigator.pop(context);
                       },
                       child: const Icon(
                         Icons.chevron_left,
@@ -113,13 +107,14 @@ class GrowthJournalEntriesScreen extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const GrowthJournalIndivEntry(
-              title: 'Tulip Growth Stages',
-              description:
-                  'Documenting the journey from bud to bloom. Potted tulips showing healthy development.',
-              imagePath: 'assets/tulips.png',
-              date: 'May 1, 2025, 11:30 AM',
-            ),
+            builder:
+                (context) => const GrowthJournalIndivEntry(
+                  title: 'Tulip Growth Stages',
+                  description:
+                      'Documenting the journey from bud to bloom. Potted tulips showing healthy development.',
+                  imagePath: 'assets/tulips.png',
+                  date: 'May 1, 2025, 11:30 AM',
+                ),
           ),
         );
       },

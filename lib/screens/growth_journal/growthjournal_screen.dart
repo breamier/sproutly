@@ -1,9 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:sproutly/main.dart';
-import 'package:sproutly/screens/growth_journal/growthjournal_entries_screen.dart';
+import 'dart:io';
 
-class GrowthJournalScreen extends StatelessWidget {
-  const GrowthJournalScreen({super.key});
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:sproutly/cloudinary/upload_image.dart';
+import 'package:sproutly/models/plant_journal_entry.dart';
+import 'package:sproutly/screens/add_plant/add_plant_camera.dart';
+import 'package:sproutly/screens/growth_journal/growthjournal_entries_screen.dart';
+import 'package:sproutly/services/database_service.dart';
+
+class GrowthJournalScreen extends StatefulWidget {
+  final String plantId;
+  const GrowthJournalScreen({super.key, required this.plantId});
 
   static const Color oliveGreen = Color(0xFF747822);
 
@@ -28,15 +35,66 @@ class GrowthJournalScreen extends StatelessWidget {
     color: oliveGreen,
   );
 
-  // Example mock image paths
-  final List<String> imagePaths = const [
-    // 'assets/tulips.png',
-    // 'assets/hyacinth.png',
-    // 'assets/tulips.png',
-    // 'assets/hyacinth.png',
-    // 'assets/tulips.png',
-    // 'assets/hyacinth.png',
-  ];
+  @override
+  State<GrowthJournalScreen> createState() => _GrowthJournalScreenState();
+}
+
+class _GrowthJournalScreenState extends State<GrowthJournalScreen> {
+  final List<String> imagePaths = [];
+  final List<String> imageUrls = [];
+
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _notesController = TextEditingController();
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submitJournalEntry() async {
+    final title = _titleController.text.trim();
+    final notes = _notesController.text.trim();
+
+    if (title.isEmpty && notes.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill in the fields.")),
+      );
+      return;
+    }
+
+    imageUrls.clear();
+    for (final path in imagePaths) {
+      final url = await uploadImageToCloudinary(File(path));
+      if (url != null && url.isNotEmpty) {
+        imageUrls.add(url);
+      }
+    }
+
+    final journalEntry = PlantJournalEntry(
+      id: '',
+      plantId: widget.plantId,
+      title: title,
+      notes: notes,
+      createdAt: Timestamp.now(),
+      imageUrls: imageUrls,
+    );
+
+    await DatabaseService().addJournalEntry(widget.plantId, journalEntry);
+
+    setState(() {
+      _titleController.clear();
+      _notesController.clear();
+      imagePaths.clear();
+      imageUrls.clear();
+    });
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => GrowthJournalEntriesScreen()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,12 +127,7 @@ class GrowthJournalScreen extends StatelessWidget {
                       ),
                       child: InkWell(
                         onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const SproutlyApp(),
-                            ),
-                          );
+                          Navigator.pop(context);
                         },
                         child: const Icon(
                           Icons.chevron_left,
@@ -90,7 +143,7 @@ class GrowthJournalScreen extends StatelessWidget {
                         fontFamily: 'Curvilingus',
                         fontWeight: FontWeight.w700,
                         fontSize: MediaQuery.of(context).size.width * 0.08,
-                        color: oliveGreen,
+                        color: GrowthJournalScreen.oliveGreen,
                       ),
                     ),
                   ],
@@ -98,8 +151,28 @@ class GrowthJournalScreen extends StatelessWidget {
 
                 const SizedBox(height: 25),
 
-                const Text("Tulip Notes", style: headingFont),
-                const SizedBox(height: 12),
+                FutureBuilder(
+                  future: DatabaseService().getPlantById(widget.plantId),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Text(
+                        "Loading...",
+                        style: GrowthJournalScreen.headingFont,
+                      );
+                    }
+                    if (!snapshot.hasData || snapshot.data == null) {
+                      return const Text(
+                        "Plant not found",
+                        style: GrowthJournalScreen.headingFont,
+                      );
+                    }
+                    final plant = snapshot.data!;
+                    return Text(
+                      "${plant.plantName} Notes",
+                      style: GrowthJournalScreen.headingFont,
+                    );
+                  },
+                ),
 
                 Container(
                   width: double.infinity,
@@ -109,26 +182,28 @@ class GrowthJournalScreen extends StatelessWidget {
                     vertical: 18,
                   ),
                   decoration: BoxDecoration(
-                    border: Border.all(color: oliveGreen),
+                    border: Border.all(color: GrowthJournalScreen.oliveGreen),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Column(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       TextField(
-                        decoration: InputDecoration(
+                        controller: _titleController,
+                        decoration: const InputDecoration(
                           hintText: 'Title',
-                          hintStyle: headingFont,
+                          hintStyle: GrowthJournalScreen.headingFont,
                           border: InputBorder.none,
                         ),
-                        style: headingFont,
+                        style: GrowthJournalScreen.headingFont,
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Flexible(
                         child: TextField(
+                          controller: _notesController,
                           maxLines: null,
                           expands: true,
-                          style: bodyFont,
+                          style: GrowthJournalScreen.bodyFont,
                           decoration: InputDecoration(
                             border: InputBorder.none,
                             isDense: true,
@@ -141,7 +216,7 @@ class GrowthJournalScreen extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 24),
-                const Text("Photos", style: headingFont),
+                const Text("Photos", style: GrowthJournalScreen.headingFont),
                 const SizedBox(height: 12),
 
                 SizedBox(
@@ -149,13 +224,32 @@ class GrowthJournalScreen extends StatelessWidget {
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: imagePaths.length + 1,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(width: 8),
+                    separatorBuilder:
+                        (context, index) => const SizedBox(width: 8),
                     itemBuilder: (context, index) {
                       if (index < imagePaths.length) {
                         return _buildPhoto(context, imagePaths[index]);
                       } else {
-                        return _buildAddPhotoBox(context);
+                        return GestureDetector(
+                          onTap: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => AddPlantCamera(
+                                      addPlant: false,
+                                      onImageSelected: (File imageFile) {
+                                        setState(() {
+                                          imagePaths.add(imageFile.path);
+                                        });
+                                      },
+                                    ),
+                              ),
+                            );
+                            print("Image selected: ${imagePaths.first}");
+                          },
+                          child: _buildAddPhotoBox(context),
+                        );
                       }
                     },
                   ),
@@ -165,16 +259,9 @@ class GrowthJournalScreen extends StatelessWidget {
 
                 Center(
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => GrowthJournalEntriesScreen(),
-                        ),
-                      );
-                    },
+                    onPressed: _submitJournalEntry,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: oliveGreen,
+                      backgroundColor: GrowthJournalScreen.oliveGreen,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
@@ -212,7 +299,7 @@ class GrowthJournalScreen extends StatelessWidget {
         aspectRatio: 3 / 4,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: Image.asset(path, fit: BoxFit.cover),
+          child: Image.file(File(path), fit: BoxFit.cover),
         ),
       ),
     );

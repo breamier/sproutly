@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sproutly/models/plant.dart';
+import 'package:sproutly/screens/growth_journal/growthjournal_screen.dart';
 import 'package:sproutly/services/database_service.dart';
 import 'plant_issues.dart';
 
@@ -81,7 +82,7 @@ class PlantProfileScreen extends StatelessWidget {
                           child:
                               plant.img != null && plant.img!.isNotEmpty
                                   ? Image.network(
-                                    "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSYlCenUZLlhRjnV551Bi8JuJvSXjV_ITnmZh6TdWn6887DisIYpaqIXgFmONuZzY2HpfeHGjE1KVlvYPS0L3LHnw",
+                                    plant.img!,
                                     fit: BoxFit.cover,
                                     errorBuilder:
                                         (context, error, stackTrace) =>
@@ -209,9 +210,12 @@ class PlantProfileScreen extends StatelessWidget {
                       label: 'Growth Journal',
                       iconAsset: 'assets/journal_icon.png',
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Growth Journal tapped'),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) =>
+                                    GrowthJournalScreen(plantId: plant.id),
                           ),
                         );
                       },

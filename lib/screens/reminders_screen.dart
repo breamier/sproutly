@@ -30,103 +30,144 @@ class RemindersScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
 
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF8C8F3E).withOpacity(0.25),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0xFF8C8F3E),
-                      width: 2,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF8C8F3E).withOpacity(0.25),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFF8C8F3E),
+                        width: 2,
+                      ),
+                    ),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SproutlyApp(),
+                          ),
+                        );
+                      },
+                      child: const Icon(
+                        Icons.chevron_left,
+                        color: Color(0xFF8C8F3E),
+                        size: 36,
+                      ),
                     ),
                   ),
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const SproutlyApp(),
-                        ),
-                      );
-                    },
-                    child: Icon(
-                      Icons.chevron_right,
-                      color: Color(0xFF8C8F3E),
-                      size: 36,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Text("Reminders", style: titleFont),
-              ],
-            ),
+                  const SizedBox(width: 16),
+                  Text("Reminders", style: titleFont),
+                ],
+              ),
 
-            const SizedBox(height: 40),
+              const SizedBox(height: 40),
 
-            // Today's Reminders
-            Text("Today's Reminders", style: headingFont),
-            const SizedBox(height: 12),
-            ReminderCard(task: 'Water the Rose', time: 'May 1, 2025 10:00 AM'),
-            const SizedBox(height: 8),
-            ReminderCard(
-              task: 'Give sunlight to Tulip',
-              time: 'May 1, 2025 11:30 AM',
-            ),
+              // Today's Reminders
+              Text("Today's Reminders", style: headingFont),
+              const SizedBox(height: 12),
+              ReminderCard(
+                task: 'Water the Rose',
+                time: 'May 1, 2025 10:00 AM',
+              ),
+              const SizedBox(height: 8),
+              ReminderCard(
+                task: 'Give sunlight to Tulip',
+                time: 'May 1, 2025 11:30 AM',
+              ),
 
-            const SizedBox(height: 32),
+              const SizedBox(height: 32),
 
-            // Upcoming Reminders
-            Text("Upcoming Reminders", style: headingFont),
-            const SizedBox(height: 12),
-            ReminderCard(task: 'Trim the Cactus', time: 'May 2, 2025 9:00 AM'),
-            const SizedBox(height: 8),
+              // Upcoming Reminders
+              Text("Upcoming Reminders", style: headingFont),
+              const SizedBox(height: 12),
+              ReminderCard(
+                task:
+                    'STEAm THUNDER BY SVT HAPPY 10TH YEAR ANNIVERSARY BABIES KO STEAm THUNDER BY SVT HAPPY 10TH YEAR ANNIVERSARY BABIES KO',
+                time: 'May 2, 2025 9:00 AM',
+              ),
+              const SizedBox(height: 8),
+              ReminderCard(
+                task: 'Fertilize the Rose',
+                time: 'May 3, 2025 1:00 PM',
+              ),
+              const SizedBox(height: 8),
+              ReminderCard(
+                task: 'Fertilize the Rose',
+                time: 'May 3, 2025 1:00 PM',
+              ),
+              const SizedBox(height: 8),
+              ReminderCard(
+                task: 'Fertilize the Rose',
+                time: 'May 3, 2025 1:00 PM',
+              ),
 
-            ReminderCard(
-              task: 'Fertilize the Rose',
-              time: 'May 3, 2025 1:00 PM',
-            ),
-            const SizedBox(height: 8),
+              ReminderCard(
+                task: 'Fertilize the Rose',
+                time: 'May 3, 2025 1:00 PM',
+              ),
+              const SizedBox(height: 8),
+              ReminderCard(
+                task: 'Fertilize the Rose',
+                time: 'May 3, 2025 1:00 PM',
+              ),
 
-            ReminderCard(
-              task: 'Fertilize the Rose',
-              time: 'May 3, 2025 1:00 PM',
-            ),
-            const SizedBox(height: 8),
+              ReminderCard(
+                task: 'Fertilize the Rose',
+                time: 'May 3, 2025 1:00 PM',
+              ),
+              const SizedBox(height: 8),
+              ReminderCard(
+                task: 'Fertilize the Rose',
+                time: 'May 3, 2025 1:00 PM',
+              ),
 
-            ReminderCard(
-              task: 'Fertilize the Rose',
-              time: 'May 3, 2025 1:00 PM',
-            ),
+              ReminderCard(
+                task: 'Fertilize the Rose',
+                time: 'May 3, 2025 1:00 PM',
+              ),
+              const SizedBox(height: 8),
+              ReminderCard(
+                task: 'Fertilize the Rose',
+                time: 'May 3, 2025 1:00 PM',
+              ),
 
-            const Spacer(),
-          ],
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class ReminderCard extends StatelessWidget {
+class ReminderCard extends StatefulWidget {
   final String task;
   final String time;
 
   const ReminderCard({super.key, required this.task, required this.time});
 
-  static const TextStyle bodyFont = RemindersScreen.bodyFont;
+  @override
+  State<ReminderCard> createState() => _ReminderCardState();
+}
+
+class _ReminderCardState extends State<ReminderCard> {
+  bool isChecked = false;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFFF8F4F4),
         borderRadius: BorderRadius.circular(12),
@@ -134,36 +175,39 @@ class ReminderCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.radio_button_unchecked,
-            color: Color.fromARGB(255, 85, 91, 16),
+          Transform.scale(
+            scale: 1.5,
+            child: Checkbox(
+              value: isChecked,
+              onChanged: (bool? value) {
+                setState(() {
+                  isChecked = value ?? false;
+                });
+              },
+              shape: const CircleBorder(),
+              activeColor: const Color.fromARGB(255, 85, 91, 16),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        task,
-                        style: bodyFont.copyWith(
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF747822),
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Text(
-                      time,
-                      style: bodyFont.copyWith(
-                        color: Colors.grey,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
+                Text(
+                  widget.task,
+                  style: RemindersScreen.bodyFont.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF747822),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  widget.time,
+                  style: RemindersScreen.bodyFont.copyWith(
+                    color: Colors.grey,
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sproutly/main.dart';
+import 'package:sproutly/screens/growth_journal/growth_journal_indiv_entry.dart';
 
 const Color oliveGreen = Color(0xFF747822);
 
@@ -67,7 +68,7 @@ class GrowthJournalEntriesScreen extends StatelessWidget {
                         );
                       },
                       child: const Icon(
-                        Icons.chevron_right,
+                        Icons.chevron_left,
                         color: Color(0xFF8C8F3E),
                         size: 36,
                       ),
@@ -75,11 +76,11 @@ class GrowthJournalEntriesScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'Growth Journal Entries',
+                    'Growth Journal',
                     style: TextStyle(
                       fontFamily: 'Curvilingus',
                       fontWeight: FontWeight.w700,
-                      fontSize: (MediaQuery.of(context).size.width * 0.05)
+                      fontSize: (MediaQuery.of(context).size.width * 0.08)
                           .clamp(24.0, 38.0),
                       color: const Color(0xFF747822),
                     ),
@@ -88,17 +89,14 @@ class GrowthJournalEntriesScreen extends StatelessWidget {
               ),
 
               const SizedBox(height: 25),
-              Text(
-                'Growth Journals',
-                style: headingFont.copyWith(fontSize: 24),
-              ),
+              Text('My Entries', style: headingFont.copyWith(fontSize: 24)),
               const SizedBox(height: 16),
               Expanded(
                 child: ListView(
                   children: [
-                    _buildJournalEntry(),
+                    _buildJournalEntry(context),
                     const SizedBox(height: 16),
-                    _buildJournalEntry(),
+                    _buildJournalEntry(context),
                   ],
                 ),
               ),
@@ -109,62 +107,51 @@ class GrowthJournalEntriesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildJournalEntry() {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Color(0xFFF8F4F4),
-        border: Border.all(color: oliveGreen),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // IMAGE LAYOUT
-          Row(
-            children: [
-              // Left large image
-              Expanded(
-                flex: 2,
-                child: _buildAssetImage('assets/tulips.png', height: 150),
-              ),
-              const SizedBox(width: 8),
-              // Middle large image
-              Expanded(
-                flex: 2,
-                child: _buildAssetImage('assets/hibiscus.png', height: 150),
-              ),
-              const SizedBox(width: 8),
-              // Right stacked images
-              Expanded(
-                flex: 1,
-                child: Column(
-                  children: [
-                    _buildAssetImage('assets/hyacinth.png', height: 70),
-                    const SizedBox(height: 8),
-                    _buildStackedImage('assets/rose.png', height: 70),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text('Tulip Growth Stages', style: headingFont),
-          const SizedBox(height: 4),
-          Text(
-            'Documenting the journey from bud to bloom. Potted tulips showing healthy development.',
-            style: bodyFont,
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'May 1, 2025, 11:30 AM',
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 10,
-              color: Colors.grey,
+  Widget _buildJournalEntry(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const GrowthJournalIndivEntry(
+              title: 'Tulip Growth Stages',
+              description:
+                  'Documenting the journey from bud to bloom. Potted tulips showing healthy development.',
+              imagePath: 'assets/tulips.png',
+              date: 'May 1, 2025, 11:30 AM',
             ),
           ),
-        ],
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8F4F4),
+          border: Border.all(color: oliveGreen),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildAssetImage('assets/tulips.png', height: 180),
+            const SizedBox(height: 12),
+            Text('Tulip Growth Stages', style: headingFont),
+            const SizedBox(height: 4),
+            Text(
+              'Documenting the journey from bud to bloom. Potted tulips showing healthy development.',
+              style: bodyFont,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'May 1, 2025, 11:30 AM',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 10,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -172,45 +159,46 @@ class GrowthJournalEntriesScreen extends StatelessWidget {
   Widget _buildAssetImage(String path, {double height = 100}) {
     return Container(
       height: height,
-      width: double.infinity,
+      width: 80,
+      margin: EdgeInsets.zero,
+      padding: EdgeInsets.zero,
       decoration: BoxDecoration(
-        // borderRadius: BorderRadius.circular(8),
-        image: DecorationImage(image: AssetImage(path), fit: BoxFit.cover),
+        image: DecorationImage(image: AssetImage(path), fit: BoxFit.contain),
       ),
     );
   }
 
-  Widget _buildStackedImage(String path, {double height = 100}) {
-    return Stack(
-      children: [
-        Container(
-          height: height,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            // borderRadius: BorderRadius.circular(8),
-            image: DecorationImage(image: AssetImage(path), fit: BoxFit.cover),
-          ),
-        ),
-        Container(
-          height: height,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.4),
-            // borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Center(
-            child: Text(
-              '+2',
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 16,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+  // Widget _buildStackedImage(String path, {double height = 100}) {
+  //   return Stack(
+  //     children: [
+  //       Container(
+  //         height: height,
+  //         width: double.infinity,
+  //         decoration: BoxDecoration(
+  //           // borderRadius: BorderRadius.circular(8),
+  //           image: DecorationImage(image: AssetImage(path), fit: BoxFit.cover),
+  //         ),
+  //       ),
+  //       Container(
+  //         height: height,
+  //         width: double.infinity,
+  //         decoration: BoxDecoration(
+  //           color: Colors.black.withOpacity(0.4),
+  //           // borderRadius: BorderRadius.circular(8),
+  //         ),
+  //         child: const Center(
+  //           child: Text(
+  //             '+2',
+  //             style: TextStyle(
+  //               fontFamily: 'Poppins',
+  //               fontSize: 16,
+  //               color: Colors.white,
+  //               fontWeight: FontWeight.bold,
+  //             ),
+  //           ),
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 }

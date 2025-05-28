@@ -24,9 +24,17 @@ const TextStyle bodyFont = TextStyle(
   color: oliveGreen,
 );
 
-class GrowthJournalEntriesScreen extends StatelessWidget {
-  const GrowthJournalEntriesScreen({super.key});
+class GrowthJournalEntriesScreen extends StatefulWidget {
+  final String plantId;
+  const GrowthJournalEntriesScreen({super.key, required this.plantId});
 
+  @override
+  State<GrowthJournalEntriesScreen> createState() =>
+      _GrowthJournalEntriesScreenState();
+}
+
+class _GrowthJournalEntriesScreenState
+    extends State<GrowthJournalEntriesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,7 +42,15 @@ class GrowthJournalEntriesScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         backgroundColor: oliveGreen,
         shape: const CircleBorder(),
-        onPressed: () {},
+        onPressed: () {
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(
+          //     builder:
+          //         (context) => GrowthJournalEntriesScreen(plantId: plant.id),
+          //   ),
+          // );
+        },
         child: const Icon(Icons.add, size: 32, color: Colors.white),
       ),
       body: SafeArea(
@@ -162,38 +178,4 @@ class GrowthJournalEntriesScreen extends StatelessWidget {
       ),
     );
   }
-
-  // Widget _buildStackedImage(String path, {double height = 100}) {
-  //   return Stack(
-  //     children: [
-  //       Container(
-  //         height: height,
-  //         width: double.infinity,
-  //         decoration: BoxDecoration(
-  //           // borderRadius: BorderRadius.circular(8),
-  //           image: DecorationImage(image: AssetImage(path), fit: BoxFit.cover),
-  //         ),
-  //       ),
-  //       Container(
-  //         height: height,
-  //         width: double.infinity,
-  //         decoration: BoxDecoration(
-  //           color: Colors.black.withOpacity(0.4),
-  //           // borderRadius: BorderRadius.circular(8),
-  //         ),
-  //         child: const Center(
-  //           child: Text(
-  //             '+2',
-  //             style: TextStyle(
-  //               fontFamily: 'Poppins',
-  //               fontSize: 16,
-  //               color: Colors.white,
-  //               fontWeight: FontWeight.bold,
-  //             ),
-  //           ),
-  //         ),
-  //       ),
-  //     ],
-  //   );
-  // }
 }

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:sproutly/cloudinary/upload_image.dart';
 import 'package:sproutly/models/plant_journal_entry.dart';
 import 'package:sproutly/screens/add_plant/add_plant_camera.dart';
-import 'package:sproutly/screens/growth_journal/growthjournal_entries_screen.dart';
 import 'package:sproutly/services/database_service.dart';
 
 class GrowthJournalScreen extends StatefulWidget {
@@ -90,10 +89,7 @@ class _GrowthJournalScreenState extends State<GrowthJournalScreen> {
       imageUrls.clear();
     });
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => GrowthJournalEntriesScreen()),
-    );
+    Navigator.pop(context);
   }
 
   @override

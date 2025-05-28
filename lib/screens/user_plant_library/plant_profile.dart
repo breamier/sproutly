@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sproutly/models/plant.dart';
-import 'package:sproutly/screens/growth_journal/growthjournal_screen.dart';
+import 'package:sproutly/screens/growth_journal/growthjournal_entries_screen.dart';
 import 'package:sproutly/services/database_service.dart';
 import 'plant_issues.dart';
 
@@ -214,8 +214,9 @@ class PlantProfileScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder:
-                                (context) =>
-                                    GrowthJournalScreen(plantId: plant.id),
+                                (context) => GrowthJournalEntriesScreen(
+                                  plantId: plant.id,
+                                ),
                           ),
                         );
                       },

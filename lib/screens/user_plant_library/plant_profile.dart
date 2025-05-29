@@ -4,10 +4,26 @@ import 'package:sproutly/screens/growth_journal/growthjournal_entries_screen.dar
 import 'package:sproutly/services/database_service.dart';
 import 'plant_issues.dart';
 
-class PlantProfileScreen extends StatelessWidget {
+//cloudinary delete function
+import 'edit_plant_form.dart';
+
+class PlantProfileScreen extends StatefulWidget {
+  final String userId;
   final String plantId;
 
-  const PlantProfileScreen({super.key, required this.plantId});
+  const PlantProfileScreen({
+    super.key,
+    required this.userId,
+    required this.plantId,
+  });
+
+  @override
+  State<PlantProfileScreen> createState() => _PlantProfileScreenState();
+}
+
+class _PlantProfileScreenState extends State<PlantProfileScreen> {
+  // for plant image ideth
+  bool isEditing = false;
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +74,66 @@ class PlantProfileScreen extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  const Spacer(),
+                  // edit icon
+                  IconButton(
+                    icon: Icon(
+                      isEditing ? Icons.check : Icons.edit,
+                      color: oliveTitleColor,
+                      size: 30,
+                    ),
+                    onPressed: () async {
+                      // Get the current plant from your FutureBuilder
+                      final plant = await DatabaseService().getPlantProfileById(
+                        widget.userId,
+                        widget.plantId,
+                      );
+
+                      if (plant == null) return;
+                      final updated = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => EditPlantForm(
+                                userId: widget.userId,
+                                plant: plant,
+                              ),
+                        ),
+                      );
+                      if (updated == true)
+                        setState(() {}); // Refresh after editing
+                    },
+                  ),
+                  const Spacer(),
+                  // edit icon
+                  IconButton(
+                    icon: Icon(
+                      isEditing ? Icons.check : Icons.edit,
+                      color: oliveTitleColor,
+                      size: 30,
+                    ),
+                    onPressed: () async {
+                      // Get the current plant from your FutureBuilder
+                      final plant = await DatabaseService().getPlantProfileById(
+                        widget.userId,
+                        widget.plantId,
+                      );
+
+                      if (plant == null) return;
+                      final updated = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => EditPlantForm(
+                                userId: widget.userId,
+                                plant: plant,
+                              ),
+                        ),
+                      );
+                      if (updated == true)
+                        setState(() {}); // Refresh after editing
+                    },
+                  ),
                 ],
               ),
             ),
@@ -65,7 +141,10 @@ class PlantProfileScreen extends StatelessWidget {
             // Scrollable Content
             Expanded(
               child: FutureBuilder<Plant?>(
-                future: DatabaseService().getPlantById(plantId),
+                future: DatabaseService().getPlantProfileById(
+                  widget.userId,
+                  widget.plantId,
+                ),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -74,6 +153,7 @@ class PlantProfileScreen extends StatelessWidget {
                     return const Center(child: Text('Plant not found'));
                   }
                   final plant = snapshot.data!;
+                  final _imageUrl = plant.img;
 
                   return SingleChildScrollView(
                     child: Padding(
@@ -90,9 +170,9 @@ class PlantProfileScreen extends StatelessWidget {
                                 width: 230,
                                 height: 230,
                                 child:
-                                    plant.img != null && plant.img!.isNotEmpty
+                                    (_imageUrl ?? '').isNotEmpty
                                         ? Image.network(
-                                          plant.img!,
+                                          _imageUrl!,
                                           fit: BoxFit.cover,
                                           errorBuilder:
                                               (context, error, stackTrace) =>

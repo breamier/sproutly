@@ -48,6 +48,8 @@ dependencies:
   camera: ^0.11.1
   gal: ^2.3.1
   image: ^4.5.4
+  flutter_dotenv: ^5.2.1
+  crypto: ^3.0.6
 
 dev_dependencies:
   flutter_test:
@@ -91,6 +93,7 @@ flutter:
     - assets/care_icon.png
     - assets/plant_icon.png
     - assets/resolved_icon.png
+    - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

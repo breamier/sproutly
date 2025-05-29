@@ -331,4 +331,18 @@ class DatabaseService {
   Future<void> deleteReminder(String reminderId) async {
     await _remindersRef.doc(reminderId).delete();
   }
+
+  Stream<List<Plant>> getUserPlants() {
+    final user = FirebaseAuth.instance.currentUser;
+    return _firestore
+        .collection('Users')
+        .doc(user!.uid)
+        .collection('plants')
+        .snapshots()
+        .map(
+          (snap) => snap.docs
+              .map((doc) => Plant.fromJson(doc.data(), doc.id))
+              .toList(),
+        );
+  }
 }

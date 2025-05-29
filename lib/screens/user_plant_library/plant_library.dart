@@ -4,6 +4,8 @@ import 'package:sproutly/models/plant.dart';
 import 'package:sproutly/services/database_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'package:sproutly/screens/schedules/light_schedule.dart';
+
 class PlantLibraryScreen extends StatefulWidget {
   const PlantLibraryScreen({super.key});
 
@@ -223,6 +225,32 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
                 fontFamily: 'Poppins',
                 fontSize: 16,
                 color: Color(0xFF747822),
+              ),
+            ),
+            // --- Add this button below ---
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF747822),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LightScheduleScreen(),
+                    ),
+                  );
+                  // check if notification works
+                  debugPrint(
+                    'Returned from LightScheduleScreen for plant: ${plant.plantName}',
+                  );
+                },
+                child: const Text('Test Light Reminder'),
               ),
             ),
           ],

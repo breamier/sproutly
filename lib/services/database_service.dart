@@ -9,6 +9,7 @@ import '../cloudinary/delete_image.dart';
 
 const String USERS_COLLECTION_REF = "Users";
 const String plantCategoriesRef = "plants-categories";
+const String guidebookRef = "guidebook";
 const String categoriesIdRef = "TJLhPyxbEG4wXt5aSRFg";
 
 class DatabaseService {
@@ -25,8 +26,8 @@ class DatabaseService {
         .doc(user.uid)
         .collection('plants')
         .withConverter<Plant>(
-          fromFirestore: (snapshots, _) =>
-              Plant.fromJson(snapshots.data()!, snapshots.id),
+          fromFirestore:
+              (snapshots, _) => Plant.fromJson(snapshots.data()!, snapshots.id),
           toFirestore: (plant, _) => plant.toJson(),
         );
   }
@@ -57,8 +58,8 @@ class DatabaseService {
         .doc(plantId)
         .collection('plant_issues')
         .withConverter<PlantIssue>(
-          fromFirestore: (snap, _) =>
-              PlantIssue.fromJson(snap.data()!, snap.id),
+          fromFirestore:
+              (snap, _) => PlantIssue.fromJson(snap.data()!, snap.id),
           toFirestore: (issue, _) => issue.toJson(),
         );
   }
@@ -75,8 +76,8 @@ class DatabaseService {
         .doc(plantId)
         .collection('plant_journal')
         .withConverter<PlantJournalEntry>(
-          fromFirestore: (snap, _) =>
-              PlantJournalEntry.fromJson(snap.data()!, snap.id),
+          fromFirestore:
+              (snap, _) => PlantJournalEntry.fromJson(snap.data()!, snap.id),
           toFirestore: (issue, _) => issue.toJson(),
         );
   }
@@ -113,7 +114,6 @@ class DatabaseService {
 
   Stream<QuerySnapshot<Plant>> getRecentPlants() {
     return _plantsRef.orderBy('addedOn', descending: true).limit(6).snapshots();
-    print('Fetching recent plants');
   }
 
   // ----------------------- PLANT ISSUES -----------------------
@@ -163,10 +163,11 @@ class DatabaseService {
   // fetching all plants-categories values in firestore
   Future<List<String>> getDropdownOptions(String fieldPath) async {
     try {
-      final doc = await _firestore
-          .collection(plantCategoriesRef)
-          .doc(categoriesIdRef)
-          .get();
+      final doc =
+          await _firestore
+              .collection(plantCategoriesRef)
+              .doc(categoriesIdRef)
+              .get();
 
       if (!doc.exists) return [];
 
@@ -192,6 +193,25 @@ class DatabaseService {
       return [];
     } catch (e) {
       print('Error fetching $fieldPath: $e');
+      return [];
+    }
+  }
+
+  Future<List<String>> getDropdownOptionsForPlantTypes() async {
+    try {
+      final guidebookSnapshot = await _firestore.collection(guidebookRef).get();
+
+      final names = <String>[];
+
+      for (var doc in guidebookSnapshot.docs) {
+        final data = doc.data();
+        if (data.containsKey('name') && data['name'] is String) {
+          names.add(data['name']);
+        }
+      }
+      return names;
+    } catch (e) {
+      print('Error fetching plant types: $e');
       return [];
     }
   }
@@ -227,12 +247,13 @@ class DatabaseService {
   }
 
   Future<Plant?> getPlantProfileById(String userId, String plantId) async {
-    final doc = await FirebaseFirestore.instance
-        .collection('Users')
-        .doc(userId)
-        .collection('plants')
-        .doc(plantId)
-        .get();
+    final doc =
+        await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(userId)
+            .collection('plants')
+            .doc(plantId)
+            .get();
     if (doc.exists && doc.data() != null) {
       return Plant.fromJson(doc.data()!, doc.id);
     }

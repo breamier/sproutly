@@ -1,107 +1,36 @@
-//imports
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz;
+// import 'package:flutter/material.dart';
 
-//models
-import '../models/water_schedule.dart';
+// class WateringSchedule {
+//   final List<int> selectedWeekdays; // 1=Monday, 7=Sunday
+//   final TimeOfDay wateringTime;
+//   final String plantId;
 
-//services
-import '../services/notification_service.dart';
+//   WateringSchedule({
+//     required this.selectedWeekdays,
+//     required this.wateringTime,
+//     required this.plantId,
+//   }) : assert(plantId.isNotEmpty, 'Plant ID cannot be empty'),
+//        assert(selectedWeekdays.isNotEmpty, 'At least one day must be selected');
 
-class ScheduleService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final String _collectionPath = 'wateringSchedules';
+//   // Convert to map for Firestore
+//   Map<String, dynamic> toMap() {
+//     return {
+//       'selectedWeekdays': selectedWeekdays,
+//       'hour': wateringTime.hour,
+//       'minute': wateringTime.minute,
+//       'plantId': plantId,
+//     };
+//   }
 
-  Future<void> saveSchedule(WateringSchedule schedule) async {
-    final nextNotification = _calculateNextNotification(schedule);
-
-    await _firestore.collection(_collectionPath).doc(schedule.plantId).set({
-      'selectedWeekdays': schedule.selectedWeekdays,
-      'hour': schedule.wateringTime.hour,
-      'minute': schedule.wateringTime.minute,
-      'plantId': schedule.plantId,
-      'nextNotificationTime': nextNotification,
-    });
-
-    // after saving to firestore, schedule notifications
-    await _scheduleNotifications(schedule);
-  }
-
-  Future<void> _scheduleNotifications(WateringSchedule schedule) async {
-    final notiService = NotiService();
-    await notiService.initNotification();
-    await notiService.cancelAllNotifications();
-
-    // test test
-    debugPrint('Scheduling notifications for plant: ${schedule.plantId}');
-    debugPrint('Selected weekdays: ${schedule.selectedWeekdays}');
-    debugPrint('Watering time: ${schedule.wateringTime}');
-
-    for (final weekday in schedule.selectedWeekdays) {
-      await notiService.scheduleNotification(
-        title: 'Watering Reminder',
-        body: 'Time to water your ${schedule.plantId}!',
-        hour: schedule.wateringTime.hour,
-        minute: schedule.wateringTime.minute,
-        weekday: weekday,
-      );
-    }
-  }
-
-  Future<WateringSchedule?> getSchedule(String plantId) async {
-    final doc = await _firestore.collection(_collectionPath).doc(plantId).get();
-    if (doc.exists) {
-      return WateringSchedule.fromFirestore(doc.data()!);
-    }
-    return null;
-  }
-
-  Future<List<DocumentSnapshot>> getAllPlants() async {
-    final snapshot = await _firestore.collection('plants').get();
-    return snapshot.docs;
-  }
-
-  // calculate next notification time (same weekday next week)
-  Timestamp _calculateNextNotification(WateringSchedule schedule) {
-    tz.initializeTimeZones();
-    final location = tz.local;
-    final now = tz.TZDateTime.now(location);
-
-    // find the selected weekday that matches the schedule
-    for (final weekday in schedule.selectedWeekdays) {
-      // calculate days until next occurrence of this weekday
-      int daysToAdd = (weekday - now.weekday) % 7;
-      daysToAdd = daysToAdd <= 0 ? daysToAdd + 7 : daysToAdd;
-
-      final nextDate = now.add(Duration(days: daysToAdd));
-
-      final scheduledTime = tz.TZDateTime(
-        location,
-        nextDate.year,
-        nextDate.month,
-        nextDate.day,
-        schedule.wateringTime.hour,
-        schedule.wateringTime.minute,
-      );
-
-      // verify the time hasn't passed today (if scheduling for today)
-      if (scheduledTime.isAfter(now)) {
-        return Timestamp.fromDate(scheduledTime);
-      }
-    }
-
-    return Timestamp.fromDate(now.add(Duration(days: 7)));
-  }
-
-  Future<List<QueryDocumentSnapshot>> getActiveSchedules() async {
-    final now = Timestamp.now();
-    final snapshot =
-        await _firestore
-            .collection(_collectionPath)
-            .where('nextNotificationTime', isGreaterThanOrEqualTo: now)
-            .get();
-    return snapshot.docs;
-  }
-}
+//   // From Firestore
+//   factory WateringSchedule.fromFirestore(Map<String, dynamic> map) {
+//     return WateringSchedule(
+//       selectedWeekdays: List<int>.from(map['selectedWeekdays'] ?? []),
+//       wateringTime: TimeOfDay(
+//         hour: map['hour'] ?? 9, // Default to 9 AM if null
+//         minute: map['minute'] ?? 0,
+//       ),
+//       plantId: map['plantId'] ?? '', // Empty string if null
+//     );
+//   }
+// }

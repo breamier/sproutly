@@ -43,7 +43,6 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         Provider<DatabaseService>(create: (_) => DatabaseService()),
-        Provider<ScheduleService>(create: (_) => ScheduleService()),
         Provider<NotiService>(create: (_) => NotiService()),
 
         // can add more providers here to share objects and instances

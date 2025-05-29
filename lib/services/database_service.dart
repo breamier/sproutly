@@ -103,6 +103,11 @@ class DatabaseService {
     return null;
   }
 
+  Stream<QuerySnapshot<Plant>> getRecentPlants() {
+    return _plantsRef.orderBy('addedOn', descending: true).limit(6).snapshots();
+    print('Fetching recent plants');
+  }
+
   // ----------------------- PLANT ISSUES -----------------------
 
   Future<void> addPlantIssue(String plantId, PlantIssue issue) async {

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sproutly/auth.dart';
+import 'package:sproutly/screens/add_plant/add_plant_camera.dart';
+import 'package:sproutly/services/database_service.dart';
 import '../widgets/navbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sproutly/screens/dev_tools.dart';
@@ -83,16 +85,18 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(height: 24),
 
               ElevatedButton(
-                onPressed: userId == null
-                    ? null
-                    : () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DevToolsPage(userId: userId!),
-                          ),
-                        );
-                      },
+                onPressed:
+                    userId == null
+                        ? null
+                        : () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => DevToolsPage(userId: userId!),
+                            ),
+                          );
+                        },
                 child: const Text('Dev Tools'),
               ),
 
@@ -126,26 +130,46 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF2EFEF),
-                  borderRadius: BorderRadius.circular(12),
-                ),
 
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: PlantThumbnail(
-                        name: 'Rose',
-                        imagePath: 'assets/rose.png',
+                child: StreamBuilder(
+                  stream: DatabaseService().getRecentPlants(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: LinearProgressIndicator());
+                    }
+
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return const Center(child: Text('No plants added yet.'));
+                    }
+
+                    final plants =
+                        snapshot.data!.docs.map((doc) => doc.data()).toList();
+                    return RawScrollbar(
+                      thumbVisibility: true,
+                      thumbColor: const Color(0xFF6C7511),
+                      radius: const Radius.circular(8),
+                      thickness: 8,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children:
+                              plants.map((plant) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(
+                                    right: 12,
+                                    bottom: 12,
+                                  ),
+                                  child: PlantThumbnail(
+                                    name: plant.plantName,
+                                    imagePath:
+                                        plant.img ?? 'assets/placeholder.png',
+                                  ),
+                                );
+                              }).toList(),
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      child: PlantThumbnail(
-                        name: 'Hyacinth',
-                        imagePath: 'assets/hyacinth.png',
-                      ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
               ),
 
@@ -158,7 +182,14 @@ class DashboardScreen extends StatelessWidget {
       // Add plant button
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF6C7511),
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddPlantCamera(addPlant: true),
+            ),
+          );
+        },
         shape: CircleBorder(),
         child: const Icon(Icons.add, color: Colors.white),
       ),
@@ -360,9 +391,10 @@ class _TipsWidgetState extends State<TipsWidget> {
                   height: 8,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: _currentPage == index
-                        ? const Color(0xFF4B5502)
-                        : Colors.grey[400],
+                    color:
+                        _currentPage == index
+                            ? const Color(0xFF4B5502)
+                            : Colors.grey[400],
                   ),
                 );
               }),
@@ -447,14 +479,14 @@ class PlantThumbnail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final imageWidth = screenWidth * 0.2;
+    final imageWidth = screenWidth * 0.4;
     final imageHeight = imageWidth * 1.25;
 
     return Column(
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: Image.asset(
+          child: Image.network(
             imagePath,
             width: imageWidth,
             height: imageHeight,
@@ -465,7 +497,7 @@ class PlantThumbnail extends StatelessWidget {
         Text(
           name,
           style: headingFont.copyWith(
-            fontSize: screenWidth * 0.035,
+            fontSize: screenWidth * 0.05,
             color: const Color.fromARGB(255, 114, 120, 49),
           ),
         ),

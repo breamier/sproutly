@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sproutly/screens/user_plant_library/plant_profile.dart';
 import 'package:sproutly/models/plant.dart';
 import 'package:sproutly/services/database_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class PlantLibraryScreen extends StatefulWidget {
   const PlantLibraryScreen({super.key});
@@ -134,17 +135,15 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
                     }
 
                     // Map Firestore docs to Plant objects
-                    final List<Plant> plants =
-                        snapshot.data!.docs
-                            .map<Plant>((doc) => doc.data() as Plant)
-                            .where((plant) {
-                              final name = plant.plantName.toLowerCase();
-                              final type = (plant.type ?? '').toLowerCase();
-                              final query = _searchQuery.toLowerCase();
-                              return name.contains(query) ||
-                                  type.contains(query);
-                            })
-                            .toList();
+                    final List<Plant> plants = snapshot.data!.docs
+                        .map<Plant>((doc) => doc.data() as Plant)
+                        .where((plant) {
+                          final name = plant.plantName.toLowerCase();
+                          final type = (plant.type ?? '').toLowerCase();
+                          final query = _searchQuery.toLowerCase();
+                          return name.contains(query) || type.contains(query);
+                        })
+                        .toList();
 
                     if (plants.isEmpty) {
                       return Center(
@@ -177,13 +176,16 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
   }
 
   List<Widget> _buildPlantItems(List<Plant> plants) {
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
     return plants.map((plant) {
       return GestureDetector(
         onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => PlantProfileScreen(plantId: plant.id),
+              builder: (context) =>
+                  PlantProfileScreen(userId: userId, plantId: plant.id),
             ),
           );
         },
@@ -193,17 +195,16 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
             Expanded(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child:
-                    plant.img != null && plant.img!.isNotEmpty
-                        ? Image.network(plant.img!, fit: BoxFit.cover)
-                        : Container(
-                          color: Colors.grey[300],
-                          child: const Icon(
-                            Icons.local_florist,
-                            size: 60,
-                            color: Color(0xFF747822),
-                          ),
+                child: plant.img != null && plant.img!.isNotEmpty
+                    ? Image.network(plant.img!, fit: BoxFit.cover)
+                    : Container(
+                        color: Colors.grey[300],
+                        child: const Icon(
+                          Icons.local_florist,
+                          size: 60,
+                          color: Color(0xFF747822),
                         ),
+                      ),
               ),
             ),
             const SizedBox(height: 8),

@@ -4,10 +4,26 @@ import 'package:sproutly/screens/growth_journal/growthjournal_entries_screen.dar
 import 'package:sproutly/services/database_service.dart';
 import 'plant_issues.dart';
 
-class PlantProfileScreen extends StatelessWidget {
+//cloudinary delete function
+import 'edit_plant_form.dart';
+
+class PlantProfileScreen extends StatefulWidget {
+  final String userId;
   final String plantId;
 
-  const PlantProfileScreen({super.key, required this.plantId});
+  const PlantProfileScreen({
+    super.key,
+    required this.userId,
+    required this.plantId,
+  });
+
+  @override
+  State<PlantProfileScreen> createState() => _PlantProfileScreenState();
+}
+
+class _PlantProfileScreenState extends State<PlantProfileScreen> {
+  // for plant image ideth
+  bool isEditing = false;
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +71,35 @@ class PlantProfileScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  const Spacer(),
+                  // edit icon
+                  IconButton(
+                    icon: Icon(
+                      isEditing ? Icons.check : Icons.edit,
+                      color: oliveTitleColor,
+                      size: 30,
+                    ),
+                    onPressed: () async {
+                      // Get the current plant from your FutureBuilder
+                      final plant = await DatabaseService().getPlantProfileById(
+                        widget.userId,
+                        widget.plantId,
+                      );
+
+                      if (plant == null) return;
+                      final updated = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditPlantForm(
+                            userId: widget.userId,
+                            plant: plant,
+                          ),
+                        ),
+                      );
+                      if (updated == true)
+                        setState(() {}); // Refresh after editing
+                    },
+                  ),
                 ],
               ),
             ),
@@ -62,7 +107,10 @@ class PlantProfileScreen extends StatelessWidget {
             // Scrollable Content
             Expanded(
               child: FutureBuilder<Plant?>(
-                future: DatabaseService().getPlantById(plantId),
+                future: DatabaseService().getPlantProfileById(
+                  widget.userId,
+                  widget.plantId,
+                ),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -71,6 +119,7 @@ class PlantProfileScreen extends StatelessWidget {
                     return const Center(child: Text('Plant not found'));
                   }
                   final plant = snapshot.data!;
+                  final _imageUrl = plant.img;
 
                   return SingleChildScrollView(
                     child: Padding(
@@ -86,30 +135,29 @@ class PlantProfileScreen extends StatelessWidget {
                               child: SizedBox(
                                 width: 230,
                                 height: 230,
-                                child:
-                                    plant.img != null && plant.img!.isNotEmpty
-                                        ? Image.network(
-                                          plant.img!,
-                                          fit: BoxFit.cover,
-                                          errorBuilder:
-                                              (context, error, stackTrace) =>
-                                                  Container(
-                                                    color: Colors.grey[300],
-                                                    child: const Icon(
-                                                      Icons.broken_image,
-                                                      size: 60,
-                                                      color: Color(0xFF747822),
-                                                    ),
+                                child: (_imageUrl ?? '').isNotEmpty
+                                    ? Image.network(
+                                        _imageUrl!,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                Container(
+                                                  color: Colors.grey[300],
+                                                  child: const Icon(
+                                                    Icons.broken_image,
+                                                    size: 60,
+                                                    color: Color(0xFF747822),
                                                   ),
-                                        )
-                                        : Container(
-                                          color: Colors.grey[300],
-                                          child: const Icon(
-                                            Icons.local_florist,
-                                            size: 60,
-                                            color: oliveTitleColor,
-                                          ),
+                                                ),
+                                      )
+                                    : Container(
+                                        color: Colors.grey[300],
+                                        child: const Icon(
+                                          Icons.local_florist,
+                                          size: 60,
+                                          color: oliveTitleColor,
                                         ),
+                                      ),
                               ),
                             ),
                           ),
@@ -130,7 +178,7 @@ class PlantProfileScreen extends StatelessWidget {
                               ),
                               const Spacer(),
                               Text(
-                                plant.type!,
+                                plant.type ?? '',
                                 style: TextStyle(
                                   fontFamily: 'Poppins',
                                   fontSize: 20,
@@ -207,9 +255,8 @@ class PlantProfileScreen extends StatelessWidget {
                             onTap: () {
                               showDialog(
                                 context: context,
-                                builder:
-                                    (context) =>
-                                        PlantIssuesScreen(plantId: plant.id),
+                                builder: (context) =>
+                                    PlantIssuesScreen(plantId: plant.id),
                               );
                             },
                           ),
@@ -224,8 +271,8 @@ class PlantProfileScreen extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder:
-                                      (context) => GrowthJournalEntriesScreen(
+                                  builder: (context) =>
+                                      GrowthJournalEntriesScreen(
                                         plantId: plant.id,
                                       ),
                                 ),

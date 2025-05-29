@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sproutly/auth.dart';
+import 'package:sproutly/screens/add_plant/add_plant_camera.dart';
+import 'package:sproutly/services/database_service.dart';
 import '../widgets/navbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sproutly/screens/dev_tools.dart';
@@ -24,8 +26,28 @@ class DashboardScreen extends StatelessWidget {
     }
   }
 
+  Widget _userNameWidget() {
+    return FutureBuilder<String?>(
+      future: DatabaseService().getCurrentUserName(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Text('Loading username...');
+        }
+        if (!snapshot.hasData || snapshot.data == null) {
+          return const Text('Username not found');
+        }
+        return Text('Username: ${snapshot.data!}');
+      },
+    );
+  }
+
   Widget _userUid() {
-    return Text(user?.email ?? 'User email');
+    return Column(
+      children: [
+        Text(user?.uid ?? 'User uid'),
+        Text(user?.email ?? 'User email'),
+      ],
+    );
   }
 
   Widget _signOutButton(BuildContext context) {
@@ -78,21 +100,24 @@ class DashboardScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _userNameWidget(),
               _userUid(),
               _signOutButton(context),
               const SizedBox(height: 24),
 
               ElevatedButton(
-                onPressed: userId == null
-                    ? null
-                    : () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DevToolsPage(userId: userId!),
-                          ),
-                        );
-                      },
+                onPressed:
+                    userId == null
+                        ? null
+                        : () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => DevToolsPage(userId: userId!),
+                            ),
+                          );
+                        },
                 child: const Text('Dev Tools'),
               ),
 
@@ -126,26 +151,46 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF2EFEF),
-                  borderRadius: BorderRadius.circular(12),
-                ),
 
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: PlantThumbnail(
-                        name: 'Rose',
-                        imagePath: 'assets/rose.png',
+                child: StreamBuilder(
+                  stream: DatabaseService().getRecentPlants(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: LinearProgressIndicator());
+                    }
+
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return const Center(child: Text('No plants added yet.'));
+                    }
+
+                    final plants =
+                        snapshot.data!.docs.map((doc) => doc.data()).toList();
+                    return RawScrollbar(
+                      thumbVisibility: true,
+                      thumbColor: const Color(0xFF6C7511),
+                      radius: const Radius.circular(8),
+                      thickness: 8,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children:
+                              plants.map((plant) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(
+                                    right: 12,
+                                    bottom: 12,
+                                  ),
+                                  child: PlantThumbnail(
+                                    name: plant.plantName,
+                                    imagePath:
+                                        plant.img ?? 'assets/placeholder.png',
+                                  ),
+                                );
+                              }).toList(),
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      child: PlantThumbnail(
-                        name: 'Hyacinth',
-                        imagePath: 'assets/hyacinth.png',
-                      ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
               ),
 
@@ -158,7 +203,14 @@ class DashboardScreen extends StatelessWidget {
       // Add plant button
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF6C7511),
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddPlantCamera(addPlant: true),
+            ),
+          );
+        },
         shape: CircleBorder(),
         child: const Icon(Icons.add, color: Colors.white),
       ),
@@ -178,12 +230,7 @@ class TipsWidget extends StatefulWidget {
 }
 
 class _TipsWidgetState extends State<TipsWidget> {
-  final List<String> tips = [
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-    'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut.',
-  ];
-
+  late Future<List<String>> tips;
   final PageController _pageController = PageController();
   int _currentPage = 0;
   Timer? _autoScrollTimer;
@@ -196,7 +243,7 @@ class _TipsWidgetState extends State<TipsWidget> {
   @override
   void initState() {
     super.initState();
-    _startAutoScroll();
+    tips = DatabaseService().getAllCareTips();
   }
 
   @override
@@ -206,7 +253,7 @@ class _TipsWidgetState extends State<TipsWidget> {
     super.dispose();
   }
 
-  void _startAutoScroll() {
+  void _startAutoScroll(List<String> tips) {
     _autoScrollTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
       if (mounted) {
         int nextPage = (_currentPage + 1) % tips.length;
@@ -223,12 +270,12 @@ class _TipsWidgetState extends State<TipsWidget> {
     _autoScrollTimer?.cancel();
   }
 
-  void _resumeAutoScroll() {
+  void _resumeAutoScroll(List<String> tips) {
     _autoScrollTimer?.cancel();
-    _startAutoScroll();
+    _startAutoScroll(tips);
   }
 
-  void _goToPrevious() {
+  void _goToPrevious(List<String> tips) {
     _stopAutoScroll();
     if (_currentPage > 0) {
       _pageController.previousPage(
@@ -245,11 +292,11 @@ class _TipsWidgetState extends State<TipsWidget> {
     }
     // Resume auto-scroll after 3 seconds of user interaction
     Timer(const Duration(seconds: 3), () {
-      if (mounted) _resumeAutoScroll();
+      if (mounted) _resumeAutoScroll(tips);
     });
   }
 
-  void _goToNext() {
+  void _goToNext(List<String> tips) {
     _stopAutoScroll();
     if (_currentPage < tips.length - 1) {
       _pageController.nextPage(
@@ -266,110 +313,133 @@ class _TipsWidgetState extends State<TipsWidget> {
     }
     // Resume auto-scroll after 3 seconds of user interaction
     Timer(const Duration(seconds: 3), () {
-      if (mounted) _resumeAutoScroll();
+      if (mounted) _resumeAutoScroll(tips);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        // Pause auto-scroll when user taps the widget
-        _stopAutoScroll();
-        Timer(const Duration(seconds: 3), () {
-          if (mounted) _resumeAutoScroll();
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF2EFEF),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            // Header with icon
-            Center(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.lightbulb_outline, color: Color(0xFF4B5502)),
-                  const SizedBox(width: 8),
-                  Text('Tips', style: DashboardScreen.headingFont),
-                ],
-              ),
+    return FutureBuilder<List<String>>(
+      future: tips,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(child: Text('No tips available.'));
+        }
+        final tips = snapshot.data!;
+        // Start auto-scroll after tips are loaded
+        if (_autoScrollTimer == null) {
+          _startAutoScroll(tips);
+        }
+        return GestureDetector(
+          onTap: () {
+            // Pause auto-scroll when user taps the widget
+            _stopAutoScroll();
+            Timer(const Duration(seconds: 3), () {
+              if (mounted) _resumeAutoScroll(tips);
+            });
+          },
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF2EFEF),
+              borderRadius: BorderRadius.circular(12),
             ),
-
-            const SizedBox(height: 16),
-
-            // Slider with arrows
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Column(
               children: [
-                // Left arrow
-                IconButton(
-                  onPressed: _goToPrevious,
-                  icon: const Icon(Icons.arrow_back_ios, size: 20),
-                  color: Colors.black,
-                ),
-
-                // Tip content
-                Expanded(
-                  child: SizedBox(
-                    height: 60,
-                    child: PageView.builder(
-                      controller: _pageController,
-                      itemCount: tips.length,
-                      onPageChanged: (index) {
-                        setState(() {
-                          _currentPage = index;
-                        });
-                      },
-                      itemBuilder: (context, index) {
-                        return Center(
-                          child: Text(
-                            tips[index],
-                            style: bodyFont,
-                            textAlign: TextAlign.center,
-                          ),
-                        );
-                      },
-                    ),
+                // Header with icon
+                Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.lightbulb_outline,
+                        color: Color(0xFF4B5502),
+                      ),
+                      const SizedBox(width: 8),
+                      Text('Tips', style: DashboardScreen.headingFont),
+                    ],
                   ),
                 ),
 
-                // Right arrow
-                IconButton(
-                  onPressed: _goToNext,
-                  icon: const Icon(Icons.arrow_forward_ios, size: 20),
-                  color: Colors.black,
+                const SizedBox(height: 16),
+
+                // Slider with arrows
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Left arrow
+                    IconButton(
+                      onPressed: () => _goToPrevious(tips),
+                      icon: const Icon(Icons.arrow_back_ios, size: 20),
+                      color: Colors.black,
+                    ),
+
+                    // Tip content
+                    Expanded(
+                      child: SizedBox(
+                        height: 100,
+                        child: PageView.builder(
+                          controller: _pageController,
+                          itemCount: tips.length,
+                          onPageChanged: (index) {
+                            setState(() {
+                              _currentPage = index;
+                            });
+                          },
+                          itemBuilder: (context, index) {
+                            return Center(
+                              child: Text(
+                                tips[index],
+                                style: bodyFont,
+                                textAlign: TextAlign.center,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+
+                    // Right arrow
+                    IconButton(
+                      onPressed: () => _goToNext(tips),
+                      icon: const Icon(Icons.arrow_forward_ios, size: 20),
+                      color: Colors.black,
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+                // Dot indicator
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(tips.length, (index) {
+                      return Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color:
+                              _currentPage == index
+                                  ? const Color(0xFF4B5502)
+                                  : Colors.grey[400],
+                        ),
+                      );
+                    }),
+                  ),
                 ),
               ],
             ),
-
-            const SizedBox(height: 12),
-
-            // Dot indicator
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(tips.length, (index) {
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _currentPage == index
-                        ? const Color(0xFF4B5502)
-                        : Colors.grey[400],
-                  ),
-                );
-              }),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -447,14 +517,14 @@ class PlantThumbnail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final imageWidth = screenWidth * 0.2;
+    final imageWidth = screenWidth * 0.4;
     final imageHeight = imageWidth * 1.25;
 
     return Column(
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: Image.asset(
+          child: Image.network(
             imagePath,
             width: imageWidth,
             height: imageHeight,
@@ -465,7 +535,7 @@ class PlantThumbnail extends StatelessWidget {
         Text(
           name,
           style: headingFont.copyWith(
-            fontSize: screenWidth * 0.035,
+            fontSize: screenWidth * 0.05,
             color: const Color.fromARGB(255, 114, 120, 49),
           ),
         ),

@@ -44,6 +44,7 @@ class _GrowthJournalScreenState extends State<GrowthJournalScreen> {
 
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
+  bool isSaving = false;
 
   @override
   void dispose() {
@@ -63,31 +64,42 @@ class _GrowthJournalScreenState extends State<GrowthJournalScreen> {
       return;
     }
 
-    imageUrls.clear();
-    for (final path in imagePaths) {
-      final url = await uploadImageToCloudinary(File(path));
-      if (url != null && url.isNotEmpty) {
-        imageUrls.add(url);
-      }
-    }
-
-    final journalEntry = PlantJournalEntry(
-      id: '',
-      plantId: widget.plantId,
-      title: title,
-      notes: notes,
-      createdAt: Timestamp.now(),
-      imageUrls: imageUrls,
-    );
-
-    await DatabaseService().addJournalEntry(widget.plantId, journalEntry);
-
     setState(() {
-      _titleController.clear();
-      _notesController.clear();
-      imagePaths.clear();
-      imageUrls.clear();
+      isSaving = true;
     });
+
+    try {
+      imageUrls.clear();
+      for (final path in imagePaths) {
+        final url = await uploadImageToCloudinary(File(path));
+        if (url != null && url.isNotEmpty) {
+          imageUrls.add(url);
+        }
+      }
+
+      final journalEntry = PlantJournalEntry(
+        id: '',
+        plantId: widget.plantId,
+        title: title,
+        notes: notes,
+        createdAt: Timestamp.now(),
+        imageUrls: imageUrls,
+      );
+
+      await DatabaseService().addJournalEntry(widget.plantId, journalEntry);
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error saving journal entry: $e")));
+    } finally {
+      setState(() {
+        isSaving = false;
+        _titleController.clear();
+        _notesController.clear();
+        imagePaths.clear();
+        imageUrls.clear();
+      });
+    }
 
     Navigator.pop(context);
   }
@@ -269,8 +281,7 @@ class _GrowthJournalScreenState extends State<GrowthJournalScreen> {
 
                     Center(
                       child: ElevatedButton(
-                        onPressed: _submitJournalEntry,
-
+                        onPressed: isSaving ? null : _submitJournalEntry,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: GrowthJournalScreen.oliveGreen,
                           shape: RoundedRectangleBorder(
@@ -281,15 +292,39 @@ class _GrowthJournalScreenState extends State<GrowthJournalScreen> {
                             vertical: 12,
                           ),
                         ),
-                        child: const Text(
-                          "Save  Journal Entry",
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                            color: Colors.white,
-                          ),
-                        ),
+                        child:
+                            isSaving
+                                ? const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                    SizedBox(width: 12),
+                                    Text(
+                                      'Saving...',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                                : const Text(
+                                  "Save  Journal Entry",
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                    color: Colors.white,
+                                  ),
+                                ),
                       ),
                     ),
                   ],

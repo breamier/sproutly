@@ -70,7 +70,7 @@ class Plant {
       'careLevel': careLevel,
       'addedOn': addedOn,
       if (type != null) 'type': type,
-      'img': img,
+      if (type != null) 'type': type,
     };
   }
 

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:sproutly/models/plant.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sproutly/models/plant_issue.dart';
@@ -259,14 +260,14 @@ class DatabaseService {
         }
       }
 
-      // Delete all plant_issues subcollection docs + their images
+      // Delete all plant_issues subcollection docs
       final issuesRef = plantDoc.reference.collection('plant_issues');
       final issuesSnapshot = await issuesRef.get();
       for (var issueDoc in issuesSnapshot.docs) {
         await issueDoc.reference.delete();
       }
 
-      // Delete all plant_journal subcollection docs + their images
+      // Delete all plant_journal subcollection
       final journalRef = plantDoc.reference.collection('plant_journal');
       final journalSnapshot = await journalRef.get();
       for (var journalDoc in journalSnapshot.docs) {
@@ -275,10 +276,10 @@ class DatabaseService {
 
       // Delete the plant doc itself
       await plantDoc.reference.delete();
+      debugPrint('Deleted plant: ${plantDoc.id}');
     }
   }
 
-  // Helper function (common in your codebase)
   String extractCloudinaryPublicId(String url) {
     Uri uri = Uri.parse(url);
     List<String> segments = uri.pathSegments;

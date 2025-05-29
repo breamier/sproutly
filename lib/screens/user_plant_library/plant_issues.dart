@@ -25,65 +25,95 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
     super.dispose();
   }
 
+  String _getMonthName(int month) {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return months[month - 1];
+  }
+
+  String _formatTime(DateTime dateTime) {
+    int hour = dateTime.hour;
+    String period = hour >= 12 ? 'PM' : 'AM';
+    
+    if (hour > 12) {
+      hour -= 12;
+    } else if (hour == 0) {
+      hour = 12;
+    }
+    
+    String minute = dateTime.minute.toString().padLeft(2, '0');
+    return '$hour:$minute $period';
+  }
+
   void _addNewIssue() {
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(
-              'Add New Plant Issue',
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-                color: oliveTitleColor,
-              ),
-            ),
-            content: TextField(
-              controller: _newIssueController,
-              decoration: InputDecoration(
-                hintText: 'Type plant issue here',
-                hintStyle: TextStyle(
-                  fontFamily: 'Poppins',
-                  color: oliveTitleColor.withOpacity(0.5),
+      builder: (context) => AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        title: Text(
+          'Add New Plant Issue',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+            color: oliveTitleColor,
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _newIssueController,
+                maxLines: null, 
+                decoration: InputDecoration(
+                  hintText: 'Type plant issue here',
+                  hintStyle: TextStyle(
+                    fontFamily: 'Poppins',
+                    color: oliveTitleColor.withOpacity(0.5),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: oliveTitleColor),
+                  ),
                 ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: oliveTitleColor),
-                ),
-              ),
-              style: TextStyle(fontFamily: 'Poppins', color: oliveTitleColor),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Cancel', style: TextStyle(color: oliveTitleColor)),
-              ),
-              TextButton(
-                onPressed: () async {
-                  if (_newIssueController.text.isNotEmpty) {
-                    // Add issue to firestore mwehehe
-                    final issue = PlantIssue(
-                      id: '',
-                      plantId: widget.plantId,
-                      issueDescription: _newIssueController.text,
-                      resolved: false,
-                      createdAt: Timestamp.now(),
-                    );
-
-                    await DatabaseService().addPlantIssue(
-                      widget.plantId,
-                      issue,
-                    );
-                    setState(() {
-                      _newIssueController.clear();
-                    });
-                    Navigator.pop(context);
-                  }
-                },
-                child: Text('Add', style: TextStyle(color: oliveTitleColor)),
+                style: TextStyle(fontFamily: 'Poppins', color: oliveTitleColor),
               ),
             ],
           ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel', style: TextStyle(color: oliveTitleColor)),
+          ),
+          TextButton(
+            onPressed: () async {
+              if (_newIssueController.text.isNotEmpty) {
+                // Add issue to firestore
+                final issue = PlantIssue(
+                  id: '',
+                  plantId: widget.plantId,
+                  issueDescription: _newIssueController.text,
+                  resolved: false,
+                  createdAt: Timestamp.now(),
+                );
+
+                await DatabaseService().addPlantIssue(
+                  widget.plantId,
+                  issue,
+                );
+                setState(() {
+                  _newIssueController.clear();
+                });
+                Navigator.pop(context);
+              }
+            },
+            child: Text('Add', style: TextStyle(color: oliveTitleColor)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -103,6 +133,7 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
     if (_showResolvedIssues) {
       return Scaffold(
         backgroundColor: Colors.white,
+        resizeToAvoidBottomInset: true,
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -166,6 +197,7 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
                       if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                         return Center(
                           child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
                                 'No resolved issues found',
@@ -189,9 +221,10 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
                       if (resolvedIssues.isEmpty) {
                         return Center(
                           child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                'No plants issues found',
+                                'No resolved issues found',
                                 style: TextStyle(
                                   fontFamily: 'Poppins',
                                   fontSize: 18,
@@ -206,6 +239,11 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
                       return ListView.builder(
                         itemCount: resolvedIssues.length,
                         itemBuilder: (context, index) {
+                          final issue = resolvedIssues[index];
+                          final createdDate = issue.createdAt.toDate();
+                          final formattedDate = 
+                              "${_getMonthName(createdDate.month)} ${createdDate.day}, ${createdDate.year}, ${_formatTime(createdDate)}";
+                          
                           return Container(
                             margin: const EdgeInsets.only(bottom: 10),
                             padding: const EdgeInsets.symmetric(
@@ -216,13 +254,27 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
                               color: lightBackgroundColor,
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: Text(
-                              resolvedIssues[index].issueDescription,
-                              style: TextStyle(
-                                fontFamily: 'Poppins',
-                                fontSize: 16,
-                                color: oliveTitleColor,
-                              ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  issue.issueDescription,
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 16,
+                                    color: oliveTitleColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  formattedDate,
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
                             ),
                           );
                         },
@@ -243,9 +295,13 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(color: oliveTitleColor, width: 2.0),
       ),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: Container(
         width: double.maxFinite,
         padding: const EdgeInsets.all(20),
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.8,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,161 +334,166 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
               ],
             ),
             const SizedBox(height: 20),
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.5,
-              ),
-              child: StreamBuilder(
-                stream: DatabaseService().getPlantIssues(widget.plantId),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return Center(
-                      child: Column(
-                        children: [
-                          Text(
-                            'No plant issues found',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 18,
-                              color: oliveTitleColor,
-                            ),
-                          ),
-                          Spacer(),
-                          Divider(
-                            color: oliveTitleColor.withOpacity(0.3),
-                            thickness: 1,
-                          ),
-                          const SizedBox(height: 10),
-                          GestureDetector(
-                            onTap: _addNewIssue,
-                            child: Row(
-                              children: [
-                                Text(
-                                  "+ Add a new plant issue",
-                                  style: TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 16,
-                                    color: oliveTitleColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  final List<PlantIssue> issues =
-                      snapshot.data!.docs
-                          .where((doc) => !(doc.data().resolved))
-                          .map((doc) => doc.data())
-                          .toList();
-
-                  if (issues.isEmpty) {
-                    return Center(
-                      child: Column(
-                        children: [
-                          Text(
-                            'No plants issues found',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 18,
-                              color: oliveTitleColor,
-                            ),
-                          ),
-                          Spacer(),
-                          Divider(
-                            color: oliveTitleColor.withOpacity(0.3),
-                            thickness: 1,
-                          ),
-                          const SizedBox(height: 10),
-                          GestureDetector(
-                            onTap: _addNewIssue,
-                            child: Row(
-                              children: [
-                                Text(
-                                  "+ Add a new plant issue",
-                                  style: TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 16,
-                                    color: oliveTitleColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  return ListView.builder(
-                    itemCount: issues.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index < issues.length) {
-                        final issue = issues[index];
-                        return Column(
+            Flexible(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.5,
+                ),
+                child: StreamBuilder(
+                  stream: DatabaseService().getPlantIssues(widget.plantId),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    issue.issueDescription,
+                            Text(
+                              'No plant issues found',
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 18,
+                                color: oliveTitleColor,
+                              ),
+                            ),
+                            const Spacer(),
+                            Divider(
+                              color: oliveTitleColor.withOpacity(0.3),
+                              thickness: 1,
+                            ),
+                            const SizedBox(height: 10),
+                            GestureDetector(
+                              onTap: _addNewIssue,
+                              child: Row(
+                                children: [
+                                  Text(
+                                    "+ Add a new plant issue",
                                     style: TextStyle(
                                       fontFamily: 'Poppins',
                                       fontSize: 16,
                                       color: oliveTitleColor,
                                     ),
                                   ),
-                                ),
-                                GestureDetector(
-                                  onTap: () => _markAsResolved(issue.id, issue),
-                                  child: Container(
-                                    width: 24,
-                                    height: 24,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: oliveTitleColor,
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                            const SizedBox(height: 10),
+                          ],
+                        ),
+                      );
+                    }
+
+                    final List<PlantIssue> issues =
+                        snapshot.data!.docs
+                            .where((doc) => !(doc.data().resolved))
+                            .map((doc) => doc.data())
+                            .toList();
+
+                    if (issues.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'No unresolved issues found',
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 18,
+                                color: oliveTitleColor,
+                              ),
+                            ),
+                            const Spacer(),
                             Divider(
                               color: oliveTitleColor.withOpacity(0.3),
                               thickness: 1,
                             ),
                             const SizedBox(height: 10),
-                          ],
-                        );
-                      } else {
-                        return GestureDetector(
-                          onTap: _addNewIssue,
-                          child: Row(
-                            children: [
-                              Text(
-                                "+ Add a new plant issue",
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: 16,
-                                  color: oliveTitleColor,
-                                ),
+                            GestureDetector(
+                              onTap: _addNewIssue,
+                              child: Row(
+                                children: [
+                                  Text(
+                                    "+ Add a new plant issue",
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: 16,
+                                      color: oliveTitleColor,
+                                    ),
+                                  ),
+                                ],
                               ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      shrinkWrap: true, 
+                      itemCount: issues.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index < issues.length) {
+                          final issue = issues[index];
+                          return Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      issue.issueDescription,
+                                      style: TextStyle(
+                                        fontFamily: 'Poppins',
+                                        fontSize: 16,
+                                        color: oliveTitleColor,
+                                      ),
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () => _markAsResolved(issue.id, issue),
+                                    child: Container(
+                                      width: 24,
+                                      height: 24,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: oliveTitleColor,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Divider(
+                                color: oliveTitleColor.withOpacity(0.3),
+                                thickness: 1,
+                              ),
+                              const SizedBox(height: 10),
                             ],
-                          ),
-                        );
-                      }
-                    },
-                  );
-                },
+                          );
+                        } else {
+                          return GestureDetector(
+                            onTap: _addNewIssue,
+                            child: Row(
+                              children: [
+                                Text(
+                                  "+ Add a new plant issue",
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 16,
+                                    color: oliveTitleColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                      },
+                    );
+                  },
+                ),
               ),
             ),
           ],

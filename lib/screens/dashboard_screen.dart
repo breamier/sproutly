@@ -4,6 +4,8 @@ import '../widgets/navbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sproutly/screens/dev_tools.dart';
 import 'package:sproutly/screens/login_register.dart';
+import 'package:sproutly/screens/add_plant/add_plant_camera.dart'; 
+import 'package:sproutly/screens/reminders_screen.dart';
 import 'dart:async';
 
 class DashboardScreen extends StatelessWidget {
@@ -104,7 +106,20 @@ class DashboardScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text("Today's Reminders", style: headingFont),
-                  Text("See all", style: bodyFont.copyWith(color: Colors.grey)),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RemindersScreen(),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      "See all", 
+                      style: bodyFont.copyWith(color: Colors.grey),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -158,7 +173,14 @@ class DashboardScreen extends StatelessWidget {
       // Add plant button
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF6C7511),
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddPlantCamera(),
+            ),
+          );
+        },
         shape: CircleBorder(),
         child: const Icon(Icons.add, color: Colors.white),
       ),
@@ -264,7 +286,6 @@ class _TipsWidgetState extends State<TipsWidget> {
         curve: Curves.easeInOut,
       );
     }
-    // Resume auto-scroll after 3 seconds of user interaction
     Timer(const Duration(seconds: 3), () {
       if (mounted) _resumeAutoScroll();
     });
@@ -274,7 +295,6 @@ class _TipsWidgetState extends State<TipsWidget> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Pause auto-scroll when user taps the widget
         _stopAutoScroll();
         Timer(const Duration(seconds: 3), () {
           if (mounted) _resumeAutoScroll();

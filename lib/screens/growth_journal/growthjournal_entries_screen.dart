@@ -152,7 +152,7 @@ class _GrowthJournalEntriesScreenState
         );
       },
       child: Container(
-        padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: const Color(0xFFF8F4F4),
           border: Border.all(color: oliveGreen),
@@ -161,18 +161,35 @@ class _GrowthJournalEntriesScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildJournalImages(entry.imageUrls),
-            const SizedBox(height: 12),
+            // Images section
+            if (entry.imageUrls.isNotEmpty) ...[
+              _buildJournalImages(entry.imageUrls),
+              const SizedBox(height: 16),
+            ],
+            
+            // Title
             Text(entry.title, style: headingFont),
-            const SizedBox(height: 4),
-            Text(entry.notes, maxLines: 3, style: bodyFont),
             const SizedBox(height: 8),
+            
+            // Notes preview
             Text(
-              formattedDate,
-              style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 10,
-                color: Colors.grey,
+              entry.notes,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: bodyFont,
+            ),
+            const SizedBox(height: 12),
+            
+            // Date
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                formattedDate,
+                style: const TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 10,
+                  color: Colors.grey,
+                ),
               ),
             ),
           ],
@@ -184,80 +201,182 @@ class _GrowthJournalEntriesScreenState
   Widget _buildJournalImages(List<String> imageUrls) {
     if (imageUrls.isEmpty) {
       return Container(
-        height: 150,
-        color: Colors.grey[300],
-        child: const Center(child: Icon(Icons.image, size: 40)),
+        height: 120,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.grey[300],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Center(
+          child: Icon(Icons.image, size: 40, color: Colors.grey),
+        ),
       );
     }
 
-    // Show up to 4 images, others are +extra
-    final imagesToShow = imageUrls.take(4).toList();
-    final extraCount = imageUrls.length - imagesToShow.length;
+    if (imageUrls.length == 1) {
+      // Single image
+      return Container(
+        height: 120,
+        width: double.infinity,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.network(
+            imageUrls[0],
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => Container(
+              color: Colors.grey[300],
+              child: const Icon(Icons.broken_image, size: 40),
+            ),
+          ),
+        ),
+      );
+    } else if (imageUrls.length == 2) {
+      // Two images side by side
+      return SizedBox(
+        height: 120,
+        child: Row(
+          children: [
+            Expanded(
+              child: Container(
+                margin: const EdgeInsets.only(right: 4),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    imageUrls[0],
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.broken_image),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Container(
+                margin: const EdgeInsets.only(left: 4),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    imageUrls[1],
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.broken_image),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      final displayImages = imageUrls.take(3).toList();
+      final extraCount = imageUrls.length - 3;
 
-    return Row(
-      children: [
-        for (int i = 0; i < imagesToShow.length; i++) ...[
-          Expanded(
-            flex: 2,
-            child: Container(
-              height: 150,
-              margin: EdgeInsets.only(
-                right: i < imagesToShow.length - 1 ? 8 : 0,
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  imagesToShow[i],
-                  fit: BoxFit.cover,
-                  errorBuilder:
-                      (context, error, stackTrace) => Container(
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.broken_image),
-                      ),
-                ),
-              ),
-            ),
-          ),
-        ],
-        if (extraCount > 0)
-          Expanded(
-            flex: 1,
-            child: Stack(
-              children: [
-                Container(
-                  height: 150,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    image: DecorationImage(
-                      image: NetworkImage(imageUrls[3]),
-                      fit: BoxFit.cover,
+      return SizedBox(
+        height: 120,
+        child: Row(
+          children: [
+            // Main image (2/3 width)
+            Expanded(
+              flex: 2,
+              child: Container(
+                margin: const EdgeInsets.only(right: 4),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    displayImages[0],
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.broken_image),
                     ),
                   ),
                 ),
-                Container(
-                  height: 150,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.4),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '+$extraCount',
-                      style: const TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 24,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+              ),
+            ),
+            // Side images (1/3 width)
+            Expanded(
+              flex: 1,
+              child: Column(
+                children: [
+                  // Second image
+                  Expanded(
+                    child: Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(left: 4, bottom: 2),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          displayImages[1],
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: Colors.grey[300],
+                            child: const Icon(Icons.broken_image, size: 20),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                  // Third image or +more overlay
+                  Expanded(
+                    child: Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(left: 4, top: 2),
+                      child: Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: displayImages.length > 2
+                              ? Image.network(
+                                  displayImages[2],
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  errorBuilder: (context, error, stackTrace) => Container(
+                                    color: Colors.grey[300],
+                                    child: const Icon(Icons.broken_image, size: 20),
+                                  ),
+                                )
+                              : Container(
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  color: Colors.grey[300],
+                                  child: const Icon(Icons.image, size: 20, color: Colors.grey),
+                                ),
+                          ),
+                          if (extraCount > 0)
+                            Container(
+                              width: double.infinity,
+                              height: double.infinity,
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.6),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '+$extraCount',
+                                  style: const TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-      ],
-    );
+          ],
+        ),
+      );
+    }
   }
 }

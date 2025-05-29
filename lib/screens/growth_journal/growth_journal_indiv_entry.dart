@@ -138,16 +138,7 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
 
               const SizedBox(height: 16),
 
-              // Image
-              Image.network(
-                widget.entry.imageUrls.first,
-                width: screenWidth * 0.3,
-                fit: BoxFit.contain,
-              ),
-
-              const SizedBox(height: 24),
-
-              // Entry Container
+              // Entry Container (Notes Section) 
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
@@ -201,6 +192,12 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
               ),
 
               const SizedBox(height: 24),
+
+              // Images Section 
+              if (widget.entry.imageUrls.isNotEmpty) ...[
+                _buildAllImages(context),
+                const SizedBox(height: 24),
+              ],
 
               // Save Button
               if (isEditing)
@@ -265,5 +262,94 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
         ),
       ),
     );
+  }
+
+  Widget _buildAllImages(BuildContext context) {
+    final imageUrls = widget.entry.imageUrls;
+    
+    if (imageUrls.length == 1) {
+      // Single image 
+      return Container(
+        width: MediaQuery.of(context).size.width * 0.6,
+        height: MediaQuery.of(context).size.width * 0.6,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Image.network(
+            imageUrls.first,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => Container(
+              color: Colors.grey[300],
+              child: const Icon(Icons.broken_image, size: 40),
+            ),
+          ),
+        ),
+      );
+    } else if (imageUrls.length == 2) {
+      // Two images - side by side
+      return Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: MediaQuery.of(context).size.width * 0.4,
+              margin: const EdgeInsets.only(right: 4),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  imageUrls[0],
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.broken_image),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Container(
+              height: MediaQuery.of(context).size.width * 0.4,
+              margin: const EdgeInsets.only(left: 4),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  imageUrls[1],
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.broken_image),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    } else {
+      // Multiple images 
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+          childAspectRatio: 1,
+        ),
+        itemCount: imageUrls.length,
+        itemBuilder: (context, index) {
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(
+              imageUrls[index],
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Container(
+                color: Colors.grey[300],
+                child: const Icon(Icons.broken_image),
+              ),
+            ),
+          );
+        },
+      );
+    }
   }
 }

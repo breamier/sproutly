@@ -46,13 +46,16 @@ class PlantProfileScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 15),
-                  Text(
-                    'Plant Profile',
-                    style: TextStyle(
-                      fontFamily: 'Curvilingus',
-                      fontSize: 34,
-                      color: oliveTitleColor,
-                      fontWeight: FontWeight.bold,
+                  Flexible(
+                    child: Text(
+                      'Plant Profile',
+                      style: TextStyle(
+                        fontFamily: 'Curvilingus',
+                        fontSize: 34,
+                        color: oliveTitleColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -116,8 +119,8 @@ class PlantProfileScreen extends StatelessWidget {
 
                           const SizedBox(height: 30),
 
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 plant.plantName,
@@ -127,14 +130,19 @@ class PlantProfileScreen extends StatelessWidget {
                                   color: oliveTitleColor,
                                   fontWeight: FontWeight.bold,
                                 ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 2,
                               ),
-                              const Spacer(),
-                              Text(
-                                plant.type!,
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: 20,
-                                  color: oliveTitleColor,
+                              const SizedBox(height: 5),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: Text(
+                                  plant.type ?? '',
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 20,
+                                    color: oliveTitleColor,
+                                  ),
                                 ),
                               ),
                             ],
@@ -179,21 +187,26 @@ class PlantProfileScreen extends StatelessWidget {
                           ),
 
                           const SizedBox(height: 30),
-
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              _buildCareIcon(
-                                iconAsset: 'assets/light_icon.png',
-                                label: plant.sunlight,
+                              Flexible(
+                                child: _buildCareIcon(
+                                  iconAsset: 'assets/light_icon.png',
+                                  label: plant.sunlight,
+                                ),
                               ),
-                              _buildCareIcon(
-                                iconAsset: 'assets/water_icon.png',
-                                label: plant.water,
+                              Flexible(
+                                child: _buildCareIcon(
+                                  iconAsset: 'assets/water_icon.png',
+                                  label: plant.water,
+                                ),
                               ),
-                              _buildCareIcon(
-                                iconAsset: 'assets/care_icon.png',
-                                label: plant.careLevel,
+                              Flexible(
+                                child: _buildCareIcon(
+                                  iconAsset: 'assets/care_icon.png',
+                                  label: plant.careLevel,
+                                ),
                               ),
                             ],
                           ),
@@ -266,6 +279,9 @@ class PlantProfileScreen extends StatelessWidget {
             color: Color(0xFF747822),
             height: 1.2,
           ),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 2,
+          softWrap: true,
         ),
       ],
     );
@@ -288,15 +304,19 @@ class PlantProfileScreen extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              label,
-              style: const TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 20,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF747822),
+            Flexible(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF747822),
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
+            const SizedBox(width: 10),
             Image.asset(
               iconAsset,
               height: 30,

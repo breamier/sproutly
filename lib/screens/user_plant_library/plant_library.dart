@@ -209,6 +209,7 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
             const SizedBox(height: 8),
             Text(
               plant.plantName,
+              textAlign: TextAlign.center, 
               style: const TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 20,
@@ -218,6 +219,7 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
             ),
             Text(
               plant.type ?? '',
+              textAlign: TextAlign.center, 
               style: const TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 16,

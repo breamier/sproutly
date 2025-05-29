@@ -39,8 +39,6 @@ class _AddPlantPageState extends State<AddPlantPage> {
             addedOn: Timestamp.now(),
             type: "Type of Plant",
             id: '',
-            date: '',
-            time: '',
             water: '',
             sunlight: '',
             careLevel: '',

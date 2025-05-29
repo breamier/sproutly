@@ -10,7 +10,7 @@ class DashboardScreen extends StatelessWidget {
   DashboardScreen({super.key});
 
   final User? user = Auth().currentUser;
-  final userId = FirebaseAuth.instance.currentUser!.uid;
+  final String? userId = FirebaseAuth.instance.currentUser?.uid;
 
   Future<void> signOut(BuildContext context) async {
     try {
@@ -83,14 +83,16 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(height: 24),
 
               ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DevToolsPage(userId: userId),
-                    ),
-                  );
-                },
+                onPressed: userId == null
+                    ? null
+                    : () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DevToolsPage(userId: userId!),
+                          ),
+                        );
+                      },
                 child: const Text('Dev Tools'),
               ),
 
@@ -358,10 +360,9 @@ class _TipsWidgetState extends State<TipsWidget> {
                   height: 8,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color:
-                        _currentPage == index
-                            ? const Color(0xFF4B5502)
-                            : Colors.grey[400],
+                    color: _currentPage == index
+                        ? const Color(0xFF4B5502)
+                        : Colors.grey[400],
                   ),
                 );
               }),

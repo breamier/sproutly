@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-
+import 'dart:math';
 // models
 import 'package:sproutly/models/plant_issue.dart';
 import 'package:sproutly/models/plant_journal_entry.dart';
@@ -308,6 +308,29 @@ class DatabaseService {
     return null;
   }
 
+  Future<String?> getRandomCareTip(String plantType) async {
+    // always lowercase to match in firestore
+    final typeLower = plantType.trim().toLowerCase();
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('guidebook')
+        .where('plantType', isEqualTo: typeLower)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isEmpty) return null;
+    final data = snapshot.docs.first.data();
+    final tips = data['care_tip'];
+    if (tips == null || !(tips is List) || tips.isEmpty) return null;
+
+    // calculate for random seed consistent daily randomness
+    final now = DateTime.now();
+    final seed = int.parse("${now.year}${now.month}${now.day}");
+    final rand = Random(seed);
+    final tip = tips[rand.nextInt(tips.length)];
+    return tip.toString();
+  }
+
   // delete user data
 
   Future<void> deleteAllUserPlants() async {
@@ -393,6 +416,7 @@ class DatabaseService {
     await _remindersRef.doc(reminderId).delete();
   }
 
+  // to get all users plant
   Stream<List<Plant>> getUserPlants() {
     final user = FirebaseAuth.instance.currentUser;
     return _firestore
@@ -405,5 +429,22 @@ class DatabaseService {
               .map((doc) => Plant.fromJson(doc.data(), doc.id))
               .toList(),
         );
+  }
+
+  // to check if reminder already exists
+  Future<Reminder?> findReminderByPlantAndType({
+    required String plantId,
+    required String reminderType,
+  }) async {
+    final query = await _remindersRef
+        .where('plant_id', isEqualTo: plantId)
+        .where('reminder_type', isEqualTo: reminderType)
+        .limit(1)
+        .get();
+    if (query.docs.isNotEmpty) {
+      final doc = query.docs.first;
+      return Reminder.fromMap(doc.data(), doc.id);
+    }
+    return null;
   }
 }

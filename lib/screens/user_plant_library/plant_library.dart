@@ -4,7 +4,10 @@ import 'package:sproutly/models/plant.dart';
 import 'package:sproutly/services/database_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import 'package:sproutly/screens/schedules/light_schedule.dart';
+// for reminders
+import '../schedules/light_schedule.dart';
+import '../schedules/care_schedule.dart';
+import '../schedules/watering_schedule.dart';
 
 class PlantLibraryScreen extends StatefulWidget {
   const PlantLibraryScreen({super.key});
@@ -17,26 +20,26 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
-  final List<Map<String, dynamic>> plantData = [
-    {'name': 'Tulip', 'type': 'Plantae', 'image': 'assets/tulips.png'},
-    {'name': 'Hibiscus', 'type': 'Type', 'image': 'assets/hibiscus.png'},
-    {'name': 'Rose', 'type': 'Type', 'image': 'assets/rose.png'},
-    {'name': 'Hyacinth', 'type': 'Type', 'image': 'assets/hyacinth.png'},
-  ];
+  // final List<Map<String, dynamic>> plantData = [
+  //   {'name': 'Tulip', 'type': 'Plantae', 'image': 'assets/tulips.png'},
+  //   {'name': 'Hibiscus', 'type': 'Type', 'image': 'assets/hibiscus.png'},
+  //   {'name': 'Rose', 'type': 'Type', 'image': 'assets/rose.png'},
+  //   {'name': 'Hyacinth', 'type': 'Type', 'image': 'assets/hyacinth.png'},
+  // ];
 
-  List<Map<String, dynamic>> get filteredPlants {
-    if (_searchQuery.isEmpty) {
-      return plantData;
-    }
+  // List<Map<String, dynamic>> get filteredPlants {
+  //   if (_searchQuery.isEmpty) {
+  //     return plantData;
+  //   }
 
-    return plantData.where((plant) {
-      final name = plant['name'].toString().toLowerCase();
-      final type = plant['type'].toString().toLowerCase();
-      final query = _searchQuery.toLowerCase();
+  //   return plantData.where((plant) {
+  //     final name = plant['name'].toString().toLowerCase();
+  //     final type = plant['type'].toString().toLowerCase();
+  //     final query = _searchQuery.toLowerCase();
 
-      return name.contains(query) || type.contains(query);
-    }).toList();
-  }
+  //     return name.contains(query) || type.contains(query);
+  //   }).toList();
+  // }
 
   @override
   void initState() {
@@ -67,6 +70,47 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
     );
   }
 
+  void _showPlantPicker(
+    BuildContext context, {
+    required String scheduleType,
+  }) async {
+    final plants = await DatabaseService().getPlants().first;
+    final plantList = plants.docs.map((doc) => doc.data() as Plant).toList();
+
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) {
+        return ListView(
+          shrinkWrap: true,
+          children: plantList.map((plant) {
+            return ListTile(
+              leading: plant.img != null && plant.img!.isNotEmpty
+                  ? CircleAvatar(backgroundImage: NetworkImage(plant.img!))
+                  : const CircleAvatar(child: Icon(Icons.local_florist)),
+              title: Text(plant.plantName),
+              subtitle: Text(plant.type ?? ''),
+              onTap: () {
+                Navigator.pop(ctx);
+                Widget screen;
+                if (scheduleType == 'light' || scheduleType == 'rotate') {
+                  screen = LightScheduleScreen(plant: plant);
+                } else if (scheduleType == 'care') {
+                  screen = CareScheduleScreen(plant: plant);
+                } else {
+                  screen = WateringScheduleScreen(plant: plant);
+                }
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => screen),
+                );
+              },
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     const Color oliveTitleColor = Color(0xFF747822);
@@ -93,11 +137,7 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
                   ),
                   GestureDetector(
                     onTap: () => _deletePlant('', 'Your Plants'),
-                    child: Icon(
-                      Icons.delete,
-                      color: oliveTitleColor,
-                      size: 24,
-                    ),
+                    child: Icon(Icons.delete, color: oliveTitleColor, size: 24),
                   ),
                 ],
               ),
@@ -158,7 +198,7 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
                       );
                     }
 
-                    // Map Firestore docs to Plant objects
+                    // map Firestore docs to Plant objects
                     final List<Plant> plants = snapshot.data!.docs
                         .map<Plant>((doc) => doc.data() as Plant)
                         .where((plant) {
@@ -196,6 +236,8 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
           ),
         ),
       ),
+      floatingActionButton: _buildFloatingActionBar(context),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
@@ -213,6 +255,7 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
             ),
           );
         },
+
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -234,7 +277,7 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
             const SizedBox(height: 8),
             Text(
               plant.plantName,
-              textAlign: TextAlign.center, 
+              textAlign: TextAlign.center,
               style: const TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 20,
@@ -244,42 +287,91 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
             ),
             Text(
               plant.type ?? '',
-              textAlign: TextAlign.center, 
+              textAlign: TextAlign.center,
               style: const TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 16,
                 color: Color(0xFF747822),
               ),
             ),
-            // --- Add this button below ---
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF747822),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => LightScheduleScreen(),
-                    ),
-                  );
-                  // check if notification works
-                  debugPrint(
-                    'Returned from LightScheduleScreen for plant: ${plant.plantName}',
-                  );
-                },
-                child: const Text('Test Light Reminder'),
-              ),
-            ),
           ],
         ),
       );
     }).toList();
+  }
+
+  Widget _buildFloatingActionBar(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16, right: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Set Plant Reminders',
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 16,
+              color: const Color(0xFF747822),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // light schedule button
+              IconButton(
+                icon: Image.asset(
+                  'assets/light_icon.png',
+                  height: 32,
+                  width: 32,
+                  color: const Color(0xFF747822),
+                ),
+                tooltip: 'Light Reminder',
+                onPressed: () =>
+                    _showPlantPicker(context, scheduleType: 'light'),
+              ),
+              const SizedBox(width: 12),
+              // care schedule button
+              IconButton(
+                icon: Image.asset(
+                  'assets/care_icon.png',
+                  height: 32,
+                  width: 32,
+                  color: const Color(0xFF747822),
+                ),
+                tooltip: 'Care Reminder',
+                onPressed: () =>
+                    _showPlantPicker(context, scheduleType: 'care'),
+              ),
+              const SizedBox(width: 12),
+              // water schedule button
+              IconButton(
+                icon: Image.asset(
+                  'assets/water_icon.png',
+                  height: 32,
+                  width: 32,
+                  color: const Color(0xFF747822),
+                ),
+                tooltip: 'Water Reminder',
+                onPressed: () =>
+                    _showPlantPicker(context, scheduleType: 'water'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

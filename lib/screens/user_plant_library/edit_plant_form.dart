@@ -59,7 +59,7 @@ class _EditPlantFormState extends State<EditPlantForm> {
     _imageUrl = widget.plant.img;
 
     final database = Provider.of<DatabaseService>(context, listen: false);
-    _typeOptions = database.getDropdownOptions('water-storage-and-adaptation');
+    _typeOptions = database.getDropdownOptionsForPlantTypes();
     _waterOptions = database.getDropdownOptions('water-level');
     _sunlightOptions = database.getDropdownOptions('sunlight-level');
     _careOptions = database.getDropdownOptions('care-level');
@@ -102,12 +102,8 @@ class _EditPlantFormState extends State<EditPlantForm> {
     final File? newImage = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => AddPlantCamera(
-          addPlant: false,
-          onImageSelected: (file) {
-            Navigator.pop(context, file);
-          },
-        ),
+        builder: (context) =>
+            AddPlantCamera(addPlant: false, onImageSelected: (file) {}),
       ),
     );
     if (newImage != null) {
@@ -314,34 +310,39 @@ class _EditPlantFormState extends State<EditPlantForm> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: SizedBox(
-                    width: 230,
-                    height: 230,
-                    child: (_imageUrl ?? '').isNotEmpty
-                        ? Image.network(
-                            _imageUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
-                                  color: Colors.grey[300],
-                                  child: const Icon(
-                                    Icons.broken_image,
-                                    size: 60,
-                                    color: Color(0xFF747822),
-                                  ),
+                child: Stack(
+                  alignment: Alignment.topRight,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: SizedBox(
+                        width: 230,
+                        height: 230,
+                        child: (_imageUrl ?? '').isNotEmpty
+                            ? Image.network(
+                                _imageUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(
+                                      color: Colors.grey[300],
+                                      child: const Icon(
+                                        Icons.broken_image,
+                                        size: 60,
+                                        color: Color(0xFF747822),
+                                      ),
+                                    ),
+                              )
+                            : Container(
+                                color: Colors.grey[300],
+                                child: const Icon(
+                                  Icons.local_florist,
+                                  size: 60,
+                                  color: Color(0xFF747822),
                                 ),
-                          )
-                        : Container(
-                            color: Colors.grey[300],
-                            child: const Icon(
-                              Icons.local_florist,
-                              size: 60,
-                              color: Color(0xFF747822),
-                            ),
-                          ),
-                  ),
+                              ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 12),

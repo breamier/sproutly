@@ -44,7 +44,7 @@ class _AddNewPlantState extends State<AddNewPlant> {
     super.initState();
     // fetch different categories
     final database = Provider.of<DatabaseService>(context, listen: false);
-    _typeOptions = database.getDropdownOptions('water-storage-and-adaptation');
+    _typeOptions = database.getDropdownOptionsForPlantTypes();
     _waterOptions = database.getDropdownOptions('water-level');
     _sunlightOptions = database.getDropdownOptions('sunlight-level');
     _careOptions = database.getDropdownOptions('care-level');
@@ -306,17 +306,14 @@ class _AddNewPlantState extends State<AddNewPlant> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        toolbarHeight: 75, 
-        leadingWidth: 75, 
+        toolbarHeight: 75,
+        leadingWidth: 75,
         leading: Container(
-          margin: const EdgeInsets.all(16), 
+          margin: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: const Color(0xFFE8E8D5),
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(
-              color: const Color(0xFF747822),
-              width: 1.5,
-            ),
+            border: Border.all(color: const Color(0xFF747822), width: 1.5),
           ),
           child: IconButton(
             icon: const Icon(
@@ -387,7 +384,10 @@ class _AddNewPlantState extends State<AddNewPlant> {
                       controller: _nameController,
                       decoration: const InputDecoration(
                         border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
                         hintText: 'Enter plant name',
                         hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
                       ),
@@ -478,38 +478,39 @@ class _AddNewPlantState extends State<AddNewPlant> {
                     ),
                     elevation: 0,
                   ),
-                  child: _isSaving
-                      ? const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
+                  child:
+                      _isSaving
+                          ? const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
                               ),
-                            ),
-                            SizedBox(width: 12),
-                            Text(
-                              'Saving...',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                              SizedBox(width: 12),
+                              Text(
+                                'Saving...',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
+                            ],
+                          )
+                          : const Text(
+                            'Save new plant',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
                             ),
-                          ],
-                        )
-                      : const Text(
-                          'Save new plant',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
                           ),
-                        ),
                 ),
               ),
             ],
@@ -519,3 +520,4 @@ class _AddNewPlantState extends State<AddNewPlant> {
     );
   }
 }
+

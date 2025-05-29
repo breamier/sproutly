@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:sproutly/services/database_service.dart';
+import 'package:sproutly/models/reminders.dart';
+import 'package:intl/intl.dart';
 
 class RemindersScreen extends StatelessWidget {
   const RemindersScreen({super.key});
@@ -66,94 +69,117 @@ class RemindersScreen extends StatelessWidget {
                 ],
               ),
             ),
-
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20.0,
-                  vertical: 5.0,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Today's Reminders
-                    Text("Today's Reminders", style: headingFont),
-                    const SizedBox(height: 12),
-                    ReminderCard(
-                      task: 'Water the Rose',
-                      time: 'May 1, 2025 10:00 AM',
-                    ),
-                    const SizedBox(height: 8),
-                    ReminderCard(
-                      task: 'Give sunlight to Tulip',
-                      time: 'May 1, 2025 11:30 AM',
-                    ),
+              child: StreamBuilder<List<Reminder>>(
+                stream: DatabaseService().getReminders(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('No reminders found.'));
+                  }
 
-                    const SizedBox(height: 32),
+                  final reminders = snapshot.data!;
+                  final now = DateTime.now();
 
-                    // Upcoming Reminders
-                    Text("Upcoming Reminders", style: headingFont),
-                    const SizedBox(height: 12),
-                    ReminderCard(
-                      task:
-                          'STEAm THUNDER BY SVT HAPPY 10TH YEAR ANNIVERSARY BABIES KO STEAm THUNDER BY SVT HAPPY 10TH YEAR ANNIVERSARY BABIES KO',
-                      time: 'May 2, 2025 9:00 AM',
-                    ),
-                    const SizedBox(height: 8),
-                    ReminderCard(
-                      task: 'Fertilize the Rose',
-                      time: 'May 3, 2025 1:00 PM',
-                    ),
-                    const SizedBox(height: 8),
-                    ReminderCard(
-                      task: 'Fertilize the Rose',
-                      time: 'May 3, 2025 1:00 PM',
-                    ),
-                    const SizedBox(height: 8),
-                    ReminderCard(
-                      task: 'Fertilize the Rose',
-                      time: 'May 3, 2025 1:00 PM',
-                    ),
+                  // divide reminders into today's and upcoming
+                  final todayReminders = reminders.where((reminder) {
+                    final date = reminder.reminderDate;
+                    return date.year == now.year &&
+                        date.month == now.month &&
+                        date.day == now.day;
+                  }).toList();
 
-                    ReminderCard(
-                      task: 'Fertilize the Rose',
-                      time: 'May 3, 2025 1:00 PM',
-                    ),
-                    const SizedBox(height: 8),
-                    ReminderCard(
-                      task: 'Fertilize the Rose',
-                      time: 'May 3, 2025 1:00 PM',
-                    ),
+                  final upcomingReminders = reminders.where((reminder) {
+                    final date = reminder.reminderDate;
+                    // return reminders that are not today and not in the past
+                    return !(date.year == now.year &&
+                            date.month == now.month &&
+                            date.day == now.day) &&
+                        date.isAfter(now);
+                  }).toList();
 
-                    ReminderCard(
-                      task: 'Fertilize the Rose',
-                      time: 'May 3, 2025 1:00 PM',
-                    ),
-                    const SizedBox(height: 8),
-                    ReminderCard(
-                      task: 'Fertilize the Rose',
-                      time: 'May 3, 2025 1:00 PM',
-                    ),
+                  // sort both lists by date/time ascending
+                  todayReminders.sort(
+                    (a, b) => a.reminderDate.compareTo(b.reminderDate),
+                  );
+                  upcomingReminders.sort(
+                    (a, b) => a.reminderDate.compareTo(b.reminderDate),
+                  );
 
-                    ReminderCard(
-                      task: 'Fertilize the Rose',
-                      time: 'May 3, 2025 1:00 PM',
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20.0,
+                      vertical: 5.0,
                     ),
-                    const SizedBox(height: 8),
-                    ReminderCard(
-                      task: 'Fertilize the Rose',
-                      time: 'May 3, 2025 1:00 PM',
-                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Today's Reminders
+                        Text("Today's Reminders", style: headingFont),
+                        const SizedBox(height: 12),
+                        if (todayReminders.isEmpty)
+                          const Text(
+                            "No reminders for today.",
+                            style: bodyFont,
+                          ),
+                        ...todayReminders.map(
+                          (reminder) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8.0),
+                            child: ReminderCard(
+                              task: _reminderTaskText(reminder),
+                              time: DateFormat(
+                                'MMM d, yyyy h:mm a',
+                              ).format(reminder.reminderDate),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 32),
 
-                    const SizedBox(height: 32),
-                  ],
-                ),
+                        // Upcoming Reminders
+                        Text("Upcoming Reminders", style: headingFont),
+                        const SizedBox(height: 12),
+                        if (upcomingReminders.isEmpty)
+                          const Text("No upcoming reminders.", style: bodyFont),
+                        ...upcomingReminders.map(
+                          (reminder) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8.0),
+                            child: ReminderCard(
+                              task: _reminderTaskText(reminder),
+                              time: DateFormat(
+                                'MMM d, yyyy h:mm a',
+                              ).format(reminder.reminderDate),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  // Helper to generate a readable task string
+  static String _reminderTaskText(Reminder reminder) {
+    switch (reminder.reminderType) {
+      case 'water':
+        return 'Water the ${reminder.plantName}';
+      case 'rotate':
+        return 'Rotate your ${reminder.plantName}';
+      case 'check_light':
+        return 'Check light for ${reminder.plantName}';
+      case 'check_health':
+        return 'Check health of ${reminder.plantName}';
+      default:
+        return '${reminder.reminderType} for ${reminder.plantName}';
+    }
   }
 }
 

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../screens/user_plant_library/plant_library.dart';
+import '../screens/guide_book/guide_book.dart';
+import '../screens/dashboard_screen.dart';
 
 class CustomNavBarPage extends StatefulWidget {
   const CustomNavBarPage({super.key});
@@ -15,6 +18,31 @@ class _CustomNavBarPageState extends State<CustomNavBarPage> {
     setState(() {
       _selectedIndex = index;
     });
+
+    // Navigate to corresponding screens
+    switch (index) {
+      case 0:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardScreen()),
+        );
+        break;
+      case 1:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const PlantLibraryScreen()),
+        );
+        break;
+      case 2:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const GuideBookScreen()),
+        );
+        break;
+      case 3:
+        // Settings - just clickable for now, no navigation
+        break;
+    }
   }
 
   @override
@@ -33,6 +61,7 @@ class _CustomNavBarPageState extends State<CustomNavBarPage> {
           _buildNavItem(Icons.home, 0),
           _buildNavItem(Icons.local_florist, 1),
           _buildNavItem(Icons.menu_book, 2),
+          _buildNavItem(Icons.settings, 3),
         ],
       ),
     );

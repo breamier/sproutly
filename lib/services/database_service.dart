@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import 'package:sproutly/models/plant.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:math';
+// models
 import 'package:sproutly/models/plant_issue.dart';
 import 'package:sproutly/models/plant_journal_entry.dart';
+import 'package:sproutly/models/plant.dart';
+import '../models/reminders.dart';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import '../cloudinary/delete_image.dart';
 
 const String USERS_COLLECTION_REF = "Users";
@@ -26,8 +29,8 @@ class DatabaseService {
         .doc(user.uid)
         .collection('plants')
         .withConverter<Plant>(
-          fromFirestore:
-              (snapshots, _) => Plant.fromJson(snapshots.data()!, snapshots.id),
+          fromFirestore: (snapshots, _) =>
+              Plant.fromJson(snapshots.data()!, snapshots.id),
           toFirestore: (plant, _) => plant.toJson(),
         );
   }
@@ -35,13 +38,26 @@ class DatabaseService {
   Future<String?> getCurrentUserName() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return null;
-    final doc =
-        await FirebaseFirestore.instance.collection('Users').doc(uid).get();
+    final doc = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(uid)
+        .get();
     if (doc.exists) {
       final data = doc.data();
       return data?['username'] as String?;
     }
     return null;
+  }
+
+  CollectionReference<Map<String, dynamic>> get _remindersRef {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('No user logged in');
+    }
+    return _firestore
+        .collection(USERS_COLLECTION_REF)
+        .doc(user.uid)
+        .collection('reminders');
   }
 
   // DatabaseService() {
@@ -70,8 +86,8 @@ class DatabaseService {
         .doc(plantId)
         .collection('plant_issues')
         .withConverter<PlantIssue>(
-          fromFirestore:
-              (snap, _) => PlantIssue.fromJson(snap.data()!, snap.id),
+          fromFirestore: (snap, _) =>
+              PlantIssue.fromJson(snap.data()!, snap.id),
           toFirestore: (issue, _) => issue.toJson(),
         );
   }
@@ -88,8 +104,8 @@ class DatabaseService {
         .doc(plantId)
         .collection('plant_journal')
         .withConverter<PlantJournalEntry>(
-          fromFirestore:
-              (snap, _) => PlantJournalEntry.fromJson(snap.data()!, snap.id),
+          fromFirestore: (snap, _) =>
+              PlantJournalEntry.fromJson(snap.data()!, snap.id),
           toFirestore: (issue, _) => issue.toJson(),
         );
   }
@@ -196,11 +212,10 @@ class DatabaseService {
   // fetching all plants-categories values in firestore
   Future<List<String>> getDropdownOptions(String fieldPath) async {
     try {
-      final doc =
-          await _firestore
-              .collection(plantCategoriesRef)
-              .doc(categoriesIdRef)
-              .get();
+      final doc = await _firestore
+          .collection(plantCategoriesRef)
+          .doc(categoriesIdRef)
+          .get();
 
       if (!doc.exists) return [];
 
@@ -281,17 +296,39 @@ class DatabaseService {
   }
 
   Future<Plant?> getPlantProfileById(String userId, String plantId) async {
-    final doc =
-        await FirebaseFirestore.instance
-            .collection('Users')
-            .doc(userId)
-            .collection('plants')
-            .doc(plantId)
-            .get();
+    final doc = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(userId)
+        .collection('plants')
+        .doc(plantId)
+        .get();
     if (doc.exists && doc.data() != null) {
       return Plant.fromJson(doc.data()!, doc.id);
     }
     return null;
+  }
+
+  Future<String?> getRandomCareTip(String plantType) async {
+    // always lowercase to match in firestore
+    final typeLower = plantType.trim().toLowerCase();
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('guidebook')
+        .where('plantType', isEqualTo: typeLower)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isEmpty) return null;
+    final data = snapshot.docs.first.data();
+    final tips = data['care_tip'];
+    if (tips == null || !(tips is List) || tips.isEmpty) return null;
+
+    // calculate for random seed consistent daily randomness
+    final now = DateTime.now();
+    final seed = int.parse("${now.year}${now.month}${now.day}");
+    final rand = Random(seed);
+    final tip = tips[rand.nextInt(tips.length)];
+    return tip.toString();
   }
 
   // delete user data
@@ -354,5 +391,60 @@ class DatabaseService {
       }
     }
     throw Exception("Could not extract publicId from URL");
+  }
+
+  // reminders services ayyeee
+  Future<void> addReminder(Reminder reminder) async {
+    await _remindersRef.add(reminder.toMap());
+  }
+
+  Stream<List<Reminder>> getReminders() {
+    return _remindersRef.snapshots().map(
+      (snapshot) => snapshot.docs
+          .map((doc) => Reminder.fromMap(doc.data(), doc.id))
+          .toList(),
+    );
+  }
+
+  //TODO
+  Future<void> updateReminder(String reminderId, Reminder reminder) async {
+    await _remindersRef.doc(reminderId).update(reminder.toMap());
+  }
+
+  //TODO
+  Future<void> deleteReminder(String reminderId) async {
+    await _remindersRef.doc(reminderId).delete();
+  }
+
+  // to get all users plant
+  Stream<List<Plant>> getUserPlants() {
+    final user = FirebaseAuth.instance.currentUser;
+    return _firestore
+        .collection('Users')
+        .doc(user!.uid)
+        .collection('plants')
+        .snapshots()
+        .map(
+          (snap) => snap.docs
+              .map((doc) => Plant.fromJson(doc.data(), doc.id))
+              .toList(),
+        );
+  }
+
+  // to check if reminder already exists
+  Future<Reminder?> findReminderByPlantAndType({
+    required String plantId,
+    required String reminderType,
+  }) async {
+    final query = await _remindersRef
+        .where('plant_id', isEqualTo: plantId)
+        .where('reminder_type', isEqualTo: reminderType)
+        .limit(1)
+        .get();
+    if (query.docs.isNotEmpty) {
+      final doc = query.docs.first;
+      return Reminder.fromMap(doc.data(), doc.id);
+    }
+    return null;
   }
 }

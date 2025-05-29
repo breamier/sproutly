@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:sproutly/auth.dart';
 import 'package:sproutly/screens/add_plant/add_plant_camera.dart';
 import 'package:sproutly/services/database_service.dart';
@@ -6,13 +7,33 @@ import '../widgets/navbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sproutly/screens/dev_tools.dart';
 import 'package:sproutly/screens/login_register.dart';
+import 'package:sproutly/screens/add_plant/add_plant_camera.dart';
+import 'package:sproutly/screens/reminders_screen.dart';
 import 'dart:async';
+
+import '../models/reminders.dart';
 
 class DashboardScreen extends StatelessWidget {
   DashboardScreen({super.key});
 
   final User? user = Auth().currentUser;
   final String? userId = FirebaseAuth.instance.currentUser?.uid;
+
+  // Helper function for showing today's reminder
+  static String _reminderTaskText(Reminder reminder) {
+    switch (reminder.reminderType) {
+      case 'water':
+        return 'Water the ${reminder.plantName}';
+      case 'rotate':
+        return 'Rotate your ${reminder.plantName}';
+      case 'check_light':
+        return 'Check light for ${reminder.plantName}';
+      case 'check_health':
+        return 'Check health of ${reminder.plantName}';
+      default:
+        return '${reminder.reminderType} for ${reminder.plantName}';
+    }
+  }
 
   Future<void> signOut(BuildContext context) async {
     try {
@@ -106,18 +127,16 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(height: 24),
 
               ElevatedButton(
-                onPressed:
-                    userId == null
-                        ? null
-                        : () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) => DevToolsPage(userId: userId!),
-                            ),
-                          );
-                        },
+                onPressed: userId == null
+                    ? null
+                    : () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DevToolsPage(userId: userId!),
+                          ),
+                        );
+                      },
                 child: const Text('Dev Tools'),
               ),
 
@@ -129,21 +148,80 @@ class DashboardScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text("Today's Reminders", style: headingFont),
-                  Text("See all", style: bodyFont.copyWith(color: Colors.grey)),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RemindersScreen(),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      "See all",
+                      style: bodyFont.copyWith(color: Colors.grey),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
 
-              // Reminders
-              ReminderCard(
-                task: 'Rose needs to be watered',
-                time: 'May 1, 2025 11:30 AM',
+              StreamBuilder<List<Reminder>>(
+                stream: DatabaseService().getReminders(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Text(
+                      "No reminders for today.",
+                      style: DashboardScreen.bodyFont,
+                    );
+                  }
+
+                  final reminders = snapshot.data!;
+                  final now = DateTime.now();
+
+                  // filter for today's reminders
+                  final todayReminders = reminders.where((reminder) {
+                    final date = reminder.reminderDate;
+                    return date.year == now.year &&
+                        date.month == now.month &&
+                        date.day == now.day;
+                  }).toList();
+
+                  todayReminders.sort(
+                    (a, b) => a.reminderDate.compareTo(b.reminderDate),
+                  );
+
+                  if (todayReminders.isEmpty) {
+                    return const Text(
+                      "No reminders for today.",
+                      style: DashboardScreen.bodyFont,
+                    );
+                  }
+
+                  // show up to 3 reminders
+                  return Column(
+                    children: [
+                      ...todayReminders
+                          .take(3)
+                          .map(
+                            (reminder) => Padding(
+                              padding: const EdgeInsets.only(bottom: 8.0),
+                              child: ReminderCard(
+                                task: _reminderTaskText(reminder),
+                                time: DateFormat(
+                                  'MMM d, yyyy h:mm a',
+                                ).format(reminder.reminderDate),
+                              ),
+                            ),
+                          ),
+                    ],
+                  );
+                },
               ),
-              const SizedBox(height: 8),
-              ReminderCard(
-                task: 'Tulip needs to be watered',
-                time: 'May 1, 2025 11:30 AM',
-              ),
+
               const SizedBox(height: 24),
 
               // Recently added plants
@@ -163,8 +241,9 @@ class DashboardScreen extends StatelessWidget {
                       return const Center(child: Text('No plants added yet.'));
                     }
 
-                    final plants =
-                        snapshot.data!.docs.map((doc) => doc.data()).toList();
+                    final plants = snapshot.data!.docs
+                        .map((doc) => doc.data())
+                        .toList();
                     return RawScrollbar(
                       thumbVisibility: true,
                       thumbColor: const Color(0xFF6C7511),
@@ -173,20 +252,19 @@ class DashboardScreen extends StatelessWidget {
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
-                          children:
-                              plants.map((plant) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(
-                                    right: 12,
-                                    bottom: 12,
-                                  ),
-                                  child: PlantThumbnail(
-                                    name: plant.plantName,
-                                    imagePath:
-                                        plant.img ?? 'assets/placeholder.png',
-                                  ),
-                                );
-                              }).toList(),
+                          children: plants.map((plant) {
+                            return Padding(
+                              padding: const EdgeInsets.only(
+                                right: 12,
+                                bottom: 12,
+                              ),
+                              child: PlantThumbnail(
+                                name: plant.plantName,
+                                imagePath:
+                                    plant.img ?? 'assets/placeholder.png',
+                              ),
+                            );
+                          }).toList(),
                         ),
                       ),
                     );
@@ -311,7 +389,6 @@ class _TipsWidgetState extends State<TipsWidget> {
         curve: Curves.easeInOut,
       );
     }
-    // Resume auto-scroll after 3 seconds of user interaction
     Timer(const Duration(seconds: 3), () {
       if (mounted) _resumeAutoScroll(tips);
     });
@@ -426,10 +503,9 @@ class _TipsWidgetState extends State<TipsWidget> {
                         height: 8,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color:
-                              _currentPage == index
-                                  ? const Color(0xFF4B5502)
-                                  : Colors.grey[400],
+                          color: _currentPage == index
+                              ? const Color(0xFF4B5502)
+                              : Colors.grey[400],
                         ),
                       );
                     }),

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import "dart:math";
 import 'package:sproutly/models/plant.dart';
 import 'package:sproutly/screens/growth_journal/growthjournal_entries_screen.dart';
 import 'package:sproutly/services/database_service.dart';
 import 'plant_issues.dart';
+import '';
 
 //cloudinary delete function
 import 'edit_plant_form.dart';
@@ -34,11 +36,10 @@ class _PlantProfileScreenState extends State<PlantProfileScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Fixed App Bar
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 20.0,
-                vertical: 20.0,
+                vertical: 10.0,
               ),
               child: Row(
                 children: [
@@ -62,22 +63,24 @@ class _PlantProfileScreenState extends State<PlantProfileScreen> {
                     ),
                   ),
                   const SizedBox(width: 15),
-                  Text(
-                    'Plant Profile',
-                    style: TextStyle(
-                      fontFamily: 'Curvilingus',
-                      fontSize: 34,
-                      color: oliveTitleColor,
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Text(
+                      'Plant Profile',
+                      style: TextStyle(
+                        fontFamily: 'Curvilingus',
+                        fontSize: 32,
+                        color: oliveTitleColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const Spacer(),
-                  // edit icon
+                  const SizedBox(width: 15),
                   IconButton(
                     icon: Icon(
                       isEditing ? Icons.check : Icons.edit,
                       color: oliveTitleColor,
-                      size: 30,
+                      size: 28,
                     ),
                     onPressed: () async {
                       // Get the current plant from your FutureBuilder
@@ -162,10 +165,10 @@ class _PlantProfileScreenState extends State<PlantProfileScreen> {
                             ),
                           ),
 
-                          const SizedBox(height: 30),
+                          const SizedBox(height: 10),
 
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 plant.plantName,
@@ -175,14 +178,19 @@ class _PlantProfileScreenState extends State<PlantProfileScreen> {
                                   color: oliveTitleColor,
                                   fontWeight: FontWeight.bold,
                                 ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 2,
                               ),
-                              const Spacer(),
-                              Text(
-                                plant.type ?? '',
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: 20,
-                                  color: oliveTitleColor,
+                              const SizedBox(height: 5),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: Text(
+                                  plant.type ?? '',
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 20,
+                                    color: oliveTitleColor,
+                                  ),
                                 ),
                               ),
                             ],
@@ -213,35 +221,68 @@ class _PlantProfileScreenState extends State<PlantProfileScreen> {
                                 ),
                                 const SizedBox(width: 15),
                                 Expanded(
-                                  child: Text(
-                                    'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. commodo ligula eget dolor',
-                                    style: TextStyle(
-                                      fontFamily: 'Poppins',
-                                      fontSize: 14,
-                                      color: oliveTitleColor,
+                                  child: FutureBuilder<String?>(
+                                    future: DatabaseService().getRandomCareTip(
+                                      plant.type ?? '',
                                     ),
+                                    builder: (context, tipSnapshot) {
+                                      if (tipSnapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        return const Text(
+                                          'Loading care tip...',
+                                          style: TextStyle(
+                                            fontFamily: 'Poppins',
+                                            fontSize: 14,
+                                            color: oliveTitleColor,
+                                          ),
+                                        );
+                                      }
+                                      if (!tipSnapshot.hasData ||
+                                          tipSnapshot.data == null) {
+                                        return Text(
+                                          'No care tip available for this plant.',
+                                          style: TextStyle(
+                                            fontFamily: 'Poppins',
+                                            fontSize: 14,
+                                            color: oliveTitleColor,
+                                          ),
+                                        );
+                                      }
+                                      return Text(
+                                        tipSnapshot.data!,
+                                        style: TextStyle(
+                                          fontFamily: 'Poppins',
+                                          fontSize: 14,
+                                          color: oliveTitleColor,
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ),
                               ],
                             ),
                           ),
-
                           const SizedBox(height: 30),
-
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              _buildCareIcon(
-                                iconAsset: 'assets/light_icon.png',
-                                label: plant.sunlight,
+                              Flexible(
+                                child: _buildCareIcon(
+                                  iconAsset: 'assets/light_icon.png',
+                                  label: plant.sunlight,
+                                ),
                               ),
-                              _buildCareIcon(
-                                iconAsset: 'assets/water_icon.png',
-                                label: plant.water,
+                              Flexible(
+                                child: _buildCareIcon(
+                                  iconAsset: 'assets/water_icon.png',
+                                  label: plant.water,
+                                ),
                               ),
-                              _buildCareIcon(
-                                iconAsset: 'assets/care_icon.png',
-                                label: plant.careLevel,
+                              Flexible(
+                                child: _buildCareIcon(
+                                  iconAsset: 'assets/care_icon.png',
+                                  label: plant.careLevel,
+                                ),
                               ),
                             ],
                           ),
@@ -313,6 +354,9 @@ class _PlantProfileScreenState extends State<PlantProfileScreen> {
             color: Color(0xFF747822),
             height: 1.2,
           ),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 2,
+          softWrap: true,
         ),
       ],
     );
@@ -335,15 +379,19 @@ class _PlantProfileScreenState extends State<PlantProfileScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              label,
-              style: const TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 20,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF747822),
+            Flexible(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF747822),
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
+            const SizedBox(width: 10),
             Image.asset(
               iconAsset,
               height: 30,

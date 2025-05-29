@@ -128,6 +128,11 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
     await DatabaseService().updatePlantIssue(widget.plantId, issueId, updated);
   }
 
+  void _onDeletePressed() {
+    // TODO: Add delete functionality
+    print('Delete button pressed');
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_showResolvedIssues) {
@@ -142,36 +147,49 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
               children: [
                 const SizedBox(height: 20),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE8E8D5),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: oliveTitleColor, width: 1.5),
-                      ),
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.arrow_back,
-                          color: Color(0xFF747822),
+                    Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE8E8D5),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: oliveTitleColor, width: 1.5),
+                          ),
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.arrow_back,
+                              color: Color(0xFF747822),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _showResolvedIssues = false;
+                              });
+                            },
+                            padding: EdgeInsets.zero,
+                          ),
                         ),
-                        onPressed: () {
-                          setState(() {
-                            _showResolvedIssues = false;
-                          });
-                        },
-                        padding: EdgeInsets.zero,
-                      ),
+                        const SizedBox(width: 15),
+                        Text(
+                          'Plant Issues',
+                          style: TextStyle(
+                            fontFamily: 'Curvilingus',
+                            fontSize: 34,
+                            color: oliveTitleColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 15),
-                    Text(
-                      'Plant Issues',
-                      style: TextStyle(
-                        fontFamily: 'Curvilingus',
-                        fontSize: 34,
+                    GestureDetector(
+                      onTap: _onDeletePressed,
+                      child: Icon(
+                        Icons.delete,
                         color: oliveTitleColor,
-                        fontWeight: FontWeight.bold,
+                        size: 24,
                       ),
                     ),
                   ],
@@ -318,18 +336,23 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
                     color: oliveTitleColor,
                   ),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _showResolvedIssues = true;
-                    });
-                  },
-                  child: Image.asset(
-                    'assets/resolved_icon.png',
-                    height: 30,
-                    width: 30,
-                    color: oliveTitleColor,
-                  ),
+                Row(
+                  children: [
+                    const SizedBox(width: 12),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _showResolvedIssues = true;
+                        });
+                      },
+                      child: Image.asset(
+                        'assets/resolved_icon.png',
+                        height: 30,
+                        width: 30,
+                        color: oliveTitleColor,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

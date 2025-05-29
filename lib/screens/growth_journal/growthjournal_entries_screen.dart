@@ -89,14 +89,26 @@ class _GrowthJournalEntriesScreenState
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Text(
-                    'Growth Journal',
-                    style: TextStyle(
-                      fontFamily: 'Curvilingus',
-                      fontWeight: FontWeight.w700,
-                      fontSize: (MediaQuery.of(context).size.width * 0.08)
-                          .clamp(24.0, 38.0),
-                      color: const Color(0xFF747822),
+                  Expanded(
+                    child: Text(
+                      'Growth Journal',
+                      style: TextStyle(
+                        fontFamily: 'Curvilingus',
+                        fontWeight: FontWeight.w700,
+                        fontSize: (MediaQuery.of(context).size.width * 0.08)
+                            .clamp(24.0, 38.0),
+                        color: const Color(0xFF747822),
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      // Delete functionality to be implemented later
+                    },
+                    child: const Icon(
+                      Icons.delete,
+                      color: oliveGreen,
+                      size: 24,
                     ),
                   ),
                 ],
@@ -136,6 +148,8 @@ class _GrowthJournalEntriesScreenState
       ),
     );
   }
+
+
 
   Widget _buildJournalEntry(BuildContext context, PlantJournalEntry entry) {
     final formattedDate = DateFormat(

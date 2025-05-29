@@ -34,11 +34,10 @@ class _PlantProfileScreenState extends State<PlantProfileScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Fixed App Bar
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 20.0,
-                vertical: 20.0,
+                vertical: 10.0,
               ),
               child: Row(
                 children: [
@@ -62,55 +61,24 @@ class _PlantProfileScreenState extends State<PlantProfileScreen> {
                     ),
                   ),
                   const SizedBox(width: 15),
-                  Flexible(
+                  Expanded(
                     child: Text(
                       'Plant Profile',
                       style: TextStyle(
                         fontFamily: 'Curvilingus',
-                        fontSize: 34,
+                        fontSize: 32,
                         color: oliveTitleColor,
                         fontWeight: FontWeight.bold,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const Spacer(),
-                  // edit icon
+                  const SizedBox(width: 15),
                   IconButton(
                     icon: Icon(
                       isEditing ? Icons.check : Icons.edit,
                       color: oliveTitleColor,
-                      size: 30,
-                    ),
-                    onPressed: () async {
-                      // Get the current plant from your FutureBuilder
-                      final plant = await DatabaseService().getPlantProfileById(
-                        widget.userId,
-                        widget.plantId,
-                      );
-
-                      if (plant == null) return;
-                      final updated = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => EditPlantForm(
-                                userId: widget.userId,
-                                plant: plant,
-                              ),
-                        ),
-                      );
-                      if (updated == true)
-                        setState(() {}); // Refresh after editing
-                    },
-                  ),
-                  const Spacer(),
-                  // edit icon
-                  IconButton(
-                    icon: Icon(
-                      isEditing ? Icons.check : Icons.edit,
-                      color: oliveTitleColor,
-                      size: 30,
+                      size: 28,
                     ),
                     onPressed: () async {
                       // Get the current plant from your FutureBuilder
@@ -197,7 +165,7 @@ class _PlantProfileScreenState extends State<PlantProfileScreen> {
                             ),
                           ),
 
-                          const SizedBox(height: 30),
+                          const SizedBox(height: 10),
 
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

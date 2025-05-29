@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sproutly/screens/dashboard_screen.dart';
 import '../auth.dart';
 
 class LoginPage extends StatefulWidget {
@@ -12,32 +13,61 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   String? errorMessage = '';
   bool isLogin = true;
+  bool isLoading = false;
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   Future<void> signInWithEmailAndPassword() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
     try {
       await Auth().signInWithEmailAndPassword(
         emailController.text,
         passwordController.text,
       );
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardScreen()),
+        );
+      }
     } on FirebaseAuthException catch (e) {
       setState(() {
         errorMessage = e.message;
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
       });
     }
   }
 
   Future<void> createUserWithEmailAndPassword() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
     try {
       await Auth().createUserWithEmailAndPassword(
         emailController.text,
         passwordController.text,
       );
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardScreen()),
+        );
+      }
     } on FirebaseAuthException catch (e) {
       setState(() {
         errorMessage = e.message;
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
       });
     }
   }
@@ -53,12 +83,13 @@ class _LoginPageState extends State<LoginPage> {
     return TextField(
       controller: controller,
       decoration: InputDecoration(labelText: title),
+      obscureText: title == 'password',
     );
   }
 
   Widget _errorMessage() {
     return Text(
-      errorMessage == '' ? '' : 'Humm: $errorMessage',
+      errorMessage == '' ? '' : '$errorMessage',
       style: const TextStyle(color: Colors.red),
     );
   }
@@ -66,8 +97,22 @@ class _LoginPageState extends State<LoginPage> {
   Widget _submitButton() {
     return ElevatedButton(
       onPressed:
-          isLogin ? signInWithEmailAndPassword : createUserWithEmailAndPassword,
-      child: Text(isLogin ? 'Login' : 'Register'),
+          isLoading
+              ? null
+              : (isLogin
+                  ? signInWithEmailAndPassword
+                  : createUserWithEmailAndPassword),
+      child:
+          isLoading
+              ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+              : Text(isLogin ? 'Login' : 'Register'),
     );
   }
 

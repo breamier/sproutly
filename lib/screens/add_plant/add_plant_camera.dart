@@ -130,6 +130,7 @@ class _AddPlantCameraState extends State<AddPlantCamera>
   }
 
   Widget _buildCameraScreen() {
+    final double previewSize = MediaQuery.of(context).size.width - 48;
     return Column(
       children: [
         // Instructions
@@ -148,9 +149,10 @@ class _AddPlantCameraState extends State<AddPlantCamera>
         ),
 
         // Camera Preview
-        Expanded(
+        SizedBox(
+          width: previewSize,
+          height: previewSize,
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 24),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
@@ -274,9 +276,10 @@ class _AddPlantCameraState extends State<AddPlantCamera>
         ),
 
         // Image Preview
-        Expanded(
+        SizedBox(
+          width: MediaQuery.of(context).size.width - 48,
+          height: MediaQuery.of(context).size.width - 48,
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 24),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
@@ -423,14 +426,41 @@ class _AddPlantCameraState extends State<AddPlantCamera>
     });
   }
 
+  Future<File> cropToSquare(File imageFile) async {
+    final bytes = await imageFile.readAsBytes();
+    img.Image? original = img.decodeImage(bytes);
+    if (original == null) return imageFile;
+
+    int size =
+        original.width < original.height ? original.width : original.height;
+    int offsetX = (original.width - size) ~/ 2;
+    int offsetY = (original.height - size) ~/ 2;
+
+    img.Image cropped = img.copyCrop(
+      original,
+      x: offsetX,
+      y: offsetY,
+      width: size,
+      height: size,
+    );
+
+    final croppedBytes = img.encodeJpg(cropped);
+    final croppedFile = File(
+      '${imageFile.parent.path}/cropped_${imageFile.uri.pathSegments.last}',
+    );
+    await croppedFile.writeAsBytes(croppedBytes);
+    return croppedFile;
+  }
+
   void _continueToForm() async {
     File? imageFile =
         _capturedImage != null ? File(_capturedImage!.path) : _pickedImage;
 
     if (imageFile != null) {
+      File croppedImage = await cropToSquare(imageFile);
       // Save to gallery if taken from camera
       if (_fromCamera && _capturedImage != null) {
-        await Gal.putImage(_capturedImage!.path);
+        await Gal.putImage(croppedImage.path);
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Picture saved!')));
@@ -441,11 +471,11 @@ class _AddPlantCameraState extends State<AddPlantCamera>
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => AddNewPlant(imageFile: imageFile),
+            builder: (context) => AddNewPlant(imageFile: croppedImage),
           ),
         );
       } else if (widget.onImageSelected != null) {
-        widget.onImageSelected!(imageFile);
+        widget.onImageSelected!(croppedImage);
         await cameraController?.dispose();
         Navigator.pop(context); // Go back to journal entry screen
       }

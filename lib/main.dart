@@ -1,12 +1,13 @@
 //imports
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:sproutly/auth.dart';
 import 'package:sproutly/firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:sproutly/widget_tree.dart';
-import 'screens/dashboard_screen.dart';
+import 'package:sproutly/screens/dashboard_screen.dart';
+import 'package:sproutly/screens/login_register.dart';
 //services
 import 'services/database_service.dart';
 import 'services/schedule_service.dart';
@@ -41,27 +42,17 @@ Future<void> main() async {
 
         // can add more providers here to share objects and instances
       ],
-      child: const SproutlyApp(),
+      child: SproutlyApp(),
     ),
   );
 }
-
-// test if correctly fetching the dropdowns options/values
-// Future<void> testPaths() async {
-//   final db = DatabaseService();
-//   debugPrint('Water levels: ${await db.getDropdownOptions('water-level')}');
-//   debugPrint('Sunlight: ${await db.getDropdownOptions('sunlight-level')}');
-//   debugPrint('Care levels: ${await db.getDropdownOptions('care-level')}');
-//   debugPrint(
-//     'Types: ${await db.getDropdownOptions('water-storage-and-adaptation')}',
-//   );
-// }
 
 class SproutlyApp extends StatelessWidget {
   const SproutlyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final user = Auth().currentUser;
     return MaterialApp(
       title: 'Sproutly',
       debugShowCheckedModeBanner: false,
@@ -72,7 +63,7 @@ class SproutlyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: WidgetTree(),
+      home: user != null ? DashboardScreen() : LoginPage(),
     );
   }
 }

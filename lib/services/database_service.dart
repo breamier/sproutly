@@ -12,6 +12,7 @@ import '../cloudinary/delete_image.dart';
 
 const String USERS_COLLECTION_REF = "Users";
 const String plantCategoriesRef = "plants-categories";
+const String guidebookRef = "guidebook";
 const String categoriesIdRef = "TJLhPyxbEG4wXt5aSRFg";
 
 class DatabaseService {
@@ -32,6 +33,20 @@ class DatabaseService {
               Plant.fromJson(snapshots.data()!, snapshots.id),
           toFirestore: (plant, _) => plant.toJson(),
         );
+  }
+
+  Future<String?> getCurrentUserName() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return null;
+    final doc = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(uid)
+        .get();
+    if (doc.exists) {
+      final data = doc.data();
+      return data?['username'] as String?;
+    }
+    return null;
   }
 
   CollectionReference<Map<String, dynamic>> get _remindersRef {
@@ -125,6 +140,10 @@ class DatabaseService {
     return null;
   }
 
+  Stream<QuerySnapshot<Plant>> getRecentPlants() {
+    return _plantsRef.orderBy('addedOn', descending: true).limit(6).snapshots();
+  }
+
   // ----------------------- PLANT ISSUES -----------------------
 
   Future<void> addPlantIssue(String plantId, PlantIssue issue) async {
@@ -169,6 +188,27 @@ class DatabaseService {
     ).doc(journalId).update(updatedEntry.toJson());
   }
 
+  // ----------------------- CARE TIPS -----------------------
+  Future<List<String>> getAllCareTips() async {
+    try {
+      final snapshot = await _firestore.collection(guidebookRef).get();
+      final allTips = <String>[];
+
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        if (data.containsKey('care_tip') && data['care_tip'] is List) {
+          final tips = List<String>.from(data['care_tip']);
+          allTips.addAll(tips);
+        }
+      }
+      return allTips;
+    } catch (e) {
+      print('Error fetching care tips: $e');
+      return [];
+    }
+  }
+
+  // ----------------------- PLANT CATEGORIES -----------------------
   // fetching all plants-categories values in firestore
   Future<List<String>> getDropdownOptions(String fieldPath) async {
     try {
@@ -205,6 +245,26 @@ class DatabaseService {
     }
   }
 
+  Future<List<String>> getDropdownOptionsForPlantTypes() async {
+    try {
+      final guidebookSnapshot = await _firestore.collection(guidebookRef).get();
+
+      final names = <String>[];
+
+      for (var doc in guidebookSnapshot.docs) {
+        final data = doc.data();
+        if (data.containsKey('name') && data['name'] is String) {
+          names.add(data['name']);
+        }
+      }
+      return names;
+    } catch (e) {
+      print('Error fetching plant types: $e');
+      return [];
+    }
+  }
+
+  // ----------------------- SAVE IMAGE TO FIRESTORE -----------------------
   Future<void> saveImageUrlToFirestore(String imageUrl) async {
     await FirebaseFirestore.instance.collection('images').add({
       'imageUrl': imageUrl,
@@ -294,6 +354,7 @@ class DatabaseService {
     }
   }
 
+  // ----------------------- CLOUDINARY -----------------------
   String extractCloudinaryPublicId(String url) {
     Uri uri = Uri.parse(url);
     List<String> segments = uri.pathSegments;

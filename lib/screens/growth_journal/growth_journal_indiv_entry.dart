@@ -46,6 +46,7 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
 
   late List<String> _imageUrls;
   bool _isDeletingImage = false;
+  String? _deletingImageUrl;
 
   @override
   void initState() {
@@ -80,6 +81,7 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
   Future<void> _deleteImage(String url) async {
     setState(() {
       _isDeletingImage = true;
+      _deletingImageUrl = url;
     });
 
     try {
@@ -125,6 +127,7 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
     } finally {
       setState(() {
         _isDeletingImage = false;
+        _deletingImageUrl = null;
       });
     }
   }
@@ -198,64 +201,19 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
               // Editable Title
               isEditing
                   ? TextField(
-                      controller: _titleController,
-                      style: headingFont.copyWith(fontSize: screenWidth * 0.05),
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Title',
-                      ),
-                    )
-                  : Text(
-                      _titleController.text,
-                      style: headingFont.copyWith(fontSize: screenWidth * 0.05),
+                    controller: _titleController,
+                    style: headingFont.copyWith(fontSize: screenWidth * 0.05),
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Title',
                     ),
+                  )
+                  : Text(
+                    _titleController.text,
+                    style: headingFont.copyWith(fontSize: screenWidth * 0.05),
+                  ),
 
               const SizedBox(height: 16),
-
-              // image with delete buttons
-              if (_imageUrls.isNotEmpty)
-                Column(
-                  children: [
-                    for (var url in _imageUrls)
-                      Stack(
-                        alignment: Alignment.topRight,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 8.0),
-                            child: Image.network(
-                              url,
-                              width: screenWidth * 0.3,
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                          if (isEditing)
-                            Positioned(
-                              right: 0,
-                              child: _isDeletingImage
-                                  ? const Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: SizedBox(
-                                        height: 24,
-                                        width: 24,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                        ),
-                                      ),
-                                    )
-                                  : IconButton(
-                                      icon: const Icon(
-                                        Icons.delete,
-                                        color: Colors.red,
-                                      ),
-                                      onPressed: () async {
-                                        await _deleteImage(url);
-                                      },
-                                    ),
-                            ),
-                        ],
-                      ),
-                  ],
-                ),
 
               // Entry Container
               Container(
@@ -277,7 +235,7 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
                           DateFormat(
                             'MMMM d, y, h:mm a',
                           ).format(widget.entry.createdAt.toDate()),
-                          style: TextStyle(
+                            style: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: screenWidth * 0.03,
                             color: Colors.grey,
@@ -290,27 +248,33 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
                     // Editable or Static Description
                     isEditing
                         ? TextField(
-                            controller: _descriptionController,
-                            style: bodyFont.copyWith(
-                              fontSize: screenWidth * 0.035,
-                            ),
-                            maxLines: null,
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              hintText: 'Write your journal entry...',
-                            ),
-                          )
-                        : Text(
-                            _descriptionController.text,
-                            style: bodyFont.copyWith(
-                              fontSize: screenWidth * 0.035,
-                            ),
+                          controller: _descriptionController,
+                          style: bodyFont.copyWith(
+                            fontSize: screenWidth * 0.035,
                           ),
+                          maxLines: null,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: 'Write your journal entry...',
+                          ),
+                        )
+                        : Text(
+                          _descriptionController.text,
+                          style: bodyFont.copyWith(
+                            fontSize: screenWidth * 0.035,
+                          ),
+                        ),
                   ],
                 ),
               ),
 
               const SizedBox(height: 24),
+
+              // Images Section with Delete Functionality
+              if (_imageUrls.isNotEmpty) ...[
+                _buildAllImages(context),
+                const SizedBox(height: 24),
+              ],
 
               // Save Button
               if (isEditing)
@@ -346,7 +310,7 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
                       title: title,
                       notes: notes,
                       createdAt: widget.entry.createdAt,
-                      imageUrls: widget.entry.imageUrls,
+                      imageUrls: _imageUrls, // Use the local _imageUrls list
                     );
 
                     final dbService = DatabaseService();
@@ -376,4 +340,79 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
       ),
     );
   }
+
+  Widget _buildAllImages(BuildContext context) {
+  return GridView.builder(
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: 2,
+      crossAxisSpacing: 8,
+      mainAxisSpacing: 8,
+      childAspectRatio: 1,
+    ),
+    itemCount: _imageUrls.length,
+    itemBuilder: (context, index) {
+      return Stack(
+        alignment: Alignment.topRight,
+        children: [
+          Container(
+            width: double.infinity,
+            height: double.infinity,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                _imageUrls[index],
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: Colors.grey[300],
+                  child: const Icon(Icons.broken_image),
+                ),
+              ),
+            ),
+          ),
+          if (isEditing)
+            Positioned(
+              top: 4,
+              right: 4,
+              child: _isDeletingImage && _deletingImageUrl == _imageUrls[index]
+                  ? Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.8),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.red,
+                        ),
+                      ),
+                    )
+                  : Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.6),
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.close,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                        padding: const EdgeInsets.all(4),
+                        constraints: const BoxConstraints(),
+                        onPressed: () async {
+                          await _deleteImage(_imageUrls[index]);
+                        },
+                      ),
+                    ),
+            ),
+        ],
+      );
+    },
+  );
+}
 }

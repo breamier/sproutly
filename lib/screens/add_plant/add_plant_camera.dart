@@ -262,8 +262,9 @@ class _AddPlantCameraState extends State<AddPlantCamera>
   }
 
   Widget _buildPreviewScreen() {
-    File? imageFile =
-        _capturedImage != null ? File(_capturedImage!.path) : _pickedImage;
+    File? imageFile = _capturedImage != null
+        ? File(_capturedImage!.path)
+        : _pickedImage;
 
     return Column(
       children: [
@@ -299,14 +300,13 @@ class _AddPlantCameraState extends State<AddPlantCamera>
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child:
-                  imageFile != null
-                      ? Image.file(
-                        imageFile,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                      )
-                      : const SizedBox(),
+              child: imageFile != null
+                  ? Image.file(
+                      imageFile,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                    )
+                  : const SizedBox(),
             ),
           ),
         ),
@@ -438,8 +438,9 @@ class _AddPlantCameraState extends State<AddPlantCamera>
     img.Image? original = img.decodeImage(bytes);
     if (original == null) return imageFile;
 
-    int size =
-        original.width < original.height ? original.width : original.height;
+    int size = original.width < original.height
+        ? original.width
+        : original.height;
     int offsetX = (original.width - size) ~/ 2;
     int offsetY = (original.height - size) ~/ 2;
 
@@ -460,8 +461,9 @@ class _AddPlantCameraState extends State<AddPlantCamera>
   }
 
   void _continueToForm() async {
-    File? imageFile =
-        _capturedImage != null ? File(_capturedImage!.path) : _pickedImage;
+    File? imageFile = _capturedImage != null
+        ? File(_capturedImage!.path)
+        : _pickedImage;
 
     if (imageFile != null) {
       File croppedImage = await cropToSquare(imageFile);
@@ -484,7 +486,7 @@ class _AddPlantCameraState extends State<AddPlantCamera>
       } else if (widget.onImageSelected != null) {
         widget.onImageSelected!(croppedImage);
         await cameraController?.dispose();
-        Navigator.pop(context); // Go back to journal entry screen
+        Navigator.pop(context, croppedImage); // Go back to journal entry screen
       }
     } else {
       setState(() {

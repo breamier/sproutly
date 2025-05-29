@@ -55,6 +55,16 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
     });
   }
 
+  void _deletePlant(String plantId, String plantName) {
+    // Just show a simple message for now
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Delete clicked for $plantName'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     const Color oliveTitleColor = Color(0xFF747822);
@@ -67,15 +77,27 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 24),
-              Text(
-                'Your Plants',
-                style: TextStyle(
-                  fontFamily: 'Curvilingus',
-                  fontSize: 38,
-                  color: oliveTitleColor,
-                  fontWeight: FontWeight.bold,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Your Plants',
+                    style: TextStyle(
+                      fontFamily: 'Curvilingus',
+                      fontSize: 38,
+                      color: oliveTitleColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => _deletePlant('', 'Your Plants'),
+                    child: Icon(
+                      Icons.delete,
+                      color: oliveTitleColor,
+                      size: 24,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               // Search bar
@@ -210,6 +232,7 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
             const SizedBox(height: 8),
             Text(
               plant.plantName,
+              textAlign: TextAlign.center, 
               style: const TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 20,
@@ -219,6 +242,7 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
             ),
             Text(
               plant.type ?? '',
+              textAlign: TextAlign.center, 
               style: const TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 16,

@@ -6,6 +6,8 @@ import '../widgets/navbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sproutly/screens/dev_tools.dart';
 import 'package:sproutly/screens/login_register.dart';
+import 'package:sproutly/screens/add_plant/add_plant_camera.dart'; 
+import 'package:sproutly/screens/reminders_screen.dart';
 import 'dart:async';
 
 class DashboardScreen extends StatelessWidget {
@@ -129,7 +131,20 @@ class DashboardScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text("Today's Reminders", style: headingFont),
-                  Text("See all", style: bodyFont.copyWith(color: Colors.grey)),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RemindersScreen(),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      "See all", 
+                      style: bodyFont.copyWith(color: Colors.grey),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -311,7 +326,6 @@ class _TipsWidgetState extends State<TipsWidget> {
         curve: Curves.easeInOut,
       );
     }
-    // Resume auto-scroll after 3 seconds of user interaction
     Timer(const Duration(seconds: 3), () {
       if (mounted) _resumeAutoScroll(tips);
     });

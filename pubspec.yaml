@@ -50,6 +50,11 @@ dependencies:
   image: ^4.5.4
   flutter_dotenv: ^5.2.1
   crypto: ^3.0.6
+  flutter_launcher_icons: ^0.14.3
+
+flutter_icons:
+  android: true
+  image_path: "assets/logo.png"
 
 dev_dependencies:
   flutter_test:

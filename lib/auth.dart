@@ -21,10 +21,23 @@ class Auth {
   }
 
   Future<void> createUserWithEmailAndPassword(
+    String username,
     String email,
     String password,
   ) async {
     try {
+      // check if username already exists
+      final query =
+          await FirebaseFirestore.instance
+              .collection('Users')
+              .where('username', isEqualTo: username)
+              .limit(1)
+              .get();
+
+      if (query.docs.isNotEmpty) {
+        throw Exception('Username already taken');
+      }
+
       UserCredential userCredential = await _firebaseAuth
           .createUserWithEmailAndPassword(email: email, password: password);
       // Add user to Firestore
@@ -34,7 +47,7 @@ class Auth {
           .set({
             'email': email,
             'createdAt': FieldValue.serverTimestamp(),
-            // 'name' : name, or more fields
+            'username': username,
           });
     } catch (e) {
       debugPrint('User creation failed: $e');

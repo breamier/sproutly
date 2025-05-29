@@ -12,7 +12,6 @@ import 'package:sproutly/screens/settings/settings_screen.dart';
 // import 'package:provider/provider.dart';
 // import 'package:permission_handler/permission_handler.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:sproutly/widget_tree.dart';
 
 //services
 import 'package:sproutly/services/database_service.dart';

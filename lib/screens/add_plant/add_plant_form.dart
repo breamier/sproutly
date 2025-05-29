@@ -26,6 +26,13 @@ class _AddNewPlantState extends State<AddNewPlant> {
   String? _selectedSunlight;
   String? _selectedCareLevel;
 
+  // Error messages for validation
+  String? _nameError;
+  String? _typeError;
+  String? _waterError;
+  String? _sunlightError;
+  String? _careError;
+
   // cache dropdown options to avoid fetching over and over again
   late final Future<List<String>> _typeOptions;
   late final Future<List<String>> _waterOptions;
@@ -60,11 +67,33 @@ class _AddNewPlantState extends State<AddNewPlant> {
       _selectedCareLevel = null;
       _isSaving = false;
       _imageUrl = null;
+      _nameError = null;
+      _typeError = null;
+      _waterError = null;
+      _sunlightError = null;
+      _careError = null;
     });
   }
 
+  bool _validateForm() {
+    bool isValid = true;
+    setState(() {
+      _nameError = _nameController.text.trim().isEmpty ? 'Please enter plant name' : null;
+      _typeError = _selectedType == null ? 'Please choose an option' : null;
+      _waterError = _selectedWater == null ? 'Please choose an option' : null;
+      _sunlightError = _selectedSunlight == null ? 'Please choose an option' : null;
+      _careError = _selectedCareLevel == null ? 'Please choose an option' : null;
+    });
+
+    if (_nameError != null || _typeError != null || _waterError != null || _sunlightError != null || _careError != null) {
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
   Future<void> _submitForm() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_validateForm()) return;
 
     setState(() => _isSaving = true);
 
@@ -114,6 +143,7 @@ class _AddNewPlantState extends State<AddNewPlant> {
     required String label,
     required String iconPath,
     required ValueChanged<String?> onChanged,
+    required String? errorText,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,69 +177,124 @@ class _AddNewPlantState extends State<AddNewPlant> {
                 height: 56,
                 decoration: BoxDecoration(
                   color: const Color(0xFFF8F9FA),
-                  border: Border.all(color: const Color(0xFF747822), width: 2),
+                  border: Border.all(
+                    color: errorText != null ? Colors.red : const Color(0xFF747822), 
+                    width: 2
+                  ),
                   borderRadius: BorderRadius.circular(28),
                 ),
-                child: const Center(child: CircularProgressIndicator()),
+                child: const Center(child: LinearProgressIndicator()),
               );
             }
+
             if (snapshot.hasError || !snapshot.hasData) {
               return Container(
                 height: 56,
                 decoration: BoxDecoration(
                   color: const Color(0xFFF8F9FA),
-                  border: Border.all(color: const Color(0xFF8B9D3A), width: 2),
+                  border: Border.all(
+                    color: errorText != null ? Colors.red : const Color(0xFF8B9D3A), 
+                    width: 2
+                  ),
                   borderRadius: BorderRadius.circular(28),
                 ),
                 child: const Center(child: Text('Failed to load options')),
               );
             }
+
             return Container(
               decoration: BoxDecoration(
                 color: const Color(0xFFF8F9FA),
-                border: Border.all(color: const Color(0xFF8C8F3E), width: 2),
+                border: Border.all(
+                  color: errorText != null ? Colors.red : const Color(0xFF8C8F3E), 
+                  width: 2
+                ),
                 borderRadius: BorderRadius.circular(28),
               ),
               child: DropdownButtonHideUnderline(
-                child: DropdownButtonFormField<String>(
+                child: DropdownButton<String>(
                   value: value,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 16,
+                  hint: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    child: Text(
+                      'Select $label',
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
-                  hint: Text(
-                    'Select $label',
-                    style: const TextStyle(color: Colors.grey, fontSize: 16),
+                  icon: const Padding(
+                    padding: EdgeInsets.only(right: 20),
+                    child: Icon(
+                      Icons.keyboard_arrow_down,
+                      color: Color(0xFF747822),
+                      size: 24,
+                    ),
                   ),
-                  icon: const Icon(
-                    Icons.keyboard_arrow_down,
+                  isExpanded: true,
+                  dropdownColor: Colors.white,
+                  style: const TextStyle(
                     color: Color(0xFF747822),
-                    size: 24,
+                    fontSize: 16,
                   ),
-                  items:
-                      snapshot.data!
-                          .map(
-                            (option) => DropdownMenuItem(
-                              value: option,
-                              child: Text(
-                                option,
-                                style: const TextStyle(fontSize: 16),
+                  items: snapshot.data!
+                      .map(
+                        (option) => DropdownMenuItem(
+                          value: option,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Text(
+                              option,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Color(0xFF747822),
                               ),
                             ),
-                          )
-                          .toList(),
-                  validator:
-                      (value) =>
-                          value == null ? 'Please choose an option' : null,
-                  onChanged: onChanged,
+                          ),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (newValue) {
+                    onChanged(newValue);
+                    // Clear error when user selects an option
+                    setState(() {
+                      if (label == 'Type') _typeError = null;
+                      if (label == 'Water') _waterError = null;
+                      if (label == 'Sunlight') _sunlightError = null;
+                      if (label == 'Care Level') _careError = null;
+                    });
+                  },
+                  selectedItemBuilder: (BuildContext context) {
+                    return snapshot.data!.map<Widget>((String item) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        child: Text(
+                          item,
+                          style: const TextStyle(
+                            color: Color(0xFF747822),
+                            fontSize: 16,
+                          ),
+                        ),
+                      );
+                    }).toList();
+                  },
                 ),
               ),
             );
           },
         ),
+        if (errorText != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8, left: 20),
+            child: Text(
+              errorText,
+              style: const TextStyle(
+                color: Colors.red,
+                fontSize: 12,
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -240,7 +325,7 @@ class _AddNewPlantState extends State<AddNewPlant> {
           ),
         ),
         title: Padding(
-          padding: const EdgeInsets.only(top: 8), // Add top padding to title
+          padding: const EdgeInsets.only(top: 8),
           child: const Text(
             'New Plant',
             style: TextStyle(
@@ -251,7 +336,7 @@ class _AddNewPlantState extends State<AddNewPlant> {
             ),
           ),
         ),
-        titleSpacing: 8, // Add spacing between leading and title
+        titleSpacing: 8,
         centerTitle: false,
       ),
       body: Form(
@@ -290,7 +375,7 @@ class _AddNewPlantState extends State<AddNewPlant> {
                     decoration: BoxDecoration(
                       color: const Color(0xFFF8F9FA),
                       border: Border.all(
-                        color: const Color(0xFF8C8F3E),
+                        color: _nameError != null ? Colors.red : const Color(0xFF8C8F3E),
                         width: 2,
                       ),
                       borderRadius: BorderRadius.circular(28),
@@ -306,14 +391,31 @@ class _AddNewPlantState extends State<AddNewPlant> {
                         hintText: 'Enter plant name',
                         hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
                       ),
-                      style: const TextStyle(fontSize: 16),
-                      validator:
-                          (value) =>
-                              value?.isEmpty ?? true
-                                  ? 'Please enter plant name'
-                                  : null,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF747822),
+                      ),
+                      onChanged: (value) {
+                        // Clear error when user types
+                        if (_nameError != null && value.trim().isNotEmpty) {
+                          setState(() {
+                            _nameError = null;
+                          });
+                        }
+                      },
                     ),
                   ),
+                  if (_nameError != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8, left: 20),
+                      child: Text(
+                        _nameError!,
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
                 ],
               ),
               const SizedBox(height: 24),
@@ -325,6 +427,7 @@ class _AddNewPlantState extends State<AddNewPlant> {
                 label: 'Type',
                 iconPath: 'assets/plant_icon.png',
                 onChanged: (value) => setState(() => _selectedType = value),
+                errorText: _typeError,
               ),
               const SizedBox(height: 24),
 
@@ -335,6 +438,7 @@ class _AddNewPlantState extends State<AddNewPlant> {
                 label: 'Water',
                 iconPath: 'assets/water_icon.png',
                 onChanged: (value) => setState(() => _selectedWater = value),
+                errorText: _waterError,
               ),
               const SizedBox(height: 24),
 
@@ -345,6 +449,7 @@ class _AddNewPlantState extends State<AddNewPlant> {
                 label: 'Sunlight',
                 iconPath: 'assets/light_icon.png',
                 onChanged: (value) => setState(() => _selectedSunlight = value),
+                errorText: _sunlightError,
               ),
               const SizedBox(height: 24),
 
@@ -354,8 +459,8 @@ class _AddNewPlantState extends State<AddNewPlant> {
                 value: _selectedCareLevel,
                 label: 'Care Level',
                 iconPath: 'assets/care_icon.png',
-                onChanged:
-                    (value) => setState(() => _selectedCareLevel = value),
+                onChanged: (value) => setState(() => _selectedCareLevel = value),
+                errorText: _careError,
               ),
               const SizedBox(height: 40),
 
@@ -415,3 +520,4 @@ class _AddNewPlantState extends State<AddNewPlant> {
     );
   }
 }
+

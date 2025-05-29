@@ -16,6 +16,9 @@ import 'services/notification_service.dart';
 //import 'add_plant.dart';
 // import 'package:provider/provider.dart';
 
+// cloudinary purposes
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 Future<void> main() async {
   // initialize database
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,6 +35,9 @@ Future<void> main() async {
   // initialize notification
   await NotiService().initNotification();
   // Initialize background notification handler
+
+  // load environment variables from .env file
+  await dotenv.load(fileName: ".env");
 
   runApp(
     MultiProvider(

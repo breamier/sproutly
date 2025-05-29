@@ -70,8 +70,31 @@ class Plant {
       'careLevel': careLevel,
       'addedOn': addedOn,
       if (type != null) 'type': type,
-      if (img != null) 'img': img,
+      'img': img,
     };
+  }
+
+  // Add this copyWith method
+  Plant copyWith({
+    String? id,
+    String? plantName,
+    String? water,
+    String? sunlight,
+    String? careLevel,
+    Timestamp? addedOn,
+    String? type,
+    String? img,
+  }) {
+    return Plant(
+      id: id ?? this.id,
+      plantName: plantName ?? this.plantName,
+      water: water ?? this.water,
+      sunlight: sunlight ?? this.sunlight,
+      careLevel: careLevel ?? this.careLevel,
+      addedOn: addedOn ?? this.addedOn,
+      type: type ?? this.type,
+      img: img ?? this.img,
+    );
   }
 }
 
@@ -82,12 +105,11 @@ class Plants {
 
   factory Plants.fromJson(List<Map<String, Object?>> json) {
     return Plants(
-      plantList:
-          json
-              .asMap()
-              .entries
-              .map((e) => Plant.fromJson(e.value, e.key.toString()))
-              .toList(),
+      plantList: json
+          .asMap()
+          .entries
+          .map((e) => Plant.fromJson(e.value, e.key.toString()))
+          .toList(),
     );
   }
 }

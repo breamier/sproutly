@@ -1,8 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:sproutly/models/plant.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sproutly/models/plant_issue.dart';
 import 'package:sproutly/models/plant_journal_entry.dart';
+
+import '../cloudinary/delete_image.dart';
 
 const String USERS_COLLECTION_REF = "Users";
 const String plantCategoriesRef = "plants-categories";
@@ -22,8 +25,8 @@ class DatabaseService {
         .doc(user.uid)
         .collection('plants')
         .withConverter<Plant>(
-          fromFirestore:
-              (snapshots, _) => Plant.fromJson(snapshots.data()!, snapshots.id),
+          fromFirestore: (snapshots, _) =>
+              Plant.fromJson(snapshots.data()!, snapshots.id),
           toFirestore: (plant, _) => plant.toJson(),
         );
   }
@@ -54,8 +57,8 @@ class DatabaseService {
         .doc(plantId)
         .collection('plant_issues')
         .withConverter<PlantIssue>(
-          fromFirestore:
-              (snap, _) => PlantIssue.fromJson(snap.data()!, snap.id),
+          fromFirestore: (snap, _) =>
+              PlantIssue.fromJson(snap.data()!, snap.id),
           toFirestore: (issue, _) => issue.toJson(),
         );
   }
@@ -72,8 +75,8 @@ class DatabaseService {
         .doc(plantId)
         .collection('plant_journal')
         .withConverter<PlantJournalEntry>(
-          fromFirestore:
-              (snap, _) => PlantJournalEntry.fromJson(snap.data()!, snap.id),
+          fromFirestore: (snap, _) =>
+              PlantJournalEntry.fromJson(snap.data()!, snap.id),
           toFirestore: (issue, _) => issue.toJson(),
         );
   }
@@ -87,8 +90,13 @@ class DatabaseService {
     _plantsRef.add(plant);
   }
 
-  void updatePlant(String plantId, Plant plant) {
-    _plantsRef.doc(plantId).update(plant.toJson());
+  Future<void> updatePlant(String userId, String plantId, Plant plant) async {
+    await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(userId)
+        .collection('plants')
+        .doc(plantId)
+        .update(plant.toJson());
   }
 
   void deletePlant(String plantId) {
@@ -155,11 +163,10 @@ class DatabaseService {
   // fetching all plants-categories values in firestore
   Future<List<String>> getDropdownOptions(String fieldPath) async {
     try {
-      final doc =
-          await _firestore
-              .collection(plantCategoriesRef)
-              .doc(categoriesIdRef)
-              .get();
+      final doc = await _firestore
+          .collection(plantCategoriesRef)
+          .doc(categoriesIdRef)
+          .get();
 
       if (!doc.exists) return [];
 
@@ -194,5 +201,102 @@ class DatabaseService {
       'imageUrl': imageUrl,
       'timestamp': FieldValue.serverTimestamp(),
     });
+  }
+
+  // plant profile services
+
+  Future<void> updatePlantImage(
+    String userId,
+    String plantId,
+    String? imgUrl,
+  ) async {
+    print(
+      'Updating Firestore image. userId: $userId, plantId: $plantId, imgUrl: $imgUrl',
+    );
+    try {
+      await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(userId)
+          .collection('plants')
+          .doc(plantId)
+          .update({'img': imgUrl});
+      print('Firestore image update succeeded');
+    } catch (e) {
+      print('Firestore image update failed: $e');
+    }
+  }
+
+  Future<Plant?> getPlantProfileById(String userId, String plantId) async {
+    final doc = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(userId)
+        .collection('plants')
+        .doc(plantId)
+        .get();
+    if (doc.exists && doc.data() != null) {
+      return Plant.fromJson(doc.data()!, doc.id);
+    }
+    return null;
+  }
+
+  // delete user data
+
+  Future<void> deleteAllUserPlants() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) throw Exception('No user logged in');
+
+    final plantsRef = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(user.uid)
+        .collection('plants');
+
+    final plantDocs = await plantsRef.get();
+
+    for (var plantDoc in plantDocs.docs) {
+      final plantData = plantDoc.data();
+      // Delete plant's image in Cloudinary
+      final plantImgUrl = plantData['img'] as String?;
+      if (plantImgUrl != null && plantImgUrl.isNotEmpty) {
+        try {
+          final publicId = extractCloudinaryPublicId(plantImgUrl);
+          await deleteImageFromCloudinary(publicId);
+        } catch (e) {
+          print("Failed to delete plant image: $e");
+        }
+      }
+
+      // Delete all plant_issues subcollection docs
+      final issuesRef = plantDoc.reference.collection('plant_issues');
+      final issuesSnapshot = await issuesRef.get();
+      for (var issueDoc in issuesSnapshot.docs) {
+        await issueDoc.reference.delete();
+      }
+
+      // Delete all plant_journal subcollection
+      final journalRef = plantDoc.reference.collection('plant_journal');
+      final journalSnapshot = await journalRef.get();
+      for (var journalDoc in journalSnapshot.docs) {
+        await journalDoc.reference.delete();
+      }
+
+      // Delete the plant doc itself
+      await plantDoc.reference.delete();
+      debugPrint('Deleted plant: ${plantDoc.id}');
+    }
+  }
+
+  String extractCloudinaryPublicId(String url) {
+    Uri uri = Uri.parse(url);
+    List<String> segments = uri.pathSegments;
+    if (segments.isNotEmpty) {
+      String filename = segments.last;
+      int dot = filename.lastIndexOf('.');
+      if (dot > 0) {
+        return filename.substring(0, dot);
+      } else {
+        return filename;
+      }
+    }
+    throw Exception("Could not extract publicId from URL");
   }
 }

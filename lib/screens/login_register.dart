@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sproutly/screens/dashboard_screen.dart';
@@ -12,7 +14,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   String? errorMessage = '';
-  bool isLogin = true;
+  bool isLogin = true; // true for login, false for register
   bool isLoading = false;
 
   final TextEditingController emailController = TextEditingController();
@@ -39,7 +41,7 @@ class _LoginPageState extends State<LoginPage> {
       }
     } on FirebaseAuthException catch (e) {
       setState(() {
-        errorMessage = e.message;
+        errorMessage = 'Please check your email and password';
       });
     } finally {
       setState(() {
@@ -91,8 +93,23 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _title() {
     return const Text(
-      'Sproutly',
-      style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+      'Welcome Back!',
+      style: TextStyle(
+        fontSize: 30,
+        fontWeight: FontWeight.bold,
+        color: Color(0xFF4B5502),
+      ),
+    );
+  }
+
+  Widget _greeting(String text) {
+    return Text(
+      text,
+      style: const TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+        color: Color(0xFF4B5502),
+      ),
     );
   }
 
@@ -100,7 +117,7 @@ class _LoginPageState extends State<LoginPage> {
     return TextField(
       controller: controller,
       decoration: InputDecoration(labelText: title),
-      obscureText: title == 'password' || title == 'confirm password',
+      obscureText: title == 'Password' || title == 'Confirm Password',
     );
   }
 
@@ -150,24 +167,93 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: _title()),
-      body: Container(
-        height: double.infinity,
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            if (!isLogin) _entryField('username', usernameController),
-            _entryField('email', emailController),
-            _entryField('password', passwordController),
-            if (!isLogin)
-              _entryField('confirm password', confirmPasswordController),
-            _errorMessage(),
-            _submitButton(),
-            _loginOrRegisterButton(),
-          ],
+      resizeToAvoidBottomInset: true,
+      appBar: AppBar(
+        // title: _title(),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: SafeArea(
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Stack(
+            children: [
+              Container(
+                width: double.infinity,
+                height: double.infinity,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Color(0xFFF2EFEF),
+                      Color(0xFF8DAA36),
+                      Color(0xFF4B5502),
+                    ],
+                    begin: Alignment.topRight,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+              ),
+              // Blur effect
+              Positioned.fill(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 100, sigmaY: 100),
+                  child: Container(color: Colors.transparent),
+                ),
+              ),
+              SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 24,
+                ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 28,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.07),
+                        blurRadius: 18,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Image.asset(
+                        'assets/sproutly_logo.png',
+                        height: 140,
+                        width: 300,
+                      ),
+                      const SizedBox(height: 12),
+                      _greeting(
+                        isLogin ? 'Welcome Back!' : 'Let\'s Get Started!',
+                      ),
+                      if (!isLogin) _entryField('Username', usernameController),
+                      _entryField('Email', emailController),
+                      _entryField('Password', passwordController),
+                      if (!isLogin)
+                        _entryField(
+                          'Confirm Password',
+                          confirmPasswordController,
+                        ),
+                      const SizedBox(height: 8),
+                      _errorMessage(),
+                      const SizedBox(height: 16),
+                      SizedBox(width: double.infinity, child: _submitButton()),
+                      _loginOrRegisterButton(),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -32,6 +32,18 @@ class DatabaseService {
         );
   }
 
+  Future<String?> getCurrentUserName() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return null;
+    final doc =
+        await FirebaseFirestore.instance.collection('Users').doc(uid).get();
+    if (doc.exists) {
+      final data = doc.data();
+      return data?['username'] as String?;
+    }
+    return null;
+  }
+
   // DatabaseService() {
   //   if (user == null) {
   //     throw Exception('No user logged in');

@@ -26,8 +26,28 @@ class DashboardScreen extends StatelessWidget {
     }
   }
 
+  Widget _userNameWidget() {
+    return FutureBuilder<String?>(
+      future: DatabaseService().getCurrentUserName(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Text('Loading username...');
+        }
+        if (!snapshot.hasData || snapshot.data == null) {
+          return const Text('Username not found');
+        }
+        return Text('Username: ${snapshot.data!}');
+      },
+    );
+  }
+
   Widget _userUid() {
-    return Text(user?.email ?? 'User email');
+    return Column(
+      children: [
+        Text(user?.uid ?? 'User uid'),
+        Text(user?.email ?? 'User email'),
+      ],
+    );
   }
 
   Widget _signOutButton(BuildContext context) {
@@ -80,6 +100,7 @@ class DashboardScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _userNameWidget(),
               _userUid(),
               _signOutButton(context),
               const SizedBox(height: 24),

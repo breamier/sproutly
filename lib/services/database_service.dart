@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import 'package:sproutly/models/plant.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
+// models
 import 'package:sproutly/models/plant_issue.dart';
 import 'package:sproutly/models/plant_journal_entry.dart';
+import 'package:sproutly/models/plant.dart';
+import '../models/reminders.dart';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import '../cloudinary/delete_image.dart';
 
 const String USERS_COLLECTION_REF = "Users";
@@ -29,6 +32,17 @@ class DatabaseService {
               Plant.fromJson(snapshots.data()!, snapshots.id),
           toFirestore: (plant, _) => plant.toJson(),
         );
+  }
+
+  CollectionReference<Map<String, dynamic>> get _remindersRef {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('No user logged in');
+    }
+    return _firestore
+        .collection(USERS_COLLECTION_REF)
+        .doc(user.uid)
+        .collection('reminders');
   }
 
   // DatabaseService() {
@@ -293,5 +307,28 @@ class DatabaseService {
       }
     }
     throw Exception("Could not extract publicId from URL");
+  }
+
+  // reminders services ayyeee
+  Future<void> addReminder(Reminder reminder) async {
+    await _remindersRef.add(reminder.toMap());
+  }
+
+  Stream<List<Reminder>> getReminders() {
+    return _remindersRef.snapshots().map(
+      (snapshot) => snapshot.docs
+          .map((doc) => Reminder.fromMap(doc.data(), doc.id))
+          .toList(),
+    );
+  }
+
+  //TODO
+  Future<void> updateReminder(String reminderId, Reminder reminder) async {
+    await _remindersRef.doc(reminderId).update(reminder.toMap());
+  }
+
+  //TODO
+  Future<void> deleteReminder(String reminderId) async {
+    await _remindersRef.doc(reminderId).delete();
   }
 }

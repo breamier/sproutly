@@ -17,6 +17,8 @@ class _LoginPageState extends State<LoginPage> {
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
   Future<void> signInWithEmailAndPassword() async {
     setState(() {
@@ -50,6 +52,15 @@ class _LoginPageState extends State<LoginPage> {
       isLoading = true;
       errorMessage = '';
     });
+
+    if (passwordController.text != confirmPasswordController.text) {
+      setState(() {
+        errorMessage = "Passwords do not match.";
+        isLoading = false;
+      });
+      return;
+    }
+
     try {
       await Auth().createUserWithEmailAndPassword(
         emailController.text,
@@ -83,7 +94,7 @@ class _LoginPageState extends State<LoginPage> {
     return TextField(
       controller: controller,
       decoration: InputDecoration(labelText: title),
-      obscureText: title == 'password',
+      obscureText: title == 'password' || title == 'confirm password',
     );
   }
 
@@ -144,6 +155,8 @@ class _LoginPageState extends State<LoginPage> {
           children: <Widget>[
             _entryField('email', emailController),
             _entryField('password', passwordController),
+            if (!isLogin)
+              _entryField('confirm password', confirmPasswordController),
             _errorMessage(),
             _submitButton(),
             _loginOrRegisterButton(),

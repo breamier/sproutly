@@ -131,6 +131,7 @@ class _AddPlantCameraState extends State<AddPlantCamera>
 
   Widget _buildCameraScreen() {
     final double previewSize = MediaQuery.of(context).size.width - 48;
+    final double previewRatio = 1;
     return Column(
       children: [
         // Instructions
@@ -163,9 +164,15 @@ class _AddPlantCameraState extends State<AddPlantCamera>
                 ),
               ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: CameraPreview(cameraController!),
+            child: AspectRatio(
+              aspectRatio: 1 / previewRatio,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Transform.scale(
+                  scale: cameraController!.value.aspectRatio / previewRatio,
+                  child: Center(child: CameraPreview(cameraController!)),
+                ),
+              ),
             ),
           ),
         ),

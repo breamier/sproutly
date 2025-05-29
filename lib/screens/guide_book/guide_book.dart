@@ -1,54 +1,62 @@
 import 'package:flutter/material.dart';
-import 'package:sproutly/models/plant_category_item.dart';
-import 'package:sproutly/models/plant_category_model.dart';
-import 'package:sproutly/services/plant_data_service.dart';
+import '../../models/guidebook.dart';
+import 'plant_information_screen.dart';
 
 class GuideBookScreen extends StatefulWidget {
-  final List<PlantCategory>? categories;
-  
-  const GuideBookScreen({
-    super.key,
-    this.categories,
-  });
+  const GuideBookScreen({super.key});
 
   @override
   State<GuideBookScreen> createState() => _GuideBookScreenState();
 }
 
 class _GuideBookScreenState extends State<GuideBookScreen> {
-  late final TextEditingController _searchController;
-  late List<PlantCategory> _displayedCategories;
-  final _plantDataService = PlantDataService();
-  
+  final TextEditingController _searchController = TextEditingController();
+  List<GuideBook> _displayedGuides = [];
+  List<GuideBook> _allGuides = [];
+  bool _loading = true;
+
   @override
   void initState() {
     super.initState();
-    _searchController = TextEditingController();
-    _displayedCategories = widget.categories ?? _plantDataService.getDefaultCategories();
+    _fetchGuides();
   }
-  
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
+
+  Future<void> _fetchGuides() async {
+    setState(() => _loading = true);
+    final guides = await PlantGuidebook().fetchAllPlants();
+    setState(() {
+      _allGuides = guides;
+      _displayedGuides = guides;
+      _loading = false;
+    });
   }
-  
+
   void _onSearchChanged(String query) {
     setState(() {
       if (query.isEmpty) {
-        _displayedCategories = widget.categories ?? _plantDataService.getDefaultCategories();
+        _displayedGuides = _allGuides;
       } else {
-        _displayedCategories = _plantDataService.searchCategories(query);
+        _displayedGuides = _allGuides
+            .where(
+              (plant) => plant.name.toLowerCase().contains(query.toLowerCase()),
+            )
+            .toList();
       }
     });
   }
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final textColor = const Color(0xFF747822);
-    
+
     return Scaffold(
-      backgroundColor: Colors.white, 
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -66,11 +74,10 @@ class _GuideBookScreenState extends State<GuideBookScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              
               Container(
                 height: 50,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8E8D5), 
+                  color: const Color(0xFFE8E8D5),
                   borderRadius: BorderRadius.circular(25),
                   border: Border.all(color: textColor, width: 1.5),
                 ),
@@ -92,28 +99,64 @@ class _GuideBookScreenState extends State<GuideBookScreen> {
                     ),
                     Padding(
                       padding: const EdgeInsets.only(right: 16.0),
-                      child: Icon(
-                        Icons.search,
-                        color: textColor,
-                        size: 28,
-                      ),
+                      child: Icon(Icons.search, color: textColor, size: 28),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
-              
               Expanded(
-                child: ListView.separated(
-                  itemCount: _displayedCategories.length,
-                  separatorBuilder: (context, index) => _buildDivider(),
-                  itemBuilder: (context, index) {
-                    return PlantCategoryItem.fromModel(
-                      category: _displayedCategories[index],
-                      textColor: textColor,
-                    );
-                  },
-                ),
+                child: _loading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _displayedGuides.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No guidebook entries found',
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 18,
+                            color: textColor,
+                          ),
+                        ),
+                      )
+                    : ListView.separated(
+                        itemCount: _displayedGuides.length,
+                        separatorBuilder: (context, index) => _buildDivider(),
+                        itemBuilder: (context, index) {
+                          final guide = _displayedGuides[index];
+                          return ListTile(
+                            leading: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                guide.plantImage,
+                                width: 80,
+                                height: 100,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(Icons.local_florist),
+                              ),
+                            ),
+                            title: Text(
+                              guide.name,
+                              style: TextStyle(
+                                color: textColor,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 22,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      PlantInformationScreen(guide: guide),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
               ),
             ],
           ),
@@ -123,9 +166,6 @@ class _GuideBookScreenState extends State<GuideBookScreen> {
   }
 
   Widget _buildDivider() {
-    return const Divider(
-      color: Color(0xFFE0E0C0), 
-      thickness: 1.0,
-    );
+    return const Divider(color: Color(0xFFE0E0C0), thickness: 1.0);
   }
 }

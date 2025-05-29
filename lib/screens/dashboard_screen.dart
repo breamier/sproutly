@@ -230,12 +230,7 @@ class TipsWidget extends StatefulWidget {
 }
 
 class _TipsWidgetState extends State<TipsWidget> {
-  final List<String> tips = [
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-    'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut.',
-  ];
-
+  late Future<List<String>> tips;
   final PageController _pageController = PageController();
   int _currentPage = 0;
   Timer? _autoScrollTimer;
@@ -248,7 +243,7 @@ class _TipsWidgetState extends State<TipsWidget> {
   @override
   void initState() {
     super.initState();
-    _startAutoScroll();
+    tips = DatabaseService().getAllCareTips();
   }
 
   @override
@@ -258,7 +253,7 @@ class _TipsWidgetState extends State<TipsWidget> {
     super.dispose();
   }
 
-  void _startAutoScroll() {
+  void _startAutoScroll(List<String> tips) {
     _autoScrollTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
       if (mounted) {
         int nextPage = (_currentPage + 1) % tips.length;
@@ -275,12 +270,12 @@ class _TipsWidgetState extends State<TipsWidget> {
     _autoScrollTimer?.cancel();
   }
 
-  void _resumeAutoScroll() {
+  void _resumeAutoScroll(List<String> tips) {
     _autoScrollTimer?.cancel();
-    _startAutoScroll();
+    _startAutoScroll(tips);
   }
 
-  void _goToPrevious() {
+  void _goToPrevious(List<String> tips) {
     _stopAutoScroll();
     if (_currentPage > 0) {
       _pageController.previousPage(
@@ -297,11 +292,11 @@ class _TipsWidgetState extends State<TipsWidget> {
     }
     // Resume auto-scroll after 3 seconds of user interaction
     Timer(const Duration(seconds: 3), () {
-      if (mounted) _resumeAutoScroll();
+      if (mounted) _resumeAutoScroll(tips);
     });
   }
 
-  void _goToNext() {
+  void _goToNext(List<String> tips) {
     _stopAutoScroll();
     if (_currentPage < tips.length - 1) {
       _pageController.nextPage(
@@ -318,111 +313,133 @@ class _TipsWidgetState extends State<TipsWidget> {
     }
     // Resume auto-scroll after 3 seconds of user interaction
     Timer(const Duration(seconds: 3), () {
-      if (mounted) _resumeAutoScroll();
+      if (mounted) _resumeAutoScroll(tips);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        // Pause auto-scroll when user taps the widget
-        _stopAutoScroll();
-        Timer(const Duration(seconds: 3), () {
-          if (mounted) _resumeAutoScroll();
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF2EFEF),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            // Header with icon
-            Center(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.lightbulb_outline, color: Color(0xFF4B5502)),
-                  const SizedBox(width: 8),
-                  Text('Tips', style: DashboardScreen.headingFont),
-                ],
-              ),
+    return FutureBuilder<List<String>>(
+      future: tips,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(child: Text('No tips available.'));
+        }
+        final tips = snapshot.data!;
+        // Start auto-scroll after tips are loaded
+        if (_autoScrollTimer == null) {
+          _startAutoScroll(tips);
+        }
+        return GestureDetector(
+          onTap: () {
+            // Pause auto-scroll when user taps the widget
+            _stopAutoScroll();
+            Timer(const Duration(seconds: 3), () {
+              if (mounted) _resumeAutoScroll(tips);
+            });
+          },
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF2EFEF),
+              borderRadius: BorderRadius.circular(12),
             ),
-
-            const SizedBox(height: 16),
-
-            // Slider with arrows
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Column(
               children: [
-                // Left arrow
-                IconButton(
-                  onPressed: _goToPrevious,
-                  icon: const Icon(Icons.arrow_back_ios, size: 20),
-                  color: Colors.black,
-                ),
-
-                // Tip content
-                Expanded(
-                  child: SizedBox(
-                    height: 60,
-                    child: PageView.builder(
-                      controller: _pageController,
-                      itemCount: tips.length,
-                      onPageChanged: (index) {
-                        setState(() {
-                          _currentPage = index;
-                        });
-                      },
-                      itemBuilder: (context, index) {
-                        return Center(
-                          child: Text(
-                            tips[index],
-                            style: bodyFont,
-                            textAlign: TextAlign.center,
-                          ),
-                        );
-                      },
-                    ),
+                // Header with icon
+                Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.lightbulb_outline,
+                        color: Color(0xFF4B5502),
+                      ),
+                      const SizedBox(width: 8),
+                      Text('Tips', style: DashboardScreen.headingFont),
+                    ],
                   ),
                 ),
 
-                // Right arrow
-                IconButton(
-                  onPressed: _goToNext,
-                  icon: const Icon(Icons.arrow_forward_ios, size: 20),
-                  color: Colors.black,
+                const SizedBox(height: 16),
+
+                // Slider with arrows
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Left arrow
+                    IconButton(
+                      onPressed: () => _goToPrevious(tips),
+                      icon: const Icon(Icons.arrow_back_ios, size: 20),
+                      color: Colors.black,
+                    ),
+
+                    // Tip content
+                    Expanded(
+                      child: SizedBox(
+                        height: 100,
+                        child: PageView.builder(
+                          controller: _pageController,
+                          itemCount: tips.length,
+                          onPageChanged: (index) {
+                            setState(() {
+                              _currentPage = index;
+                            });
+                          },
+                          itemBuilder: (context, index) {
+                            return Center(
+                              child: Text(
+                                tips[index],
+                                style: bodyFont,
+                                textAlign: TextAlign.center,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+
+                    // Right arrow
+                    IconButton(
+                      onPressed: () => _goToNext(tips),
+                      icon: const Icon(Icons.arrow_forward_ios, size: 20),
+                      color: Colors.black,
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+                // Dot indicator
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(tips.length, (index) {
+                      return Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color:
+                              _currentPage == index
+                                  ? const Color(0xFF4B5502)
+                                  : Colors.grey[400],
+                        ),
+                      );
+                    }),
+                  ),
                 ),
               ],
             ),
-
-            const SizedBox(height: 12),
-
-            // Dot indicator
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(tips.length, (index) {
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color:
-                        _currentPage == index
-                            ? const Color(0xFF4B5502)
-                            : Colors.grey[400],
-                  ),
-                );
-              }),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

@@ -172,6 +172,27 @@ class DatabaseService {
     ).doc(journalId).update(updatedEntry.toJson());
   }
 
+  // ----------------------- CARE TIPS -----------------------
+  Future<List<String>> getAllCareTips() async {
+    try {
+      final snapshot = await _firestore.collection(guidebookRef).get();
+      final allTips = <String>[];
+
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        if (data.containsKey('care_tip') && data['care_tip'] is List) {
+          final tips = List<String>.from(data['care_tip']);
+          allTips.addAll(tips);
+        }
+      }
+      return allTips;
+    } catch (e) {
+      print('Error fetching care tips: $e');
+      return [];
+    }
+  }
+
+  // ----------------------- PLANT CATEGORIES -----------------------
   // fetching all plants-categories values in firestore
   Future<List<String>> getDropdownOptions(String fieldPath) async {
     try {
@@ -228,6 +249,7 @@ class DatabaseService {
     }
   }
 
+  // ----------------------- SAVE IMAGE TO FIRESTORE -----------------------
   Future<void> saveImageUrlToFirestore(String imageUrl) async {
     await FirebaseFirestore.instance.collection('images').add({
       'imageUrl': imageUrl,
@@ -318,6 +340,7 @@ class DatabaseService {
     }
   }
 
+  // ----------------------- CLOUDINARY -----------------------
   String extractCloudinaryPublicId(String url) {
     Uri uri = Uri.parse(url);
     List<String> segments = uri.pathSegments;

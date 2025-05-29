@@ -111,7 +111,7 @@ class _GuideBookScreenState extends State<GuideBookScreen> {
                     : _displayedGuides.isEmpty
                     ? Center(
                         child: Text(
-                          'No guidebook entries found',
+                          'No plant type found',
                           style: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: 18,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sproutly/models/plant.dart';
+import 'package:sproutly/screens/growth_journal/growthjournal_entries_screen.dart';
 import 'package:sproutly/services/database_service.dart';
 import 'plant_issues.dart';
 
@@ -19,7 +20,10 @@ class PlantProfileScreen extends StatelessWidget {
           children: [
             // Fixed App Bar
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 20.0,
+              ),
               child: Row(
                 children: [
                   Container(
@@ -28,10 +32,7 @@ class PlantProfileScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: const Color(0xFFE8E8D5),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: oliveTitleColor,
-                        width: 1.5,
-                      ),
+                      border: Border.all(color: oliveTitleColor, width: 1.5),
                     ),
                     child: IconButton(
                       icon: const Icon(
@@ -57,7 +58,7 @@ class PlantProfileScreen extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             // Scrollable Content
             Expanded(
               child: FutureBuilder<Plant?>(
@@ -88,7 +89,7 @@ class PlantProfileScreen extends StatelessWidget {
                                 child:
                                     plant.img != null && plant.img!.isNotEmpty
                                         ? Image.network(
-                                          "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSYlCenUZLlhRjnV551Bi8JuJvSXjV_ITnmZh6TdWn6887DisIYpaqIXgFmONuZzY2HpfeHGjE1KVlvYPS0L3LHnw",
+                                          plant.img!,
                                           fit: BoxFit.cover,
                                           errorBuilder:
                                               (context, error, stackTrace) =>
@@ -149,7 +150,10 @@ class PlantProfileScreen extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(25),
-                              border: Border.all(color: oliveTitleColor, width: 1.5),
+                              border: Border.all(
+                                color: oliveTitleColor,
+                                width: 1.5,
+                              ),
                             ),
                             child: Row(
                               children: [
@@ -204,7 +208,8 @@ class PlantProfileScreen extends StatelessWidget {
                               showDialog(
                                 context: context,
                                 builder:
-                                    (context) => PlantIssuesScreen(plantId: plant.id),
+                                    (context) =>
+                                        PlantIssuesScreen(plantId: plant.id),
                               );
                             },
                           ),
@@ -216,9 +221,13 @@ class PlantProfileScreen extends StatelessWidget {
                             label: 'Growth Journal',
                             iconAsset: 'assets/journal_icon.png',
                             onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Growth Journal tapped'),
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => GrowthJournalEntriesScreen(
+                                        plantId: plant.id,
+                                      ),
                                 ),
                               );
                             },

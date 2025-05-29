@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sproutly/models/plant.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sproutly/models/plant_issue.dart';
+import 'package:sproutly/models/plant_journal_entry.dart';
 
 const String USERS_COLLECTION_REF = "Users";
 const String plantCategoriesRef = "plants-categories";
@@ -59,6 +60,24 @@ class DatabaseService {
         );
   }
 
+  CollectionReference<PlantJournalEntry> _plantJournalRef(String plantId) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('No user logged in');
+    }
+    return _firestore
+        .collection(USERS_COLLECTION_REF)
+        .doc(user.uid)
+        .collection('plants')
+        .doc(plantId)
+        .collection('plant_journal')
+        .withConverter<PlantJournalEntry>(
+          fromFirestore:
+              (snap, _) => PlantJournalEntry.fromJson(snap.data()!, snap.id),
+          toFirestore: (issue, _) => issue.toJson(),
+        );
+  }
+
   // ----------------------- PLANTS -----------------------
   Stream<QuerySnapshot> getPlants() {
     return _plantsRef.snapshots();
@@ -104,6 +123,28 @@ class DatabaseService {
 
   Future<void> deletePlantIssue(String plantId, String issueId) async {
     await _plantIssueRef(plantId).doc(issueId).delete();
+  }
+
+  // ----------------------- GROWTH JOURNAL -----------------------
+  Future<void> addJournalEntry(
+    String plantId,
+    PlantJournalEntry plantJournalEntry,
+  ) async {
+    await _plantJournalRef(plantId).add(plantJournalEntry);
+  }
+
+  Stream<QuerySnapshot<PlantJournalEntry>> getJournalEntries(String plantId) {
+    return _plantJournalRef(plantId).snapshots();
+  }
+
+  Future<void> updateJournalEntry(
+    String plantId,
+    String journalId,
+    PlantJournalEntry updatedEntry,
+  ) async {
+    await _plantJournalRef(
+      plantId,
+    ).doc(journalId).update(updatedEntry.toJson());
   }
 
   // fetching all plants-categories values in firestore

@@ -72,7 +72,7 @@ class SproutlyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-       home: DashboardScreen(),
+      home: WidgetTree(),
     );
   }
 }

@@ -1,7 +1,6 @@
 import 'package:sproutly/auth.dart';
 import 'package:sproutly/screens/dashboard_screen.dart';
 import 'package:sproutly/screens/login_register.dart';
-
 import 'package:flutter/material.dart';
 
 class WidgetTree extends StatefulWidget {
@@ -17,6 +16,7 @@ class _WidgetTreeState extends State<WidgetTree> {
     return StreamBuilder(
       stream: Auth().authStateChanges,
       builder: (context, snapshot) {
+        print('Auth snapshot: ${snapshot.data}');
         if (snapshot.connectionState == ConnectionState.active) {
           final user = snapshot.data;
           if (user == null) {

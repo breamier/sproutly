@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:sproutly/main.dart';
+import 'package:intl/intl.dart';
+import 'package:sproutly/models/plant_journal_entry.dart';
+import 'package:sproutly/services/database_service.dart';
 
 const Color oliveGreen = Color(0xFF747822);
 
@@ -25,18 +27,9 @@ const TextStyle bodyFont = TextStyle(
 );
 
 class GrowthJournalIndivEntry extends StatefulWidget {
-  final String title;
-  final String description;
-  final String imagePath;
-  final String date;
+  final PlantJournalEntry entry;
 
-  const GrowthJournalIndivEntry({
-    super.key,
-    required this.title,
-    required this.description,
-    required this.imagePath,
-    required this.date,
-  });
+  const GrowthJournalIndivEntry({super.key, required this.entry});
 
   @override
   State<GrowthJournalIndivEntry> createState() =>
@@ -51,8 +44,8 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: widget.title);
-    _descriptionController = TextEditingController(text: widget.description);
+    _titleController = TextEditingController(text: widget.entry.title);
+    _descriptionController = TextEditingController(text: widget.entry.notes);
   }
 
   @override
@@ -131,23 +124,23 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
               // Editable Title
               isEditing
                   ? TextField(
-                      controller: _titleController,
-                      style: headingFont.copyWith(fontSize: screenWidth * 0.05),
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Title',
-                      ),
-                    )
-                  : Text(
-                      _titleController.text,
-                      style: headingFont.copyWith(fontSize: screenWidth * 0.05),
+                    controller: _titleController,
+                    style: headingFont.copyWith(fontSize: screenWidth * 0.05),
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Title',
                     ),
+                  )
+                  : Text(
+                    _titleController.text,
+                    style: headingFont.copyWith(fontSize: screenWidth * 0.05),
+                  ),
 
               const SizedBox(height: 16),
 
               // Image
-              Image.asset(
-                widget.imagePath,
+              Image.network(
+                widget.entry.imageUrls.first,
                 width: screenWidth * 0.3,
                 fit: BoxFit.contain,
               ),
@@ -171,7 +164,9 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
                       children: [
                         Text('Notes', style: headingFont),
                         Text(
-                          widget.date,
+                          DateFormat(
+                            'MMMM d, y, h:mm a',
+                          ).format(widget.entry.createdAt.toDate()),
                           style: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: screenWidth * 0.03,
@@ -185,22 +180,22 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
                     // Editable or Static Description
                     isEditing
                         ? TextField(
-                            controller: _descriptionController,
-                            style: bodyFont.copyWith(
-                              fontSize: screenWidth * 0.035,
-                            ),
-                            maxLines: null,
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              hintText: 'Write your journal entry...',
-                            ),
-                          )
-                        : Text(
-                            _descriptionController.text,
-                            style: bodyFont.copyWith(
-                              fontSize: screenWidth * 0.035,
-                            ),
+                          controller: _descriptionController,
+                          style: bodyFont.copyWith(
+                            fontSize: screenWidth * 0.035,
                           ),
+                          maxLines: null,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: 'Write your journal entry...',
+                          ),
+                        )
+                        : Text(
+                          _descriptionController.text,
+                          style: bodyFont.copyWith(
+                            fontSize: screenWidth * 0.035,
+                          ),
+                        ),
                   ],
                 ),
               ),
@@ -220,7 +215,37 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
                       vertical: 12,
                     ),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
+                    final title = _titleController.text.trim();
+                    final notes = _descriptionController.text.trim();
+                    print("Title: $title, Notes: $notes");
+                    // Validate input
+
+                    if (title.isEmpty && notes.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Please fill in the fields."),
+                        ),
+                      );
+                      return;
+                    }
+
+                    final updatedEntry = PlantJournalEntry(
+                      id: widget.entry.id,
+                      plantId: widget.entry.plantId,
+                      title: title,
+                      notes: notes,
+                      createdAt: widget.entry.createdAt,
+                      imageUrls: widget.entry.imageUrls,
+                    );
+
+                    final dbService = DatabaseService();
+                    await dbService.updateJournalEntry(
+                      widget.entry.plantId,
+                      widget.entry.id,
+                      updatedEntry,
+                    );
+
                     setState(() {
                       isEditing = false;
                     });

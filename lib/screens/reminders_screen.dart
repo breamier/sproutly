@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sproutly/main.dart';
 
 class RemindersScreen extends StatelessWidget {
   const RemindersScreen({super.key});
@@ -33,7 +32,10 @@ class RemindersScreen extends StatelessWidget {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 5.0,
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -50,12 +52,7 @@ class RemindersScreen extends StatelessWidget {
                     ),
                     child: InkWell(
                       onTap: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const SproutlyApp(),
-                          ),
-                        );
+                        Navigator.pop(context);
                       },
                       child: const Icon(
                         Icons.chevron_left,
@@ -72,7 +69,10 @@ class RemindersScreen extends StatelessWidget {
 
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20.0,
+                  vertical: 5.0,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

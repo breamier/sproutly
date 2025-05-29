@@ -7,7 +7,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 
 class AddPlantCamera extends StatefulWidget {
-  const AddPlantCamera({super.key});
+  final bool addPlant; // Flag to determine if it's for adding a plant
+  final void Function(File imageFile)? onImageSelected;
+
+  const AddPlantCamera({super.key, this.addPlant = true, this.onImageSelected});
 
   @override
   State<AddPlantCamera> createState() => _AddPlantCameraState();
@@ -53,10 +56,7 @@ class _AddPlantCameraState extends State<AddPlantCamera>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: _buildUI(),
-    );
+    return Scaffold(backgroundColor: Colors.white, body: _buildUI());
   }
 
   Widget _buildUI() {
@@ -71,7 +71,7 @@ class _AddPlantCameraState extends State<AddPlantCamera>
         children: [
           // Custom App Bar
           _buildAppBar(),
-          
+
           // Main Content
           Expanded(
             child: _showPreview ? _buildPreviewScreen() : _buildCameraScreen(),
@@ -92,10 +92,7 @@ class _AddPlantCameraState extends State<AddPlantCamera>
             decoration: BoxDecoration(
               color: const Color(0xFFE8E8D5),
               shape: BoxShape.circle,
-              border: Border.all(
-                color: const Color(0xFF747822),
-                width: 2,
-              ),
+              border: Border.all(color: const Color(0xFF747822), width: 2),
             ),
             child: IconButton(
               padding: EdgeInsets.zero,
@@ -149,7 +146,7 @@ class _AddPlantCameraState extends State<AddPlantCamera>
             textAlign: TextAlign.center,
           ),
         ),
-        
+
         // Camera Preview
         Expanded(
           child: Container(
@@ -170,7 +167,7 @@ class _AddPlantCameraState extends State<AddPlantCamera>
             ),
           ),
         ),
-        
+
         // Camera Controls
         Container(
           padding: const EdgeInsets.all(24),
@@ -189,7 +186,10 @@ class _AddPlantCameraState extends State<AddPlantCamera>
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(25),
-                        border: Border.all(color: const Color(0xFF747822), width: 2),
+                        border: Border.all(
+                          color: const Color(0xFF747822),
+                          width: 2,
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.1),
@@ -217,7 +217,7 @@ class _AddPlantCameraState extends State<AddPlantCamera>
                   ],
                 ),
               ),
-              
+
               // Camera Button
               GestureDetector(
                 onTap: _takePicture,
@@ -242,7 +242,7 @@ class _AddPlantCameraState extends State<AddPlantCamera>
                   ),
                 ),
               ),
-              
+
               // Spacer for symmetry
               const SizedBox(width: 60),
             ],
@@ -253,10 +253,9 @@ class _AddPlantCameraState extends State<AddPlantCamera>
   }
 
   Widget _buildPreviewScreen() {
-    File? imageFile = _capturedImage != null 
-        ? File(_capturedImage!.path) 
-        : _pickedImage;
-    
+    File? imageFile =
+        _capturedImage != null ? File(_capturedImage!.path) : _pickedImage;
+
     return Column(
       children: [
         // Instructions
@@ -273,7 +272,7 @@ class _AddPlantCameraState extends State<AddPlantCamera>
             textAlign: TextAlign.center,
           ),
         ),
-        
+
         // Image Preview
         Expanded(
           child: Container(
@@ -290,17 +289,18 @@ class _AddPlantCameraState extends State<AddPlantCamera>
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: imageFile != null 
-                  ? Image.file(
-                      imageFile,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                    )
-                  : const SizedBox(),
+              child:
+                  imageFile != null
+                      ? Image.file(
+                        imageFile,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                      )
+                      : const SizedBox(),
             ),
           ),
         ),
-        
+
         // Camera Icon (Satisfied with picture?)
         Container(
           margin: const EdgeInsets.symmetric(vertical: 16),
@@ -309,13 +309,9 @@ class _AddPlantCameraState extends State<AddPlantCamera>
             color: const Color(0xFF747822),
             borderRadius: BorderRadius.circular(30),
           ),
-          child: const Icon(
-            Icons.camera_alt,
-            color: Colors.white,
-            size: 24,
-          ),
+          child: const Icon(Icons.camera_alt, color: Colors.white, size: 24),
         ),
-        
+
         // Question Text
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -330,7 +326,7 @@ class _AddPlantCameraState extends State<AddPlantCamera>
             textAlign: TextAlign.center,
           ),
         ),
-        
+
         // Action Buttons
         Container(
           padding: const EdgeInsets.all(24),
@@ -359,9 +355,9 @@ class _AddPlantCameraState extends State<AddPlantCamera>
                   ),
                 ),
               ),
-              
+
               const SizedBox(width: 16),
-              
+
               // Retake Button
               Expanded(
                 child: ElevatedButton(
@@ -408,9 +404,7 @@ class _AddPlantCameraState extends State<AddPlantCamera>
 
   Future<void> _pickImageFromGallery() async {
     final picker = ImagePicker();
-    final picked = await picker.pickImage(
-      source: ImageSource.gallery,
-    );
+    final picked = await picker.pickImage(source: ImageSource.gallery);
     if (picked != null) {
       setState(() {
         _pickedImage = File(picked.path);
@@ -430,26 +424,36 @@ class _AddPlantCameraState extends State<AddPlantCamera>
   }
 
   void _continueToForm() async {
-    File? imageFile = _capturedImage != null 
-        ? File(_capturedImage!.path) 
-        : _pickedImage;
-    
+    File? imageFile =
+        _capturedImage != null ? File(_capturedImage!.path) : _pickedImage;
+
     if (imageFile != null) {
       // Save to gallery if taken from camera
       if (_fromCamera && _capturedImage != null) {
         await Gal.putImage(_capturedImage!.path);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Picture saved!')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Picture saved!')));
       }
-      
-      // Navigate to form
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => AddNewPlant(imageFile: imageFile),
-        ),
-      );
+
+      if (widget.addPlant) {
+        await cameraController?.dispose();
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AddNewPlant(imageFile: imageFile),
+          ),
+        );
+      } else if (widget.onImageSelected != null) {
+        widget.onImageSelected!(imageFile);
+        await cameraController?.dispose();
+        Navigator.pop(context); // Go back to journal entry screen
+      }
+    } else {
+      setState(() {
+        _capturedImage = null;
+        _pickedImage = null;
+      });
     }
   }
 

@@ -43,13 +43,22 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
     }
     final lower = sunlight.toLowerCase();
     if (lower == _sunlightLevels[0].toLowerCase()) {
-      return {'type': 'check_light', 'days': 21};
+      return {'type': 'check on your plant\'s light exposure', 'days': 21};
     } else if (lower == _sunlightLevels[1].toLowerCase()) {
-      return {'type': 'rotate', 'days': 14};
+      return {
+        'type': 'It\'s time to rotate your plant for even growth!',
+        'days': 14,
+      };
     } else if (lower == _sunlightLevels[2].toLowerCase()) {
-      return {'type': 'rotate', 'days': 7};
+      return {
+        'type': 'Check if your plant is getting enough light.',
+        'days': 7,
+      };
     } else {
-      return {'type': 'rotate', 'days': 14};
+      return {
+        'type': 'Check if your plant is getting enough light.',
+        'days': 14,
+      };
     }
   }
 
@@ -68,6 +77,10 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
         reminderType: reminderType,
       );
 
+      // generate notificationId
+      final notificationId = reminderDate.millisecondsSinceEpoch % 1000000000;
+
+      // if reminder also exist, give message
       if (existing != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -86,62 +99,32 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
         reminderDate: reminderDate,
         reminderType: reminderType,
         completed: false,
+        notificationId: notificationId,
       );
 
       await db.addReminder(reminder);
 
       final notiService = Provider.of<NotiService>(context, listen: false);
-      await notiService.scheduleNotification(
-        title: reminderType == 'rotate'
-            ? 'Rotate your ${widget.plant.plantName}'
-            : 'Check light for ${widget.plant.plantName}',
-        body: reminderType == 'rotate'
-            ? 'It\'s time to rotate your plant for even growth!'
-            : 'Check if your plant is getting enough light.',
-        hour: 9,
-        minute: 0,
-      );
+      final notificationsEnabled = await DatabaseService()
+          .getNotificationsEnabled();
+      if (notificationsEnabled) {
+        await notiService.scheduleNotification(
+          id: notificationId,
+          title: reminderType == 'rotate'
+              ? 'Rotate your ${widget.plant.plantName}'
+              : 'Check light for ${widget.plant.plantName}',
+          body: reminderType == 'rotate'
+              ? 'It\'s time to rotate your plant for even growth!'
+              : 'Check if your plant is getting enough light.',
+          hour: 9,
+          minute: 0,
+        );
+      }
+      debugPrint('Notification scheduled for ${reminder.reminderDate}');
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Light Notification has been scheduled!'),
-          backgroundColor: Color(0xFF747822),
-        ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to save reminder: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      setState(() => _isSaving = false);
-    }
-  }
-
-  Future<void> _testLightNotification() async {
-    setState(() => _isSaving = true);
-    try {
-      final reminderInfo = _getLightReminder(widget.plant.sunlight);
-      final reminderType = reminderInfo['type'] as String;
-      final nowPlus1 = DateTime.now().add(const Duration(minutes: 1));
-
-      final notiService = Provider.of<NotiService>(context, listen: false);
-      await notiService.scheduleNotification(
-        title: reminderType == 'rotate'
-            ? 'Rotate your ${widget.plant.plantName}'
-            : 'Check light for ${widget.plant.plantName}',
-        body: reminderType == 'rotate'
-            ? 'It\'s time to rotate your plant for even growth!'
-            : 'Check if your plant is getting enough light.',
-        hour: nowPlus1.hour,
-        minute: nowPlus1.minute,
-      );
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Test notification scheduled for 1 minute from now.'),
+          content: Text('Light notification successfully scheduled.'),
           backgroundColor: Color(0xFF747822),
         ),
       );
@@ -183,6 +166,50 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _testLightNotification() async {
+    setState(() => _isSaving = true);
+    try {
+      final nowPlus1 = DateTime.now().add(const Duration(minutes: 1));
+      final notificationId = nowPlus1.millisecondsSinceEpoch % 1000000000;
+      final db = Provider.of<DatabaseService>(context, listen: false);
+      final notiService = Provider.of<NotiService>(context, listen: false);
+
+      // Save a test light reminder
+      final testReminder = Reminder(
+        id: '',
+        plantName: widget.plant.plantName,
+        plantId: widget.plant.id,
+        reminderDate: nowPlus1,
+        reminderType: 'test_light',
+        completed: false,
+        notificationId: notificationId,
+      );
+      await db.addReminder(testReminder);
+
+      final notificationsEnabled = await DatabaseService()
+          .getNotificationsEnabled();
+      if (notificationsEnabled) {
+        await notiService.scheduleNotification(
+          id: notificationId,
+          title: 'Light for ${widget.plant.plantName}',
+          body: 'This is a test light notification!',
+          hour: nowPlus1.hour,
+          minute: nowPlus1.minute,
+        );
+      }
+      debugPrint('Test notification scheduled for $nowPlus1');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Test light notification scheduled.')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to schedule test notification: $e')),
+      );
+    } finally {
+      setState(() => _isSaving = false);
+    }
   }
 
   @override
@@ -249,8 +276,39 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
               ),
               const SizedBox(height: 24),
 
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(bottom: 24),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFBEA),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFFB5B23A),
+                    width: 1.5,
+                  ),
+                ),
+                child: const Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline, color: Color(0xFFB5B23A)),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Note: The light reminder schedule depends on the sunlight level you selected for this plant. Different light levels require different care frequencies.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontFamily: 'Poppins',
+                          color: Color(0xFF6F6F2C),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
               _buildInfoCard('Light Level', widget.plant.sunlight),
-              _buildInfoCard('Reminder Type', reminderType),
+              _buildInfoCard('Reminder', reminderType),
               _buildInfoCard('Frequency', 'Every $frequencyDays days'),
 
               const SizedBox(height: 32),

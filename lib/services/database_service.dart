@@ -516,4 +516,39 @@ class DatabaseService {
     }
     return null;
   }
+
+  // notification enable or disable
+
+  Future<void> setNotificationsEnabled(bool enabled) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    await _firestore.collection('Users').doc(user.uid).set({
+      'notificationsEnabled': enabled,
+    }, SetOptions(merge: true));
+  }
+
+  Future<bool> getNotificationsEnabled() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return true; // default to enable
+    final doc = await _firestore.collection('Users').doc(user.uid).get();
+    if (doc.exists && doc.data()!.containsKey('notificationsEnabled')) {
+      return doc.data()!['notificationsEnabled'] == true;
+    }
+    return true; // enable is default
+  }
+
+  Future<List<Reminder>> getAllRemindersOnce() async {
+    final snapshot = await _remindersRef.get();
+    return snapshot.docs
+        .map((doc) => Reminder.fromMap(doc.data(), doc.id))
+        .toList();
+  }
+
+  Future<List<int>> getAllNotificationIds() async {
+    final reminders = await getAllRemindersOnce();
+    return reminders
+        .where((r) => r.notificationId != null)
+        .map((r) => r.notificationId!)
+        .toList();
+  }
 }

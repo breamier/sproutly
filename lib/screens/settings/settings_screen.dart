@@ -5,10 +5,15 @@ import 'package:sproutly/screens/login_register.dart';
 import 'package:sproutly/screens/settings/help_center_screen.dart';
 import 'package:sproutly/services/database_service.dart';
 import 'package:sproutly/widgets/navbar.dart';
+import 'package:sproutly/services/notification_service.dart';
+import 'package:sproutly/models/reminders.dart';
+import '../dev_tools.dart';
+import '../login_register.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 const Color oliveGreen = Color(0xFF747822);
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   final int navIndex;
   SettingsScreen({super.key, this.navIndex = 3});
 
@@ -52,6 +57,78 @@ class SettingsScreen extends StatelessWidget {
     }
   }
 
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool _notificationsEnabled = true;
+  bool _loading = true;
+  final String? userId = FirebaseAuth.instance.currentUser?.uid;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotificationSetting();
+  }
+
+  Future<void> _loadNotificationSetting() async {
+    final enabled = await DatabaseService().getNotificationsEnabled();
+    setState(() {
+      _notificationsEnabled = enabled;
+      _loading = false;
+    });
+  }
+
+  Future<void> _toggleNotifications(bool value) async {
+    setState(() => _notificationsEnabled = value);
+    await DatabaseService().setNotificationsEnabled(value);
+
+    final db = DatabaseService();
+    final notiService = NotiService();
+
+    if (!value) {
+      // cancel all notifications
+      final ids = await db.getAllNotificationIds();
+      await notiService.cancelAllRemindersNotifications(ids);
+    } else {
+      // re-schedule all reminders
+      final reminders = await db.getAllRemindersOnce();
+      for (final reminder in reminders.where(
+        (r) => !r.reminderType.startsWith('test_'),
+      )) {
+        final notificationId =
+            reminder.reminderDate.millisecondsSinceEpoch % 1000000000;
+        await notiService.scheduleNotification(
+          id: notificationId,
+          title: _reminderTaskText(reminder),
+          body: 'Reminder for ${reminder.plantName}',
+          hour: reminder.reminderDate.hour,
+          minute: reminder.reminderDate.minute,
+        );
+        await db.updateReminder(
+          reminder.id,
+          reminder.copyWith(notificationId: notificationId),
+        );
+      }
+    }
+  }
+
+  String _reminderTaskText(Reminder reminder) {
+    switch (reminder.reminderType) {
+      case 'water':
+        return 'Water the ${reminder.plantName}';
+      case 'rotate':
+        return 'Rotate your ${reminder.plantName}';
+      case 'check_light':
+        return 'Check light for ${reminder.plantName}';
+      case 'check_health':
+        return 'Check health of ${reminder.plantName}';
+      default:
+        return '${reminder.reminderType} for ${reminder.plantName}';
+    }
+  }
+
   Widget _buildSettingsButton(
     BuildContext context,
     String text,
@@ -87,34 +164,33 @@ class SettingsScreen extends StatelessWidget {
               MaterialPageRoute(builder: (context) => const HelpCenterScreen()),
             );
           } else if (text == 'Sign Out') {
-            await signOut(context);
+            await widget.signOut(context);
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Signed out successfully')),
             );
           } else if (text == 'Clear Database') {
             final confirm = await showDialog<bool>(
               context: context,
-              builder:
-                  (context) => AlertDialog(
-                    title: const Text("Confirm Delete"),
-                    content: const Text(
-                      "Are you sure you want to delete all your plants?",
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text("Cancel"),
-                      ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF747822),
-                          foregroundColor: Colors.white,
-                        ),
-                        onPressed: () => Navigator.pop(context, true),
-                        child: const Text("Delete All"),
-                      ),
-                    ],
+              builder: (context) => AlertDialog(
+                title: const Text("Confirm Delete"),
+                content: const Text(
+                  "Are you sure you want to delete all your plants?",
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text("Cancel"),
                   ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFF747822),
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text("Delete All"),
+                  ),
+                ],
+              ),
             );
             if (confirm == true) {
               try {
@@ -198,7 +274,7 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               SizedBox(height: screenWidth * 0.015),
-              Center(child: _getUsername(screenWidth * 0.07)),
+              Center(child: widget._getUsername(screenWidth * 0.07)),
               SizedBox(height: screenWidth * 0.015),
               Center(
                 child: Container(
@@ -211,7 +287,7 @@ class SettingsScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    user?.email ?? 'No email available',
+                    widget.user?.email ?? 'No email available',
                     style: TextStyle(
                       fontFamily: 'Poppins',
                       fontWeight: FontWeight.w400,
@@ -244,20 +320,58 @@ class SettingsScreen extends StatelessWidget {
                 verticalPadding: verticalPadding,
                 horizontalPadding: horizontalPadding,
               ),
-              _buildSettingsButton(
-                context,
-                'Turn off Notifications',
-                Icons.notifications_off,
-                fontSize: buttonFontSize,
-                iconSize: iconSize,
-                verticalPadding: verticalPadding,
-                horizontalPadding: horizontalPadding,
+              // Notification toggle switch
+              Container(
+                margin: EdgeInsets.only(bottom: verticalPadding * 0.85),
+                width: double.infinity,
+                // Set the height to match the ElevatedButton's height
+                height:
+                    (verticalPadding * 2) +
+                    buttonFontSize +
+                    16, // 16 is for icon/text padding
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: oliveGreen),
+                  borderRadius: BorderRadius.circular(25),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05), // subtle shadow
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: verticalPadding,
+                    horizontal: horizontalPadding,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Enable Notifications',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w700,
+                          fontSize: buttonFontSize,
+                          color: oliveGreen,
+                        ),
+                      ),
+                      Switch(
+                        value: _notificationsEnabled,
+                        onChanged: _loading ? null : _toggleNotifications,
+                        activeThumbColor: oliveGreen,
+                      ),
+                    ],
+                  ),
+                ),
               ),
               _buildSettingsButton(
                 context,
                 'Clear Database',
                 Icons.cancel,
-                bgColor: const Color(0xFFBFBFB4),
+                bgColor: const Color.fromARGB(255, 168, 176, 166),
                 textColor: Colors.white,
                 fontSize: buttonFontSize,
                 iconSize: iconSize,
@@ -268,18 +382,31 @@ class SettingsScreen extends StatelessWidget {
                 context,
                 'Sign Out',
                 Icons.logout,
-                bgColor: const Color(0xFFE3B4B4),
+                bgColor: const Color.fromARGB(255, 172, 52, 52),
                 textColor: Colors.white,
                 fontSize: buttonFontSize,
                 iconSize: iconSize,
                 verticalPadding: verticalPadding,
                 horizontalPadding: horizontalPadding,
               ),
+              ElevatedButton(
+                onPressed: userId == null
+                    ? null
+                    : () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DevToolsPage(userId: userId!),
+                          ),
+                        );
+                      },
+                child: const Text('Dev Tools'),
+              ),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: CustomNavBarPage(selectedIndex: navIndex),
+      bottomNavigationBar: CustomNavBarPage(selectedIndex: widget.navIndex),
     );
   }
 }

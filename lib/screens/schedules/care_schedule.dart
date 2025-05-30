@@ -39,17 +39,17 @@ class _CareScheduleScreenState extends State<CareScheduleScreen> {
 
   Map<String, dynamic> _getCareReminder(String careLevel) {
     if (_careLevels.isEmpty) {
-      return {'type': 'check_health', 'days': 14};
+      return {'type': 'Check on your plant\'s health', 'days': 14};
     }
     final lower = careLevel.toLowerCase();
     if (lower == _careLevels[0].toLowerCase()) {
-      return {'type': 'check_health', 'days': 30};
+      return {'type': 'Check on your plant\'s health', 'days': 30};
     } else if (lower == _careLevels[1].toLowerCase()) {
-      return {'type': 'check_health', 'days': 14};
+      return {'type': 'Check on your plant\'s health', 'days': 14};
     } else if (lower == _careLevels[2].toLowerCase()) {
-      return {'type': 'check_health', 'days': 7};
+      return {'type': 'Check on your plant\'s health', 'days': 7};
     } else {
-      return {'type': 'check_health', 'days': 14};
+      return {'type': 'Check on your plant\'s health', 'days': 14};
     }
   }
 
@@ -67,6 +67,9 @@ class _CareScheduleScreenState extends State<CareScheduleScreen> {
         plantId: widget.plant.id,
         reminderType: reminderType,
       );
+
+      final notificationId = reminderDate.millisecondsSinceEpoch % 1000000000;
+
       if (existing != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -85,21 +88,28 @@ class _CareScheduleScreenState extends State<CareScheduleScreen> {
         reminderDate: reminderDate,
         reminderType: reminderType,
         completed: false,
+        notificationId: notificationId,
       );
 
       await db.addReminder(reminder);
 
       final notiService = Provider.of<NotiService>(context, listen: false);
-      await notiService.scheduleNotification(
-        title: 'Check health of ${widget.plant.plantName}',
-        body: 'Time to inspect your plant for issues, pests, or root rot!',
-        hour: 10,
-        minute: 0,
-      );
+      final notificationsEnabled = await DatabaseService()
+          .getNotificationsEnabled();
+      if (notificationsEnabled) {
+        await notiService.scheduleNotification(
+          id: notificationId,
+          title: 'Check health of ${widget.plant.plantName}',
+          body: 'Time to inspect your plant for issues, pests, or root rot!',
+          hour: 10,
+          minute: 0,
+        );
+      }
+      debugPrint('Notification scheduled for ${reminder.reminderDate}');
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Care reminder saved and notification scheduled!'),
+          content: Text('Care notification successfully scheduled.'),
           backgroundColor: Color(0xFF747822),
         ),
       );
@@ -118,21 +128,37 @@ class _CareScheduleScreenState extends State<CareScheduleScreen> {
   Future<void> _testCareNotification() async {
     setState(() => _isSaving = true);
     try {
-      final nowPlus2 = DateTime.now().add(const Duration(minutes: 1));
-
+      final nowPlus30 = DateTime.now().add(const Duration(seconds: 30));
+      final notificationId = nowPlus30.millisecondsSinceEpoch % 1000000000;
+      final db = Provider.of<DatabaseService>(context, listen: false);
       final notiService = Provider.of<NotiService>(context, listen: false);
-      await notiService.scheduleNotification(
-        title: 'Check health of ${widget.plant.plantName}',
-        body: 'Time to inspect your plant for issues, pests, or root rot!',
-        hour: nowPlus2.hour,
-        minute: nowPlus2.minute,
-      );
 
+      // Save a test care reminder
+      final testReminder = Reminder(
+        id: '',
+        plantName: widget.plant.plantName,
+        plantId: widget.plant.id,
+        reminderDate: nowPlus30,
+        reminderType: 'test_care',
+        completed: false,
+        notificationId: notificationId,
+      );
+      await db.addReminder(testReminder);
+
+      final notificationsEnabled = await DatabaseService()
+          .getNotificationsEnabled();
+      if (notificationsEnabled) {
+        await notiService.scheduleNotification(
+          id: notificationId,
+          title: 'Care for ${widget.plant.plantName}',
+          body: 'This is a test care notification!',
+          hour: nowPlus30.hour,
+          minute: nowPlus30.minute,
+        );
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Test care notification scheduled for 1 minute from now.',
-          ),
+          content: Text('Test care notification scheduled.'),
           backgroundColor: Color(0xFF747822),
         ),
       );
@@ -239,8 +265,36 @@ class _CareScheduleScreenState extends State<CareScheduleScreen> {
               ),
               const SizedBox(height: 24),
 
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(bottom: 24),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFBEA),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Color(0xFFB5B23A), width: 1.5),
+                ),
+                child: const Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline, color: Color(0xFFB5B23A)),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Note: The care reminder schedule depends on the care level you selected for this plant. Light care means less frequent reminders.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontFamily: 'Poppins',
+                          color: Color(0xFF6F6F2C),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
               _buildInfoCard('Care Level', widget.plant.careLevel),
-              _buildInfoCard('Reminder Type', 'check_health'),
+              _buildInfoCard('Reminder', 'Check on your plant\'s health'),
               _buildInfoCard('Frequency', 'Every $frequencyDays days'),
 
               const SizedBox(height: 32),

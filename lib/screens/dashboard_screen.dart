@@ -5,7 +5,7 @@ import 'package:sproutly/screens/add_plant/add_plant_camera.dart';
 import 'package:sproutly/services/database_service.dart';
 import '../widgets/navbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:sproutly/screens/dev_tools.dart';
+import '../screens/user_plant_library/plant_profile.dart';
 import 'package:sproutly/screens/reminders_screen.dart';
 import 'dart:async';
 
@@ -37,8 +37,8 @@ class DashboardScreen extends StatelessWidget {
   Widget _userUid() {
     return Column(
       children: [
-        Text(user?.uid ?? 'User uid'),
-        Text(user?.email ?? 'User email'),
+        //Text(user?.uid ?? 'User uid'),
+        //Text(user?.email ?? 'User email'),
       ],
     );
   }
@@ -85,24 +85,7 @@ class DashboardScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _userUid(),
-              const SizedBox(height: 24),
-
-              ElevatedButton(
-                onPressed:
-                    userId == null
-                        ? null
-                        : () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) => DevToolsPage(userId: userId!),
-                            ),
-                          );
-                        },
-                child: const Text('Dev Tools'),
-              ),
-
+              const SizedBox(height: 5),
               // TIPS
               TipsWidget(),
 
@@ -146,13 +129,12 @@ class DashboardScreen extends StatelessWidget {
                   final now = DateTime.now();
 
                   // filter for today's reminders
-                  final todayReminders =
-                      reminders.where((reminder) {
-                        final date = reminder.reminderDate;
-                        return date.year == now.year &&
-                            date.month == now.month &&
-                            date.day == now.day;
-                      }).toList();
+                  final todayReminders = reminders.where((reminder) {
+                    final date = reminder.reminderDate;
+                    return date.year == now.year &&
+                        date.month == now.month &&
+                        date.day == now.day;
+                  }).toList();
 
                   todayReminders.sort(
                     (a, b) => a.reminderDate.compareTo(b.reminderDate),
@@ -205,8 +187,9 @@ class DashboardScreen extends StatelessWidget {
                       return const Center(child: Text('No plants added yet.'));
                     }
 
-                    final plants =
-                        snapshot.data!.docs.map((doc) => doc.data()).toList();
+                    final plants = snapshot.data!.docs
+                        .map((doc) => doc.data())
+                        .toList();
                     return RawScrollbar(
                       thumbColor: const Color(0xFF6C7511),
                       radius: const Radius.circular(8),
@@ -214,20 +197,35 @@ class DashboardScreen extends StatelessWidget {
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
-                          children:
-                              plants.map((plant) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(
-                                    right: 12,
-                                    bottom: 12,
-                                  ),
-                                  child: PlantThumbnail(
-                                    name: plant.plantName,
-                                    imagePath:
-                                        plant.img ?? 'assets/placeholder.png',
-                                  ),
-                                );
-                              }).toList(),
+                          children: plants.map((plant) {
+                            return Padding(
+                              padding: const EdgeInsets.only(
+                                right: 12,
+                                bottom: 12,
+                              ),
+                              child: GestureDetector(
+                                onTap: () {
+                                  final userId =
+                                      FirebaseAuth.instance.currentUser?.uid ??
+                                      '';
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PlantProfileScreen(
+                                        userId: userId,
+                                        plantId: plant.id,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: PlantThumbnail(
+                                  name: plant.plantName,
+                                  imagePath:
+                                      plant.img ?? 'assets/placeholder.png',
+                                ),
+                              ),
+                            );
+                          }).toList(),
                         ),
                       ),
                     );
@@ -466,10 +464,9 @@ class _TipsWidgetState extends State<TipsWidget> {
                         height: 8,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color:
-                              _currentPage == index
-                                  ? const Color(0xFF4B5502)
-                                  : Colors.grey[400],
+                          color: _currentPage == index
+                              ? const Color(0xFF4B5502)
+                              : Colors.grey[400],
                         ),
                       );
                     }),

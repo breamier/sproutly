@@ -5,7 +5,7 @@ import 'package:sproutly/screens/add_plant/add_plant_camera.dart';
 import 'package:sproutly/services/database_service.dart';
 import '../widgets/navbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:sproutly/screens/dev_tools.dart';
+import '../screens/user_plant_library/plant_profile.dart';
 import 'package:sproutly/screens/reminders_screen.dart';
 import 'dart:async';
 
@@ -203,10 +203,26 @@ class DashboardScreen extends StatelessWidget {
                                 right: 12,
                                 bottom: 12,
                               ),
-                              child: PlantThumbnail(
-                                name: plant.plantName,
-                                imagePath:
-                                    plant.img ?? 'assets/placeholder.png',
+                              child: GestureDetector(
+                                onTap: () {
+                                  final userId =
+                                      FirebaseAuth.instance.currentUser?.uid ??
+                                      '';
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PlantProfileScreen(
+                                        userId: userId,
+                                        plantId: plant.id,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: PlantThumbnail(
+                                  name: plant.plantName,
+                                  imagePath:
+                                      plant.img ?? 'assets/placeholder.png',
+                                ),
                               ),
                             );
                           }).toList(),

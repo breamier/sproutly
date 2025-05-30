@@ -7,6 +7,9 @@ import 'package:sproutly/services/database_service.dart';
 import 'package:sproutly/widgets/navbar.dart';
 import 'package:sproutly/services/notification_service.dart';
 import 'package:sproutly/models/reminders.dart';
+import '../dev_tools.dart';
+import '../login_register.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 const Color oliveGreen = Color(0xFF747822);
 
@@ -61,6 +64,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _notificationsEnabled = true;
   bool _loading = true;
+  final String? userId = FirebaseAuth.instance.currentUser?.uid;
 
   @override
   void initState() {
@@ -320,13 +324,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Container(
                 margin: EdgeInsets.only(bottom: verticalPadding * 0.85),
                 width: double.infinity,
+                // Set the height to match the ElevatedButton's height
+                height:
+                    (verticalPadding * 2) +
+                    buttonFontSize +
+                    16, // 16 is for icon/text padding
                 decoration: BoxDecoration(
                   color: Colors.white,
                   border: Border.all(color: oliveGreen),
                   borderRadius: BorderRadius.circular(25),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.5),
+                      color: Colors.black.withOpacity(0.05), // subtle shadow
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -362,7 +371,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 context,
                 'Clear Database',
                 Icons.cancel,
-                bgColor: const Color(0xFFBFBFB4),
+                bgColor: const Color.fromARGB(255, 168, 176, 166),
                 textColor: Colors.white,
                 fontSize: buttonFontSize,
                 iconSize: iconSize,
@@ -373,12 +382,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 context,
                 'Sign Out',
                 Icons.logout,
-                bgColor: const Color(0xFFE3B4B4),
+                bgColor: const Color.fromARGB(255, 172, 52, 52),
                 textColor: Colors.white,
                 fontSize: buttonFontSize,
                 iconSize: iconSize,
                 verticalPadding: verticalPadding,
                 horizontalPadding: horizontalPadding,
+              ),
+              ElevatedButton(
+                onPressed: userId == null
+                    ? null
+                    : () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DevToolsPage(userId: userId!),
+                          ),
+                        );
+                      },
+                child: const Text('Dev Tools'),
               ),
             ],
           ),

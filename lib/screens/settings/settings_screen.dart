@@ -4,8 +4,9 @@ import 'package:sproutly/auth.dart';
 import 'package:sproutly/screens/login_register.dart';
 import 'package:sproutly/screens/settings/help_center_screen.dart';
 import 'package:sproutly/services/database_service.dart';
-import '../../services/notification_service.dart';
-import '../../models/reminders.dart';
+import 'package:sproutly/widgets/navbar.dart';
+import 'package:sproutly/services/notification_service.dart';
+import 'package:sproutly/models/reminders.dart';
 
 const Color oliveGreen = Color(0xFF747822);
 
@@ -83,17 +84,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final notiService = NotiService();
 
     if (!value) {
-      // // cancel all notifications, IF DISABLED
+      // cancel all notifications
       final ids = await db.getAllNotificationIds();
       await notiService.cancelAllRemindersNotifications(ids);
     } else {
-      // re-schedule all reminders, IF ENABLED AGAIN
+      // re-schedule all reminders
       final reminders = await db.getAllRemindersOnce();
       for (final reminder in reminders.where(
         (r) => !r.reminderType.startsWith('test_'),
       )) {
-        // schedule notification
-        // generate a new notificationId for each reminder
         final notificationId =
             reminder.reminderDate.millisecondsSinceEpoch % 1000000000;
         await notiService.scheduleNotification(
@@ -102,9 +101,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           body: 'Reminder for ${reminder.plantName}',
           hour: reminder.reminderDate.hour,
           minute: reminder.reminderDate.minute,
-          // add weekday if needed
         );
-        // update notificationId in Firestore
         await db.updateReminder(
           reminder.id,
           reminder.copyWith(notificationId: notificationId),
@@ -113,7 +110,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  // notification title
   String _reminderTaskText(Reminder reminder) {
     switch (reminder.reminderType) {
       case 'water':
@@ -164,7 +160,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               MaterialPageRoute(builder: (context) => const HelpCenterScreen()),
             );
           } else if (text == 'Sign Out') {
-            await signOut(context);
+            await widget.signOut(context);
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Signed out successfully')),
             );
@@ -274,7 +270,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               SizedBox(height: screenWidth * 0.015),
-              Center(child: _getUsername(screenWidth * 0.07)),
+              Center(child: widget._getUsername(screenWidth * 0.07)),
               SizedBox(height: screenWidth * 0.015),
               Center(
                 child: Container(
@@ -287,7 +283,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    user?.email ?? 'No email available',
+                    widget.user?.email ?? 'No email available',
                     style: TextStyle(
                       fontFamily: 'Poppins',
                       fontWeight: FontWeight.w400,
@@ -320,6 +316,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 verticalPadding: verticalPadding,
                 horizontalPadding: horizontalPadding,
               ),
+              // Notification toggle switch
               Container(
                 margin: EdgeInsets.only(bottom: verticalPadding * 0.85),
                 width: double.infinity,
@@ -329,7 +326,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   borderRadius: BorderRadius.circular(25),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.5),
+                      color: Colors.black.withOpacity(0.5),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -355,7 +352,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Switch(
                         value: _notificationsEnabled,
                         onChanged: _loading ? null : _toggleNotifications,
-                        activeThumbColor: oliveGreen,
+                        activeColor: oliveGreen,
                       ),
                     ],
                   ),
@@ -387,7 +384,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: CustomNavBarPage(selectedIndex: navIndex),
+      bottomNavigationBar: CustomNavBarPage(selectedIndex: widget.navIndex),
     );
   }
 }

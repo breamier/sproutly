@@ -39,7 +39,7 @@ class _CareScheduleScreenState extends State<CareScheduleScreen> {
 
   Map<String, dynamic> _getCareReminder(String careLevel) {
     if (_careLevels.isEmpty) {
-      return {'type': 'check_health', 'days': 14};
+      return {'type': 'Check on your plant\'s health', 'days': 14};
     }
     final lower = careLevel.toLowerCase();
     if (lower == _careLevels[0].toLowerCase()) {
@@ -265,8 +265,36 @@ class _CareScheduleScreenState extends State<CareScheduleScreen> {
               ),
               const SizedBox(height: 24),
 
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(bottom: 24),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFBEA),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Color(0xFFB5B23A), width: 1.5),
+                ),
+                child: const Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline, color: Color(0xFFB5B23A)),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Note: The care reminder schedule depends on the care level you selected for this plant. Light care means less frequent reminders.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontFamily: 'Poppins',
+                          color: Color(0xFF6F6F2C),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
               _buildInfoCard('Care Level', widget.plant.careLevel),
-              _buildInfoCard('Reminder', 'check_health'),
+              _buildInfoCard('Reminder', 'Check on your plant\'s health'),
               _buildInfoCard('Frequency', 'Every $frequencyDays days'),
 
               const SizedBox(height: 32),

@@ -40,33 +40,134 @@ class RemindersScreen extends StatelessWidget {
 
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
       builder: (ctx) {
-        return ListView(
-          shrinkWrap: true,
-          children: plantList.map((plant) {
-            return ListTile(
-              leading: plant.img != null && plant.img!.isNotEmpty
-                  ? CircleAvatar(backgroundImage: NetworkImage(plant.img!))
-                  : const CircleAvatar(child: Icon(Icons.local_florist)),
-              title: Text(plant.plantName),
-              subtitle: Text(plant.type ?? ''),
-              onTap: () {
-                Navigator.pop(ctx);
-                Widget screen;
-                if (scheduleType == 'light' || scheduleType == 'rotate') {
-                  screen = LightScheduleScreen(plant: plant);
-                } else if (scheduleType == 'care') {
-                  screen = CareScheduleScreen(plant: plant);
-                } else {
-                  screen = WateringScheduleScreen(plant: plant);
-                }
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => screen),
-                );
-              },
-            );
-          }).toList(),
+        return Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFFF8F4F4),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[400],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Text(
+                'Select a Plant',
+                style: const TextStyle(
+                  fontFamily: 'Curvilingus',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                  color: Color(0xFF747822),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Flexible(
+                child: plantList.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'No plants found.',
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 18,
+                            color: Color(0xFF747822),
+                          ),
+                        ),
+                      )
+                    : ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: plantList.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 10),
+                        itemBuilder: (context, index) {
+                          final plant = plantList[index];
+                          return Material(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(18),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(18),
+                              onTap: () {
+                                Navigator.pop(ctx);
+                                Widget screen;
+                                if (scheduleType == 'light' ||
+                                    scheduleType == 'rotate') {
+                                  screen = LightScheduleScreen(plant: plant);
+                                } else if (scheduleType == 'care') {
+                                  screen = CareScheduleScreen(plant: plant);
+                                } else {
+                                  screen = WateringScheduleScreen(plant: plant);
+                                }
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => screen,
+                                  ),
+                                );
+                              },
+                              child: ListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                leading:
+                                    plant.img != null && plant.img!.isNotEmpty
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Image.network(
+                                          plant.img!,
+                                          width: 48,
+                                          height: 48,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      )
+                                    : const CircleAvatar(
+                                        radius: 24,
+                                        backgroundColor: Color(0xFFE8E8D5),
+                                        child: Icon(
+                                          Icons.local_florist,
+                                          color: Color(0xFF747822),
+                                        ),
+                                      ),
+                                title: Text(
+                                  plant.plantName,
+                                  style: const TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                    color: Color(0xFF747822),
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  plant.type ?? '',
+                                  style: const TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 14,
+                                    color: Color(0xFF747822),
+                                  ),
+                                ),
+                                trailing: const Icon(
+                                  Icons.chevron_right,
+                                  color: Color(0xFF747822),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
         );
       },
     );

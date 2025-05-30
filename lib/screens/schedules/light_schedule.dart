@@ -276,6 +276,37 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
               ),
               const SizedBox(height: 24),
 
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(bottom: 24),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFBEA),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFFB5B23A),
+                    width: 1.5,
+                  ),
+                ),
+                child: const Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline, color: Color(0xFFB5B23A)),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Note: The light reminder schedule depends on the sunlight level you selected for this plant. Different light levels require different care frequencies.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontFamily: 'Poppins',
+                          color: Color(0xFF6F6F2C),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
               _buildInfoCard('Light Level', widget.plant.sunlight),
               _buildInfoCard('Reminder', reminderType),
               _buildInfoCard('Frequency', 'Every $frequencyDays days'),

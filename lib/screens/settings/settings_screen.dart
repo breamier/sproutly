@@ -9,7 +9,8 @@ import 'package:sproutly/widgets/navbar.dart';
 const Color oliveGreen = Color(0xFF747822);
 
 class SettingsScreen extends StatelessWidget {
-  SettingsScreen({super.key});
+  final int navIndex;
+  SettingsScreen({super.key, this.navIndex = 3});
 
   final User? user = Auth().currentUser;
 
@@ -278,7 +279,7 @@ class SettingsScreen extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: CustomNavBarPage(),
+      bottomNavigationBar: CustomNavBarPage(selectedIndex: navIndex),
     );
   }
 }

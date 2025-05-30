@@ -257,7 +257,8 @@ class DevToolsPage extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const GuideBookScreen(),
+                        builder:
+                            (context) => const GuideBookScreen(navIndex: 2),
                       ),
                     );
                   },
@@ -319,7 +320,8 @@ class DevToolsPage extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const PlantLibraryScreen(),
+                        builder:
+                            (context) => const PlantLibraryScreen(navIndex: 1),
                       ),
                     );
                   },
@@ -410,7 +412,9 @@ class DevToolsPage extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => SettingsScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => SettingsScreen(navIndex: 3),
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(

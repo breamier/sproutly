@@ -11,7 +11,8 @@ import '../schedules/care_schedule.dart';
 import '../schedules/watering_schedule.dart';
 
 class PlantLibraryScreen extends StatefulWidget {
-  const PlantLibraryScreen({super.key});
+  final int navIndex;
+  const PlantLibraryScreen({super.key, this.navIndex = 1});
 
   @override
   State<PlantLibraryScreen> createState() => _PlantLibraryScreenState();
@@ -247,7 +248,7 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
       ),
       floatingActionButton: _buildFloatingActionBar(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      bottomNavigationBar: CustomNavBarPage(),
+      bottomNavigationBar: CustomNavBarPage(selectedIndex: widget.navIndex),
     );
   }
 

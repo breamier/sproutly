@@ -6,15 +6,14 @@ import 'package:sproutly/services/database_service.dart';
 import '../widgets/navbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sproutly/screens/dev_tools.dart';
-import 'package:sproutly/screens/login_register.dart';
-import 'package:sproutly/screens/add_plant/add_plant_camera.dart';
 import 'package:sproutly/screens/reminders_screen.dart';
 import 'dart:async';
 
 import '../models/reminders.dart';
 
 class DashboardScreen extends StatelessWidget {
-  DashboardScreen({super.key});
+  final int navIndex;
+  DashboardScreen({super.key, this.navIndex = 0});
 
   final User? user = Auth().currentUser;
   final String? userId = FirebaseAuth.instance.currentUser?.uid;
@@ -259,7 +258,7 @@ class DashboardScreen extends StatelessWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
 
       // navbar
-      bottomNavigationBar: CustomNavBarPage(),
+      bottomNavigationBar: CustomNavBarPage(selectedIndex: navIndex),
     );
   }
 }

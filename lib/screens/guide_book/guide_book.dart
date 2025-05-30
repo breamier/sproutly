@@ -4,7 +4,8 @@ import '../../models/guidebook.dart';
 import 'plant_information_screen.dart';
 
 class GuideBookScreen extends StatefulWidget {
-  const GuideBookScreen({super.key});
+  final int navIndex;
+  const GuideBookScreen({super.key, this.navIndex = 2});
 
   @override
   State<GuideBookScreen> createState() => _GuideBookScreenState();
@@ -169,7 +170,7 @@ class _GuideBookScreenState extends State<GuideBookScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: CustomNavBarPage(),
+      bottomNavigationBar: CustomNavBarPage(selectedIndex: widget.navIndex),
     );
   }
 

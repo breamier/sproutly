@@ -43,13 +43,13 @@ class _CareScheduleScreenState extends State<CareScheduleScreen> {
     }
     final lower = careLevel.toLowerCase();
     if (lower == _careLevels[0].toLowerCase()) {
-      return {'type': 'check_health', 'days': 30};
+      return {'type': 'Check on your plant\'s health', 'days': 30};
     } else if (lower == _careLevels[1].toLowerCase()) {
-      return {'type': 'check_health', 'days': 14};
+      return {'type': 'Check on your plant\'s health', 'days': 14};
     } else if (lower == _careLevels[2].toLowerCase()) {
-      return {'type': 'check_health', 'days': 7};
+      return {'type': 'Check on your plant\'s health', 'days': 7};
     } else {
-      return {'type': 'check_health', 'days': 14};
+      return {'type': 'Check on your plant\'s health', 'days': 14};
     }
   }
 
@@ -109,7 +109,7 @@ class _CareScheduleScreenState extends State<CareScheduleScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Care reminder saved and notification scheduled!'),
+          content: Text('Care notification successfully scheduled.'),
           backgroundColor: Color(0xFF747822),
         ),
       );
@@ -150,17 +150,15 @@ class _CareScheduleScreenState extends State<CareScheduleScreen> {
       if (notificationsEnabled) {
         await notiService.scheduleNotification(
           id: notificationId,
-          title: 'Test: Care for ${widget.plant.plantName}',
-          body: 'Test: This is a test care notification!',
+          title: 'Care for ${widget.plant.plantName}',
+          body: 'This is a test care notification!',
           hour: nowPlus30.hour,
           minute: nowPlus30.minute,
         );
       }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Test care notification scheduled for 30 seconds from now!',
-          ),
+          content: Text('Test care notification scheduled.'),
           backgroundColor: Color(0xFF747822),
         ),
       );
@@ -268,7 +266,7 @@ class _CareScheduleScreenState extends State<CareScheduleScreen> {
               const SizedBox(height: 24),
 
               _buildInfoCard('Care Level', widget.plant.careLevel),
-              _buildInfoCard('Reminder Type', 'check_health'),
+              _buildInfoCard('Reminder', 'check_health'),
               _buildInfoCard('Frequency', 'Every $frequencyDays days'),
 
               const SizedBox(height: 32),

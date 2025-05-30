@@ -326,7 +326,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   borderRadius: BorderRadius.circular(25),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.5),
+                      color: Colors.black.withValues(alpha: 0.5),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -352,7 +352,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Switch(
                         value: _notificationsEnabled,
                         onChanged: _loading ? null : _toggleNotifications,
-                        activeColor: oliveGreen,
+                        activeThumbColor: oliveGreen,
                       ),
                     ],
                   ),

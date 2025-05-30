@@ -100,7 +100,7 @@ class _WateringScheduleScreenState extends State<WateringScheduleScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Watering reminders saved and notifications set!'),
+          content: Text('Watering notification successfully scheduled.'),
           backgroundColor: Color(0xFF747822),
         ),
       );
@@ -125,15 +125,15 @@ class _WateringScheduleScreenState extends State<WateringScheduleScreen> {
           .getNotificationsEnabled();
       if (notificationsEnabled) {
         await notiService.scheduleNotification(
-          title: 'Test: Water your ${widget.plant.plantName}',
-          body: 'Test: This is a test watering notification!',
+          title: 'Water your ${widget.plant.plantName}',
+          body: 'This is a test watering notification!',
           hour: nowPlus30.hour,
           minute: nowPlus30.minute,
         );
       }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Test notification scheduled for 30 seconds from now!'),
+          content: Text('Test notification scheduled.'),
           backgroundColor: Color(0xFF747822),
         ),
       );

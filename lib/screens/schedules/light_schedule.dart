@@ -43,13 +43,22 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
     }
     final lower = sunlight.toLowerCase();
     if (lower == _sunlightLevels[0].toLowerCase()) {
-      return {'type': 'check_light', 'days': 21};
+      return {'type': 'check on you plant\'s light exposure', 'days': 21};
     } else if (lower == _sunlightLevels[1].toLowerCase()) {
-      return {'type': 'rotate', 'days': 14};
+      return {
+        'type': 'It\'s time to rotate your plant for even growth!',
+        'days': 14,
+      };
     } else if (lower == _sunlightLevels[2].toLowerCase()) {
-      return {'type': 'rotate', 'days': 7};
+      return {
+        'type': 'Check if your plant is getting enough light.',
+        'days': 7,
+      };
     } else {
-      return {'type': 'rotate', 'days': 14};
+      return {
+        'type': 'Check if your plant is getting enough light.',
+        'days': 14,
+      };
     }
   }
 
@@ -115,7 +124,7 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Test notification scheduled for 1 minute from now.'),
+          content: Text('Light notification successfully scheduled.'),
           backgroundColor: Color(0xFF747822),
         ),
       );
@@ -184,19 +193,15 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
       if (notificationsEnabled) {
         await notiService.scheduleNotification(
           id: notificationId,
-          title: 'Test: Light for ${widget.plant.plantName}',
-          body: 'Test: This is a test light notification!',
+          title: 'Light for ${widget.plant.plantName}',
+          body: 'This is a test light notification!',
           hour: nowPlus1.hour,
           minute: nowPlus1.minute,
         );
       }
       debugPrint('Test notification scheduled for $nowPlus1');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Test light notification scheduled for 1 minute from now.',
-          ),
-        ),
+        const SnackBar(content: Text('Test light notification scheduled.')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -272,7 +277,7 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
               const SizedBox(height: 24),
 
               _buildInfoCard('Light Level', widget.plant.sunlight),
-              _buildInfoCard('Reminder Type', reminderType),
+              _buildInfoCard('Reminder', reminderType),
               _buildInfoCard('Frequency', 'Every $frequencyDays days'),
 
               const SizedBox(height: 32),

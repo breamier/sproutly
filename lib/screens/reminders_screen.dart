@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:sproutly/services/database_service.dart';
 import 'package:sproutly/models/reminders.dart';
 import 'package:intl/intl.dart';
+import 'package:sproutly/screens/schedules/light_schedule.dart';
+import 'package:sproutly/screens/schedules/care_schedule.dart';
+import 'package:sproutly/screens/schedules/watering_schedule.dart';
+import 'package:sproutly/models/plant.dart';
 
 class RemindersScreen extends StatelessWidget {
   const RemindersScreen({super.key});
@@ -27,6 +31,47 @@ class RemindersScreen extends StatelessWidget {
     color: Color(0xFF747822),
   );
 
+  Future<void> _showPlantPicker(
+    BuildContext context, {
+    required String scheduleType,
+  }) async {
+    final plants = await DatabaseService().getPlants().first;
+    final plantList = plants.docs.map((doc) => doc.data() as Plant).toList();
+
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) {
+        return ListView(
+          shrinkWrap: true,
+          children: plantList.map((plant) {
+            return ListTile(
+              leading: plant.img != null && plant.img!.isNotEmpty
+                  ? CircleAvatar(backgroundImage: NetworkImage(plant.img!))
+                  : const CircleAvatar(child: Icon(Icons.local_florist)),
+              title: Text(plant.plantName),
+              subtitle: Text(plant.type ?? ''),
+              onTap: () {
+                Navigator.pop(ctx);
+                Widget screen;
+                if (scheduleType == 'light' || scheduleType == 'rotate') {
+                  screen = LightScheduleScreen(plant: plant);
+                } else if (scheduleType == 'care') {
+                  screen = CareScheduleScreen(plant: plant);
+                } else {
+                  screen = WateringScheduleScreen(plant: plant);
+                }
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => screen),
+                );
+              },
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,7 +91,7 @@ class RemindersScreen extends StatelessWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF8C8F3E).withOpacity(0.25),
+                      color: const Color(0xFF8C8F3E).withValues(alpha: 0.25),
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: const Color(0xFF8C8F3E),
@@ -163,6 +208,51 @@ class RemindersScreen extends StatelessWidget {
           ],
         ),
       ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 40.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            FloatingActionButton(
+              heroTag: 'light_reminder',
+              backgroundColor: const Color(0xFF747822),
+              onPressed: () => _showPlantPicker(context, scheduleType: 'light'),
+              child: Image.asset(
+                'assets/light_icon.png',
+                height: 28,
+                width: 28,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 16),
+            FloatingActionButton(
+              heroTag: 'care_reminder',
+              backgroundColor: const Color(0xFF747822),
+              onPressed: () => _showPlantPicker(context, scheduleType: 'care'),
+              child: Image.asset(
+                'assets/care_icon.png',
+                height: 28,
+                width: 28,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 16),
+            FloatingActionButton(
+              heroTag: 'water_reminder',
+              backgroundColor: const Color(0xFF747822),
+              onPressed: () => _showPlantPicker(context, scheduleType: 'water'),
+              child: Image.asset(
+                'assets/water_icon.png',
+                height: 28,
+                width: 28,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 

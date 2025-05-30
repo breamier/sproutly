@@ -16,6 +16,7 @@ class LightScheduleScreen extends StatefulWidget {
 class _LightScheduleScreenState extends State<LightScheduleScreen> {
   bool _isSaving = false;
   late List<String> _sunlightLevels = [];
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -28,6 +29,12 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
         _sunlightLevels = levels;
       });
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Map<String, dynamic> _getLightReminder(String sunlight) {
@@ -60,11 +67,12 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
         plantId: widget.plant.id,
         reminderType: reminderType,
       );
-      // if reminder also exist, give message
+
       if (existing != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('A light reminder for this plant already exists!'),
+            backgroundColor: Color(0xFF747822),
           ),
         );
         setState(() => _isSaving = false);
@@ -81,7 +89,6 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
       );
 
       await db.addReminder(reminder);
-      debugPrint('Reminder added to Firestore: ${reminder.toMap()}');
 
       final notiService = Provider.of<NotiService>(context, listen: false);
       await notiService.scheduleNotification(
@@ -94,18 +101,88 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
         hour: 9,
         minute: 0,
       );
-      debugPrint('Notification scheduled for ${reminder.reminderDate}');
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Light Notification has been scheduled!')),
+        const SnackBar(
+          content: Text('Light Notification has been scheduled!'),
+          backgroundColor: Color(0xFF747822),
+        ),
       );
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to save reminder: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save reminder: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
       setState(() => _isSaving = false);
     }
+  }
+
+  Future<void> _testLightNotification() async {
+    setState(() => _isSaving = true);
+    try {
+      final reminderInfo = _getLightReminder(widget.plant.sunlight);
+      final reminderType = reminderInfo['type'] as String;
+      final nowPlus1 = DateTime.now().add(const Duration(minutes: 1));
+
+      final notiService = Provider.of<NotiService>(context, listen: false);
+      await notiService.scheduleNotification(
+        title: reminderType == 'rotate'
+            ? 'Rotate your ${widget.plant.plantName}'
+            : 'Check light for ${widget.plant.plantName}',
+        body: reminderType == 'rotate'
+            ? 'It\'s time to rotate your plant for even growth!'
+            : 'Check if your plant is getting enough light.',
+        hour: nowPlus1.hour,
+        minute: nowPlus1.minute,
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Test notification scheduled for 1 minute from now.'),
+          backgroundColor: Color(0xFF747822),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to schedule test notification: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() => _isSaving = false);
+    }
+  }
+
+  Widget _buildInfoCard(String label, String value) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: const Color(0xFF8C8F3E), width: 2),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF747822),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -115,108 +192,146 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
     final frequencyDays = reminderInfo['days'] as int;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        title: const Text('Light Schedule'),
         backgroundColor: Colors.white,
         elevation: 0,
+        toolbarHeight: 75,
+        leadingWidth: 75,
+        leading: Container(
+          margin: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE8E8D5),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: const Color(0xFF747822), width: 1.5),
+          ),
+          child: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios_new,
+              color: Color(0xFF747822),
+              size: 18,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        title: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text(
+            'Light Schedule',
+            style: const TextStyle(
+              fontSize: 32,
+              fontFamily: 'Curvilingus',
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF747822),
+            ),
+          ),
+        ),
+        titleSpacing: 8,
+        centerTitle: false,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Set up a light reminder for "${widget.plant.plantName}"',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Light Level: ${widget.plant.sunlight}',
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Reminder Type: $reminderType',
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Frequency: Every $frequencyDays days',
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isSaving ? null : _saveLightReminder,
-                child: _isSaving
-                    ? const CircularProgressIndicator()
-                    : const Text('Save Light Reminder'),
-              ),
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF4B5502),
-                  foregroundColor: Colors.white,
+      body: Scrollbar(
+        controller: _scrollController,
+        thumbVisibility: true,
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Set up light for "${widget.plant.plantName}"',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF747822),
                 ),
-                onPressed: _isSaving
-                    ? null
-                    : () async {
-                        setState(() => _isSaving = true);
-                        try {
-                          final reminderInfo = _getLightReminder(
-                            widget.plant.sunlight,
-                          );
-                          final reminderType = reminderInfo['type'] as String;
-                          final nowPlus1 = DateTime.now().add(
-                            const Duration(minutes: 1),
-                          );
-                          // schedule a test notification for 1 minute from now
-                          final notiService = Provider.of<NotiService>(
-                            context,
-                            listen: false,
-                          );
-                          await notiService.scheduleNotification(
-                            title: reminderType == 'rotate'
-                                ? 'Rotate your ${widget.plant.plantName}'
-                                : 'Check light for ${widget.plant.plantName}',
-                            body: reminderType == 'rotate'
-                                ? 'It\'s time to rotate your plant for even growth!'
-                                : 'Check if your plant is getting enough light.',
-                            hour: nowPlus1.hour,
-                            minute: nowPlus1.minute,
-                          );
-                          debugPrint(
-                            'Test notification scheduled for $nowPlus1',
-                          );
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Test notification scheduled for 1 minute from now.',
-                              ),
-                            ),
-                          );
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Failed to schedule test notification: $e',
-                              ),
-                            ),
-                          );
-                        } finally {
-                          setState(() => _isSaving = false);
-                        }
-                      },
-                child: _isSaving
-                    ? const CircularProgressIndicator()
-                    : const Text('Test Light Notification'),
               ),
-            ),
-          ],
+              const SizedBox(height: 24),
+
+              _buildInfoCard('Light Level', widget.plant.sunlight),
+              _buildInfoCard('Reminder Type', reminderType),
+              _buildInfoCard('Frequency', 'Every $frequencyDays days'),
+
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _isSaving ? null : _saveLightReminder,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF747822),
+                    disabledBackgroundColor: Colors.grey,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: _isSaving
+                      ? const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            ),
+                            SizedBox(width: 12),
+                            Text(
+                              'Saving...',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        )
+                      : const Text(
+                          'Save Light Reminder',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontFamily: 'Poppins',
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFE8E8D5),
+                    disabledBackgroundColor: Colors.grey,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
+                      side: BorderSide(
+                        color: const Color(0xFF747822),
+                        width: 2,
+                      ),
+                    ),
+                    elevation: 0,
+                  ),
+                  onPressed: _isSaving ? null : _testLightNotification,
+                  child: Text(
+                    'Test Notification',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontFamily: 'Poppins',
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF747822),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

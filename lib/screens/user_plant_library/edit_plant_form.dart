@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sproutly/models/plant.dart';
+import 'package:sproutly/screens/user_plant_library/plant_library.dart';
 import 'package:sproutly/services/database_service.dart';
 import 'package:sproutly/cloudinary/delete_image.dart';
 import 'package:sproutly/cloudinary/upload_image.dart';
@@ -27,6 +28,7 @@ class _EditPlantFormState extends State<EditPlantForm> {
   String? _imageUrl;
   bool _isSaving = false;
   bool _isUploadingImage = false;
+  bool _isDeleting = false;
 
   late final Future<List<String>> _typeOptions;
   late final Future<List<String>> _waterOptions;
@@ -63,6 +65,49 @@ class _EditPlantFormState extends State<EditPlantForm> {
     _waterOptions = database.getDropdownOptions('water-level');
     _sunlightOptions = database.getDropdownOptions('sunlight-level');
     _careOptions = database.getDropdownOptions('care-level');
+  }
+
+  Future<void> _onDeletePlant() async {
+    if (_isDeleting) return;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Delete Plant'),
+            content: const Text(
+              'Are you sure you want to delete this plant? This action cannot be undone.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+    );
+    if (confirm == true) {
+      setState(() => _isDeleting = true);
+      await DatabaseService().deletePlant(widget.plant.id);
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (context) => const PlantLibraryScreen(navIndex: 1),
+          ),
+          (route) => false,
+        );
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Plant deleted successfully.")),
+      );
+      setState(() => _isDeleting = false);
+    }
   }
 
   // Future<void> _deleteImage() async {
@@ -102,8 +147,9 @@ class _EditPlantFormState extends State<EditPlantForm> {
     final File? newImage = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            AddPlantCamera(addPlant: false, onImageSelected: (file) {}),
+        builder:
+            (context) =>
+                AddPlantCamera(addPlant: false, onImageSelected: (file) {}),
       ),
     );
     if (newImage != null) {
@@ -239,19 +285,21 @@ class _EditPlantFormState extends State<EditPlantForm> {
                     color: Color(0xFF747822),
                     size: 24,
                   ),
-                  items: snapshot.data!
-                      .map(
-                        (option) => DropdownMenuItem(
-                          value: option,
-                          child: Text(
-                            option,
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                        ),
-                      )
-                      .toList(),
-                  validator: (value) =>
-                      value == null ? 'Please choose an option' : null,
+                  items:
+                      snapshot.data!
+                          .map(
+                            (option) => DropdownMenuItem(
+                              value: option,
+                              child: Text(
+                                option,
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                  validator:
+                      (value) =>
+                          value == null ? 'Please choose an option' : null,
                   onChanged: onChanged,
                 ),
               ),
@@ -318,28 +366,29 @@ class _EditPlantFormState extends State<EditPlantForm> {
                       child: SizedBox(
                         width: 230,
                         height: 230,
-                        child: (_imageUrl ?? '').isNotEmpty
-                            ? Image.network(
-                                _imageUrl!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    Container(
-                                      color: Colors.grey[300],
-                                      child: const Icon(
-                                        Icons.broken_image,
-                                        size: 60,
-                                        color: Color(0xFF747822),
+                        child:
+                            (_imageUrl ?? '').isNotEmpty
+                                ? Image.network(
+                                  _imageUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder:
+                                      (context, error, stackTrace) => Container(
+                                        color: Colors.grey[300],
+                                        child: const Icon(
+                                          Icons.broken_image,
+                                          size: 60,
+                                          color: Color(0xFF747822),
+                                        ),
                                       ),
-                                    ),
-                              )
-                            : Container(
-                                color: Colors.grey[300],
-                                child: const Icon(
-                                  Icons.local_florist,
-                                  size: 60,
-                                  color: Color(0xFF747822),
+                                )
+                                : Container(
+                                  color: Colors.grey[300],
+                                  child: const Icon(
+                                    Icons.local_florist,
+                                    size: 60,
+                                    color: Color(0xFF747822),
+                                  ),
                                 ),
-                              ),
                       ),
                     ),
                   ],
@@ -396,9 +445,11 @@ class _EditPlantFormState extends State<EditPlantForm> {
                         hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
                       ),
                       style: const TextStyle(fontSize: 16),
-                      validator: (value) => value?.isEmpty ?? true
-                          ? 'Please enter plant name'
-                          : null,
+                      validator:
+                          (value) =>
+                              value?.isEmpty ?? true
+                                  ? 'Please enter plant name'
+                                  : null,
                     ),
                   ),
                 ],
@@ -437,8 +488,8 @@ class _EditPlantFormState extends State<EditPlantForm> {
                 value: _selectedCareLevel,
                 label: 'Care Level',
                 iconPath: 'assets/care_icon.png',
-                onChanged: (value) =>
-                    setState(() => _selectedCareLevel = value),
+                onChanged:
+                    (value) => setState(() => _selectedCareLevel = value),
               ),
               const SizedBox(height: 40),
               // Save button
@@ -455,39 +506,83 @@ class _EditPlantFormState extends State<EditPlantForm> {
                     ),
                     elevation: 0,
                   ),
-                  child: _isSaving
-                      ? const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
+                  child:
+                      _isSaving
+                          ? const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
                               ),
-                            ),
-                            SizedBox(width: 12),
-                            Text(
-                              'Saving...',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                              SizedBox(width: 12),
+                              Text(
+                                'Saving...',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
+                            ],
+                          )
+                          : const Text(
+                            'Save Changes',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
                             ),
-                          ],
-                        )
-                      : const Text(
-                          'Save Changes',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
                           ),
-                        ),
                 ),
+              ),
+              const SizedBox(height: 24),
+              // Danger zone - Delete Plant button
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Divider(color: Colors.red.shade900, thickness: 1.5),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade900,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      icon:
+                          _isDeleting ? null : const Icon(Icons.delete_forever),
+                      label:
+                          _isDeleting
+                              ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : const Text(
+                                'Delete Plant',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                      onPressed: _isDeleting ? null : _onDeletePlant,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

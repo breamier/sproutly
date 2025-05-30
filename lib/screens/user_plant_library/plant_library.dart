@@ -22,27 +22,6 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
-  // final List<Map<String, dynamic>> plantData = [
-  //   {'name': 'Tulip', 'type': 'Plantae', 'image': 'assets/tulips.png'},
-  //   {'name': 'Hibiscus', 'type': 'Type', 'image': 'assets/hibiscus.png'},
-  //   {'name': 'Rose', 'type': 'Type', 'image': 'assets/rose.png'},
-  //   {'name': 'Hyacinth', 'type': 'Type', 'image': 'assets/hyacinth.png'},
-  // ];
-
-  // List<Map<String, dynamic>> get filteredPlants {
-  //   if (_searchQuery.isEmpty) {
-  //     return plantData;
-  //   }
-
-  //   return plantData.where((plant) {
-  //     final name = plant['name'].toString().toLowerCase();
-  //     final type = plant['type'].toString().toLowerCase();
-  //     final query = _searchQuery.toLowerCase();
-
-  //     return name.contains(query) || type.contains(query);
-  //   }).toList();
-  // }
-
   @override
   void initState() {
     super.initState();
@@ -60,16 +39,6 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
     setState(() {
       _searchQuery = _searchController.text;
     });
-  }
-
-  void _deletePlant(String plantId, String plantName) {
-    // Just show a simple message for now
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Delete clicked for $plantName'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
   }
 
   void _showPlantPicker(
@@ -142,10 +111,6 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
                       color: oliveTitleColor,
                       fontWeight: FontWeight.bold,
                     ),
-                  ),
-                  GestureDetector(
-                    onTap: () => _deletePlant('', 'Your Plants'),
-                    child: Icon(Icons.delete, color: oliveTitleColor, size: 24),
                   ),
                 ],
               ),

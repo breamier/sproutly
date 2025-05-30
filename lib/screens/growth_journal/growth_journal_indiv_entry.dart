@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sproutly/models/plant_journal_entry.dart';
+import 'package:sproutly/screens/growth_journal/growthjournal_entries_screen.dart';
 import 'package:sproutly/services/database_service.dart';
 
 // cloudinary delete image
@@ -41,6 +42,7 @@ class GrowthJournalIndivEntry extends StatefulWidget {
 
 class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
   bool isEditing = false;
+  bool _isDeleting = false;
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
 
@@ -61,6 +63,54 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
     _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  Future<void> _onDeleteEntry() async {
+    if (_isDeleting) return;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Delete Journal Entry'),
+            content: const Text(
+              'Are you sure you want to delete this journal entry? This action cannot be undone.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+    );
+    if (confirm == true) {
+      setState(() => _isDeleting = true);
+      await DatabaseService().deleteJournalEntry(
+        widget.entry.plantId,
+        widget.entry.id,
+      );
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder:
+                (context) =>
+                    GrowthJournalEntriesScreen(plantId: widget.entry.plantId),
+          ),
+          (route) => false,
+        );
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Plant deleted successfully.")),
+      );
+      setState(() => _isDeleting = false);
+    }
   }
 
   String extractCloudinaryPublicId(String url) {
@@ -235,7 +285,7 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
                           DateFormat(
                             'MMMM d, y, h:mm a',
                           ).format(widget.entry.createdAt.toDate()),
-                            style: TextStyle(
+                          style: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: screenWidth * 0.03,
                             color: Colors.grey,
@@ -334,6 +384,53 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
                     ),
                   ),
                 ),
+
+              const SizedBox(height: 24),
+              // Delete Plant Button
+              if (isEditing)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Divider(color: Colors.red.shade900, thickness: 1.5),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red.shade900,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        icon:
+                            _isDeleting
+                                ? null
+                                : const Icon(Icons.delete_forever),
+                        label:
+                            _isDeleting
+                                ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                : const Text(
+                                  'Delete Journal Entry',
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                        onPressed: _isDeleting ? null : _onDeleteEntry,
+                      ),
+                    ),
+                  ],
+                ),
             ],
           ),
         ),
@@ -342,77 +439,79 @@ class _GrowthJournalIndivEntryState extends State<GrowthJournalIndivEntry> {
   }
 
   Widget _buildAllImages(BuildContext context) {
-  return GridView.builder(
-    shrinkWrap: true,
-    physics: const NeverScrollableScrollPhysics(),
-    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: 2,
-      crossAxisSpacing: 8,
-      mainAxisSpacing: 8,
-      childAspectRatio: 1,
-    ),
-    itemCount: _imageUrls.length,
-    itemBuilder: (context, index) {
-      return Stack(
-        alignment: Alignment.topRight,
-        children: [
-          Container(
-            width: double.infinity,
-            height: double.infinity,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                _imageUrls[index],
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  color: Colors.grey[300],
-                  child: const Icon(Icons.broken_image),
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+        childAspectRatio: 1,
+      ),
+      itemCount: _imageUrls.length,
+      itemBuilder: (context, index) {
+        return Stack(
+          alignment: Alignment.topRight,
+          children: [
+            Container(
+              width: double.infinity,
+              height: double.infinity,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  _imageUrls[index],
+                  fit: BoxFit.cover,
+                  errorBuilder:
+                      (context, error, stackTrace) => Container(
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.broken_image),
+                      ),
                 ),
               ),
             ),
-          ),
-          if (isEditing)
-            Positioned(
-              top: 4,
-              right: 4,
-              child: _isDeletingImage && _deletingImageUrl == _imageUrls[index]
-                  ? Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.8),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const SizedBox(
-                        height: 16,
-                        width: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.red,
+            if (isEditing)
+              Positioned(
+                top: 4,
+                right: 4,
+                child:
+                    _isDeletingImage && _deletingImageUrl == _imageUrls[index]
+                        ? Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.8),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const SizedBox(
+                            height: 16,
+                            width: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.red,
+                            ),
+                          ),
+                        )
+                        : Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.6),
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.close,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                            padding: const EdgeInsets.all(4),
+                            constraints: const BoxConstraints(),
+                            onPressed: () async {
+                              await _deleteImage(_imageUrls[index]);
+                            },
+                          ),
                         ),
-                      ),
-                    )
-                  : Container(
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.6),
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.close,
-                          color: Colors.white,
-                          size: 16,
-                        ),
-                        padding: const EdgeInsets.all(4),
-                        constraints: const BoxConstraints(),
-                        onPressed: () async {
-                          await _deleteImage(_imageUrls[index]);
-                        },
-                      ),
-                    ),
-            ),
-        ],
-      );
-    },
-  );
-}
+              ),
+          ],
+        );
+      },
+    );
+  }
 }

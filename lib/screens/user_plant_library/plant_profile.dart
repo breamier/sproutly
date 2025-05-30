@@ -4,7 +4,6 @@ import 'package:sproutly/models/plant.dart';
 import 'package:sproutly/screens/growth_journal/growthjournal_entries_screen.dart';
 import 'package:sproutly/services/database_service.dart';
 import 'plant_issues.dart';
-import '';
 
 //cloudinary delete function
 import 'edit_plant_form.dart';
@@ -93,10 +92,11 @@ class _PlantProfileScreenState extends State<PlantProfileScreen> {
                       final updated = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => EditPlantForm(
-                            userId: widget.userId,
-                            plant: plant,
-                          ),
+                          builder:
+                              (context) => EditPlantForm(
+                                userId: widget.userId,
+                                plant: plant,
+                              ),
                         ),
                       );
                       if (updated == true)
@@ -138,29 +138,30 @@ class _PlantProfileScreenState extends State<PlantProfileScreen> {
                               child: SizedBox(
                                 width: 230,
                                 height: 230,
-                                child: (_imageUrl ?? '').isNotEmpty
-                                    ? Image.network(
-                                        _imageUrl!,
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) =>
-                                                Container(
-                                                  color: Colors.grey[300],
-                                                  child: const Icon(
-                                                    Icons.broken_image,
-                                                    size: 60,
-                                                    color: Color(0xFF747822),
+                                child:
+                                    (_imageUrl ?? '').isNotEmpty
+                                        ? Image.network(
+                                          _imageUrl!,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  Container(
+                                                    color: Colors.grey[300],
+                                                    child: const Icon(
+                                                      Icons.broken_image,
+                                                      size: 60,
+                                                      color: Color(0xFF747822),
+                                                    ),
                                                   ),
-                                                ),
-                                      )
-                                    : Container(
-                                        color: Colors.grey[300],
-                                        child: const Icon(
-                                          Icons.local_florist,
-                                          size: 60,
-                                          color: oliveTitleColor,
+                                        )
+                                        : Container(
+                                          color: Colors.grey[300],
+                                          child: const Icon(
+                                            Icons.local_florist,
+                                            size: 60,
+                                            color: oliveTitleColor,
+                                          ),
                                         ),
-                                      ),
                               ),
                             ),
                           ),
@@ -296,8 +297,9 @@ class _PlantProfileScreenState extends State<PlantProfileScreen> {
                             onTap: () {
                               showDialog(
                                 context: context,
-                                builder: (context) =>
-                                    PlantIssuesScreen(plantId: plant.id),
+                                builder:
+                                    (context) =>
+                                        PlantIssuesScreen(plantId: plant.id),
                               );
                             },
                           ),
@@ -312,8 +314,8 @@ class _PlantProfileScreenState extends State<PlantProfileScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      GrowthJournalEntriesScreen(
+                                  builder:
+                                      (context) => GrowthJournalEntriesScreen(
                                         plantId: plant.id,
                                       ),
                                 ),

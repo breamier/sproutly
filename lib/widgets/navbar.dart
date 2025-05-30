@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:sproutly/screens/settings/settings_screen.dart';
 import '../screens/user_plant_library/plant_library.dart';
 import '../screens/guide_book/guide_book.dart';
 import '../screens/dashboard_screen.dart';
 
 class CustomNavBarPage extends StatefulWidget {
-  const CustomNavBarPage({super.key});
+  final int selectedIndex;
+  const CustomNavBarPage({super.key, this.selectedIndex = 0});
 
   @override
   // ignore: library_private_types_in_public_api
@@ -12,9 +14,16 @@ class CustomNavBarPage extends StatefulWidget {
 }
 
 class _CustomNavBarPageState extends State<CustomNavBarPage> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.selectedIndex;
+  }
 
   void _onItemTapped(int index) {
+    if (_selectedIndex == index) return;
     setState(() {
       _selectedIndex = index;
     });
@@ -22,25 +31,32 @@ class _CustomNavBarPageState extends State<CustomNavBarPage> {
     // Navigate to corresponding screens
     switch (index) {
       case 0:
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => DashboardScreen()),
+          MaterialPageRoute(builder: (context) => DashboardScreen(navIndex: 0)),
         );
         break;
       case 1:
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const PlantLibraryScreen()),
+          MaterialPageRoute(
+            builder: (context) => const PlantLibraryScreen(navIndex: 1),
+          ),
         );
         break;
       case 2:
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const GuideBookScreen()),
+          MaterialPageRoute(
+            builder: (context) => const GuideBookScreen(navIndex: 2),
+          ),
         );
         break;
       case 3:
-        // Settings - just clickable for now, no navigation
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => SettingsScreen(navIndex: 3)),
+        );
         break;
     }
   }
@@ -72,12 +88,13 @@ class _CustomNavBarPageState extends State<CustomNavBarPage> {
     return GestureDetector(
       onTap: () => _onItemTapped(index),
       child: Container(
-        decoration: isSelected
-            ? BoxDecoration(
-                color: const Color(0xFFDCE093),
-                borderRadius: BorderRadius.circular(30),
-              )
-            : null,
+        decoration:
+            isSelected
+                ? BoxDecoration(
+                  color: const Color(0xFFDCE093),
+                  borderRadius: BorderRadius.circular(30),
+                )
+                : null,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Icon(icon, color: const Color(0xFF6C7511)),
       ),

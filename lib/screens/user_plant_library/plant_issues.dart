@@ -27,8 +27,18 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
 
   String _getMonthName(int month) {
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     return months[month - 1];
   }
@@ -36,13 +46,13 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
   String _formatTime(DateTime dateTime) {
     int hour = dateTime.hour;
     String period = hour >= 12 ? 'PM' : 'AM';
-    
+
     if (hour > 12) {
       hour -= 12;
     } else if (hour == 0) {
       hour = 12;
     }
-    
+
     String minute = dateTime.minute.toString().padLeft(2, '0');
     return '$hour:$minute $period';
   }
@@ -50,70 +60,77 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
   void _addNewIssue() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-        title: Text(
-          'Add New Plant Issue',
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-            color: oliveTitleColor,
-          ),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _newIssueController,
-                maxLines: null, 
-                decoration: InputDecoration(
-                  hintText: 'Type plant issue here',
-                  hintStyle: TextStyle(
-                    fontFamily: 'Poppins',
-                    color: oliveTitleColor.withOpacity(0.5),
+      builder:
+          (context) => AlertDialog(
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 24,
+            ),
+            title: Text(
+              'Add New Plant Issue',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: oliveTitleColor,
+              ),
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: _newIssueController,
+                    maxLines: null,
+                    decoration: InputDecoration(
+                      hintText: 'Type plant issue here',
+                      hintStyle: TextStyle(
+                        fontFamily: 'Poppins',
+                        color: oliveTitleColor.withOpacity(0.5),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: oliveTitleColor),
+                      ),
+                    ),
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      color: oliveTitleColor,
+                    ),
                   ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: oliveTitleColor),
-                  ),
-                ),
-                style: TextStyle(fontFamily: 'Poppins', color: oliveTitleColor),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Cancel', style: TextStyle(color: oliveTitleColor)),
+              ),
+              TextButton(
+                onPressed: () async {
+                  if (_newIssueController.text.isNotEmpty) {
+                    // Add issue to firestore
+                    final issue = PlantIssue(
+                      id: '',
+                      plantId: widget.plantId,
+                      issueDescription: _newIssueController.text,
+                      resolved: false,
+                      createdAt: Timestamp.now(),
+                    );
+
+                    await DatabaseService().addPlantIssue(
+                      widget.plantId,
+                      issue,
+                    );
+                    setState(() {
+                      _newIssueController.clear();
+                    });
+                    Navigator.pop(context);
+                  }
+                },
+                child: Text('Add', style: TextStyle(color: oliveTitleColor)),
               ),
             ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: oliveTitleColor)),
-          ),
-          TextButton(
-            onPressed: () async {
-              if (_newIssueController.text.isNotEmpty) {
-                // Add issue to firestore
-                final issue = PlantIssue(
-                  id: '',
-                  plantId: widget.plantId,
-                  issueDescription: _newIssueController.text,
-                  resolved: false,
-                  createdAt: Timestamp.now(),
-                );
-
-                await DatabaseService().addPlantIssue(
-                  widget.plantId,
-                  issue,
-                );
-                setState(() {
-                  _newIssueController.clear();
-                });
-                Navigator.pop(context);
-              }
-            },
-            child: Text('Add', style: TextStyle(color: oliveTitleColor)),
-          ),
-        ],
-      ),
     );
   }
 
@@ -128,9 +145,32 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
     await DatabaseService().updatePlantIssue(widget.plantId, issueId, updated);
   }
 
-  void _onDeletePressed() {
-    // TODO: Add delete functionality
-    print('Delete button pressed');
+  Future<void> _onDeletePressed(String issueId) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Delete Plant Issue'),
+            content: const Text('Are you sure you want to delete this issue?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+    );
+    if (confirm == true) {
+      await DatabaseService().deletePlantIssue(widget.plantId, issueId);
+      setState(() {});
+    }
   }
 
   @override
@@ -157,7 +197,10 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
                           decoration: BoxDecoration(
                             color: const Color(0xFFE8E8D5),
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: oliveTitleColor, width: 1.5),
+                            border: Border.all(
+                              color: oliveTitleColor,
+                              width: 1.5,
+                            ),
                           ),
                           child: IconButton(
                             icon: const Icon(
@@ -183,14 +226,6 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
                           ),
                         ),
                       ],
-                    ),
-                    GestureDetector(
-                      onTap: _onDeletePressed,
-                      child: Icon(
-                        Icons.delete,
-                        color: oliveTitleColor,
-                        size: 24,
-                      ),
                     ),
                   ],
                 ),
@@ -259,9 +294,9 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
                         itemBuilder: (context, index) {
                           final issue = resolvedIssues[index];
                           final createdDate = issue.createdAt.toDate();
-                          final formattedDate = 
+                          final formattedDate =
                               "${_getMonthName(createdDate.month)} ${createdDate.day}, ${createdDate.year}, ${_formatTime(createdDate)}";
-                          
+
                           return Container(
                             margin: const EdgeInsets.only(bottom: 10),
                             padding: const EdgeInsets.symmetric(
@@ -272,25 +307,41 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
                               color: lightBackgroundColor,
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: Column(
+                            child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  issue.issueDescription,
-                                  style: TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 16,
-                                    color: oliveTitleColor,
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        issue.issueDescription,
+                                        style: TextStyle(
+                                          fontFamily: 'Poppins',
+                                          fontSize: 16,
+                                          color: oliveTitleColor,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        formattedDate,
+                                        style: TextStyle(
+                                          fontFamily: 'Poppins',
+                                          fontSize: 12,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  formattedDate,
-                                  style: TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 12,
-                                    color: Colors.grey,
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Color(0xFF747822),
                                   ),
+                                  onPressed: () => _onDeletePressed(issue.id),
+                                  tooltip: 'Delete issue',
                                 ),
                               ],
                             ),
@@ -453,7 +504,7 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
                     }
 
                     return ListView.builder(
-                      shrinkWrap: true, 
+                      shrinkWrap: true,
                       itemCount: issues.length + 1,
                       itemBuilder: (context, index) {
                         if (index < issues.length) {
@@ -473,7 +524,8 @@ class _PlantIssuesScreenState extends State<PlantIssuesScreen> {
                                     ),
                                   ),
                                   GestureDetector(
-                                    onTap: () => _markAsResolved(issue.id, issue),
+                                    onTap:
+                                        () => _markAsResolved(issue.id, issue),
                                     child: Container(
                                       width: 24,
                                       height: 24,

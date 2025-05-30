@@ -257,7 +257,8 @@ class DevToolsPage extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const GuideBookScreen(),
+                        builder:
+                            (context) => const GuideBookScreen(navIndex: 2),
                       ),
                     );
                   },
@@ -319,7 +320,8 @@ class DevToolsPage extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const PlantLibraryScreen(),
+                        builder:
+                            (context) => const PlantLibraryScreen(navIndex: 1),
                       ),
                     );
                   },
@@ -349,26 +351,27 @@ class DevToolsPage extends StatelessWidget {
                   onPressed: () async {
                     final confirm = await showDialog<bool>(
                       context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text("Confirm Delete"),
-                        content: const Text(
-                          "Are you sure you want to delete all your plants?",
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: const Text("Cancel"),
-                          ),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: buttonColor,
-                              foregroundColor: Colors.white,
+                      builder:
+                          (context) => AlertDialog(
+                            title: const Text("Confirm Delete"),
+                            content: const Text(
+                              "Are you sure you want to delete all your plants?",
                             ),
-                            onPressed: () => Navigator.pop(context, true),
-                            child: const Text("Delete All"),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text("Cancel"),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: buttonColor,
+                                  foregroundColor: Colors.white,
+                                ),
+                                onPressed: () => Navigator.pop(context, true),
+                                child: const Text("Delete All"),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
                     );
                     if (confirm == true) {
                       try {
@@ -410,7 +413,7 @@ class DevToolsPage extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const SettingsScreen(),
+                        builder: (context) => SettingsScreen(navIndex: 3),
                       ),
                     );
                   },

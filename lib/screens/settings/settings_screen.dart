@@ -1,10 +1,89 @@
 import 'package:flutter/material.dart';
 import 'package:sproutly/screens/settings/help_center_screen.dart';
+import 'package:sproutly/services/database_service.dart';
+import '../../services/notification_service.dart';
+import '../../models/reminders.dart';
 
 const Color oliveGreen = Color(0xFF747822);
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool _notificationsEnabled = true;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotificationSetting();
+  }
+
+  Future<void> _loadNotificationSetting() async {
+    final enabled = await DatabaseService().getNotificationsEnabled();
+    setState(() {
+      _notificationsEnabled = enabled;
+      _loading = false;
+    });
+  }
+
+  Future<void> _toggleNotifications(bool value) async {
+    setState(() => _notificationsEnabled = value);
+    await DatabaseService().setNotificationsEnabled(value);
+
+    final db = DatabaseService();
+    final notiService = NotiService();
+
+    if (!value) {
+      // // cancel all notifications, IF DISABLED
+      final ids = await db.getAllNotificationIds();
+      await notiService.cancelAllRemindersNotifications(ids);
+    } else {
+      // re-schedule all reminders, IF ENABLED AGAIN
+      final reminders = await db.getAllRemindersOnce();
+      for (final reminder in reminders.where(
+        (r) => !r.reminderType.startsWith('test_'),
+      )) {
+        // schedule notification
+        // generate a new notificationId for each reminder
+        final notificationId =
+            reminder.reminderDate.millisecondsSinceEpoch % 1000000000;
+        await notiService.scheduleNotification(
+          id: notificationId,
+          title: _reminderTaskText(reminder),
+          body: 'Reminder for ${reminder.plantName}',
+          hour: reminder.reminderDate.hour,
+          minute: reminder.reminderDate.minute,
+          // add weekday if needed
+        );
+        // update notificationId in Firestore
+        await db.updateReminder(
+          reminder.id,
+          reminder.copyWith(notificationId: notificationId),
+        );
+      }
+    }
+  }
+
+  // notification title
+  String _reminderTaskText(Reminder reminder) {
+    switch (reminder.reminderType) {
+      case 'water':
+        return 'Water the ${reminder.plantName}';
+      case 'rotate':
+        return 'Rotate your ${reminder.plantName}';
+      case 'check_light':
+        return 'Check light for ${reminder.plantName}';
+      case 'check_health':
+        return 'Check health of ${reminder.plantName}';
+      default:
+        return '${reminder.reminderType} for ${reminder.plantName}';
+    }
+  }
 
   Widget _buildSettingsButton(
     BuildContext context,
@@ -164,14 +243,46 @@ class SettingsScreen extends StatelessWidget {
                 verticalPadding: verticalPadding,
                 horizontalPadding: horizontalPadding,
               ),
-              _buildSettingsButton(
-                context,
-                'Turn off Notifications',
-                Icons.notifications_off,
-                fontSize: buttonFontSize,
-                iconSize: iconSize,
-                verticalPadding: verticalPadding,
-                horizontalPadding: horizontalPadding,
+              Container(
+                margin: EdgeInsets.only(bottom: verticalPadding * 0.85),
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: oliveGreen),
+                  borderRadius: BorderRadius.circular(25),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: verticalPadding,
+                    horizontal: horizontalPadding,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Enable Notifications',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w700,
+                          fontSize: buttonFontSize,
+                          color: oliveGreen,
+                        ),
+                      ),
+                      Switch(
+                        value: _notificationsEnabled,
+                        onChanged: _loading ? null : _toggleNotifications,
+                        activeThumbColor: oliveGreen,
+                      ),
+                    ],
+                  ),
+                ),
               ),
               _buildSettingsButton(
                 context,

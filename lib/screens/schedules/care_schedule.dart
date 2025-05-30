@@ -60,6 +60,9 @@ class _CareScheduleScreenState extends State<CareScheduleScreen> {
         plantId: widget.plant.id,
         reminderType: reminderType,
       );
+
+      final notificationId = reminderDate.millisecondsSinceEpoch % 1000000000;
+
       if (existing != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -77,18 +80,24 @@ class _CareScheduleScreenState extends State<CareScheduleScreen> {
         reminderDate: reminderDate,
         reminderType: reminderType,
         completed: false,
+        notificationId: notificationId,
       );
 
       await db.addReminder(reminder);
       debugPrint('Care reminder added to Firestore: ${reminder.toMap()}');
 
       final notiService = Provider.of<NotiService>(context, listen: false);
-      await notiService.scheduleNotification(
-        title: 'Check health of ${widget.plant.plantName}',
-        body: 'Time to inspect your plant for issues, pests, or root rot!',
-        hour: 10,
-        minute: 0,
-      );
+      final notificationsEnabled = await DatabaseService()
+          .getNotificationsEnabled();
+      if (notificationsEnabled) {
+        await notiService.scheduleNotification(
+          id: notificationId,
+          title: 'Check health of ${widget.plant.plantName}',
+          body: 'Time to inspect your plant for issues, pests, or root rot!',
+          hour: 10,
+          minute: 0,
+        );
+      }
       debugPrint('Notification scheduled for ${reminder.reminderDate}');
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -108,21 +117,38 @@ class _CareScheduleScreenState extends State<CareScheduleScreen> {
   Future<void> _testCareNotification() async {
     setState(() => _isSaving = true);
     try {
-      final reminderInfo = _getCareReminder(widget.plant.careLevel);
-      final nowPlus2 = DateTime.now().add(const Duration(minutes: 1));
-
+      final nowPlus30 = DateTime.now().add(const Duration(seconds: 30));
+      final notificationId = nowPlus30.millisecondsSinceEpoch % 1000000000;
+      final db = Provider.of<DatabaseService>(context, listen: false);
       final notiService = Provider.of<NotiService>(context, listen: false);
-      await notiService.scheduleNotification(
-        title: 'Check health of ${widget.plant.plantName}',
-        body: 'Time to inspect your plant for issues, pests, or root rot!',
-        hour: nowPlus2.hour,
-        minute: nowPlus2.minute,
+
+      // Save a test care reminder
+      final testReminder = Reminder(
+        id: '',
+        plantName: widget.plant.plantName,
+        plantId: widget.plant.id,
+        reminderDate: nowPlus30,
+        reminderType: 'test_care',
+        completed: false,
+        notificationId: notificationId,
       );
-      debugPrint('Test care notification scheduled for $nowPlus2');
+      await db.addReminder(testReminder);
+
+      final notificationsEnabled = await DatabaseService()
+          .getNotificationsEnabled();
+      if (notificationsEnabled) {
+        await notiService.scheduleNotification(
+          id: notificationId,
+          title: 'Test: Care for ${widget.plant.plantName}',
+          body: 'Test: This is a test care notification!',
+          hour: nowPlus30.hour,
+          minute: nowPlus30.minute,
+        );
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Test care notification scheduled for 1 minute from now.',
+            'Test care notification scheduled for 30 seconds from now!',
           ),
         ),
       );

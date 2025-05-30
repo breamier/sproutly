@@ -60,6 +60,10 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
         plantId: widget.plant.id,
         reminderType: reminderType,
       );
+
+      // generate notificationId
+      final notificationId = reminderDate.millisecondsSinceEpoch % 1000000000;
+
       // if reminder also exist, give message
       if (existing != null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -78,22 +82,28 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
         reminderDate: reminderDate,
         reminderType: reminderType,
         completed: false,
+        notificationId: notificationId,
       );
 
       await db.addReminder(reminder);
       debugPrint('Reminder added to Firestore: ${reminder.toMap()}');
 
       final notiService = Provider.of<NotiService>(context, listen: false);
-      await notiService.scheduleNotification(
-        title: reminderType == 'rotate'
-            ? 'Rotate your ${widget.plant.plantName}'
-            : 'Check light for ${widget.plant.plantName}',
-        body: reminderType == 'rotate'
-            ? 'It\'s time to rotate your plant for even growth!'
-            : 'Check if your plant is getting enough light.',
-        hour: 9,
-        minute: 0,
-      );
+      final notificationsEnabled = await DatabaseService()
+          .getNotificationsEnabled();
+      if (notificationsEnabled) {
+        await notiService.scheduleNotification(
+          id: notificationId,
+          title: reminderType == 'rotate'
+              ? 'Rotate your ${widget.plant.plantName}'
+              : 'Check light for ${widget.plant.plantName}',
+          body: reminderType == 'rotate'
+              ? 'It\'s time to rotate your plant for even growth!'
+              : 'Check if your plant is getting enough light.',
+          hour: 9,
+          minute: 0,
+        );
+      }
       debugPrint('Notification scheduled for ${reminder.reminderDate}');
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -103,6 +113,54 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Failed to save reminder: $e')));
+    } finally {
+      setState(() => _isSaving = false);
+    }
+  }
+
+  Future<void> _testLightNotification() async {
+    setState(() => _isSaving = true);
+    try {
+      final nowPlus1 = DateTime.now().add(const Duration(minutes: 1));
+      final notificationId = nowPlus1.millisecondsSinceEpoch % 1000000000;
+      final db = Provider.of<DatabaseService>(context, listen: false);
+      final notiService = Provider.of<NotiService>(context, listen: false);
+
+      // Save a test light reminder
+      final testReminder = Reminder(
+        id: '',
+        plantName: widget.plant.plantName,
+        plantId: widget.plant.id,
+        reminderDate: nowPlus1,
+        reminderType: 'test_light',
+        completed: false,
+        notificationId: notificationId,
+      );
+      await db.addReminder(testReminder);
+
+      final notificationsEnabled = await DatabaseService()
+          .getNotificationsEnabled();
+      if (notificationsEnabled) {
+        await notiService.scheduleNotification(
+          id: notificationId,
+          title: 'Test: Light for ${widget.plant.plantName}',
+          body: 'Test: This is a test light notification!',
+          hour: nowPlus1.hour,
+          minute: nowPlus1.minute,
+        );
+      }
+      debugPrint('Test notification scheduled for $nowPlus1');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Test light notification scheduled for 1 minute from now.',
+          ),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to schedule test notification: $e')),
+      );
     } finally {
       setState(() => _isSaving = false);
     }
@@ -159,58 +217,10 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF4B5502),
+                  backgroundColor: const Color(0xFF4B5502),
                   foregroundColor: Colors.white,
                 ),
-                onPressed: _isSaving
-                    ? null
-                    : () async {
-                        setState(() => _isSaving = true);
-                        try {
-                          final reminderInfo = _getLightReminder(
-                            widget.plant.sunlight,
-                          );
-                          final reminderType = reminderInfo['type'] as String;
-                          final nowPlus1 = DateTime.now().add(
-                            const Duration(minutes: 1),
-                          );
-                          // schedule a test notification for 1 minute from now
-                          final notiService = Provider.of<NotiService>(
-                            context,
-                            listen: false,
-                          );
-                          await notiService.scheduleNotification(
-                            title: reminderType == 'rotate'
-                                ? 'Rotate your ${widget.plant.plantName}'
-                                : 'Check light for ${widget.plant.plantName}',
-                            body: reminderType == 'rotate'
-                                ? 'It\'s time to rotate your plant for even growth!'
-                                : 'Check if your plant is getting enough light.',
-                            hour: nowPlus1.hour,
-                            minute: nowPlus1.minute,
-                          );
-                          debugPrint(
-                            'Test notification scheduled for $nowPlus1',
-                          );
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Test notification scheduled for 1 minute from now.',
-                              ),
-                            ),
-                          );
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Failed to schedule test notification: $e',
-                              ),
-                            ),
-                          );
-                        } finally {
-                          setState(() => _isSaving = false);
-                        }
-                      },
+                onPressed: _isSaving ? null : _testLightNotification,
                 child: _isSaving
                     ? const CircularProgressIndicator()
                     : const Text('Test Light Notification'),

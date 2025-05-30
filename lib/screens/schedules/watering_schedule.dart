@@ -49,6 +49,9 @@ class _WateringScheduleScreenState extends State<WateringScheduleScreen> {
           _wateringTime!.minute,
         );
 
+        // generate notificationId after reminder datae
+        final notificationId = reminderDate.millisecondsSinceEpoch % 1000000000;
+
         // no duplicate watering reminders for this plant/day/time
         final existing = await db.findReminderByPlantAndType(
           plantId: widget.plant.id,
@@ -68,16 +71,22 @@ class _WateringScheduleScreenState extends State<WateringScheduleScreen> {
           reminderDate: reminderDate,
           reminderType: 'water',
           completed: false,
+          notificationId: notificationId,
         );
         await db.addReminder(reminder);
 
-        await notiService.scheduleNotification(
-          title: 'Water your ${widget.plant.plantName}',
-          body: 'It\'s time to water your plant!',
-          hour: _wateringTime!.hour,
-          minute: _wateringTime!.minute,
-          weekday: weekday,
-        );
+        final notificationsEnabled = await DatabaseService()
+            .getNotificationsEnabled();
+        if (notificationsEnabled) {
+          await notiService.scheduleNotification(
+            id: notificationId,
+            title: 'Water your ${widget.plant.plantName}',
+            body: 'It\'s time to water your plant!',
+            hour: _wateringTime!.hour,
+            minute: _wateringTime!.minute,
+            weekday: weekday,
+          );
+        }
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -99,12 +108,16 @@ class _WateringScheduleScreenState extends State<WateringScheduleScreen> {
     try {
       final nowPlus30 = DateTime.now().add(const Duration(seconds: 30));
       final notiService = Provider.of<NotiService>(context, listen: false);
-      await notiService.scheduleNotification(
-        title: 'Test: Water your ${widget.plant.plantName}',
-        body: 'Test: This is a test watering notification!',
-        hour: nowPlus30.hour,
-        minute: nowPlus30.minute,
-      );
+      final notificationsEnabled = await DatabaseService()
+          .getNotificationsEnabled();
+      if (notificationsEnabled) {
+        await notiService.scheduleNotification(
+          title: 'Test: Water your ${widget.plant.plantName}',
+          body: 'Test: This is a test watering notification!',
+          hour: nowPlus30.hour,
+          minute: nowPlus30.minute,
+        );
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Test notification scheduled for 30 seconds from now!'),

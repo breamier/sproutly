@@ -3,6 +3,7 @@ import 'package:sproutly/screens/user_plant_library/plant_profile.dart';
 import 'package:sproutly/models/plant.dart';
 import 'package:sproutly/services/database_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sproutly/widgets/navbar.dart';
 
 // for reminders
 import '../schedules/light_schedule.dart';
@@ -10,7 +11,8 @@ import '../schedules/care_schedule.dart';
 import '../schedules/watering_schedule.dart';
 
 class PlantLibraryScreen extends StatefulWidget {
-  const PlantLibraryScreen({super.key});
+  final int navIndex;
+  const PlantLibraryScreen({super.key, this.navIndex = 1});
 
   @override
   State<PlantLibraryScreen> createState() => _PlantLibraryScreenState();
@@ -19,27 +21,6 @@ class PlantLibraryScreen extends StatefulWidget {
 class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-
-  // final List<Map<String, dynamic>> plantData = [
-  //   {'name': 'Tulip', 'type': 'Plantae', 'image': 'assets/tulips.png'},
-  //   {'name': 'Hibiscus', 'type': 'Type', 'image': 'assets/hibiscus.png'},
-  //   {'name': 'Rose', 'type': 'Type', 'image': 'assets/rose.png'},
-  //   {'name': 'Hyacinth', 'type': 'Type', 'image': 'assets/hyacinth.png'},
-  // ];
-
-  // List<Map<String, dynamic>> get filteredPlants {
-  //   if (_searchQuery.isEmpty) {
-  //     return plantData;
-  //   }
-
-  //   return plantData.where((plant) {
-  //     final name = plant['name'].toString().toLowerCase();
-  //     final type = plant['type'].toString().toLowerCase();
-  //     final query = _searchQuery.toLowerCase();
-
-  //     return name.contains(query) || type.contains(query);
-  //   }).toList();
-  // }
 
   @override
   void initState() {
@@ -60,16 +41,6 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
     });
   }
 
-  void _deletePlant(String plantId, String plantName) {
-    // Just show a simple message for now
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Delete clicked for $plantName'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
   void _showPlantPicker(
     BuildContext context, {
     required String scheduleType,
@@ -82,30 +53,36 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
       builder: (ctx) {
         return ListView(
           shrinkWrap: true,
-          children: plantList.map((plant) {
-            return ListTile(
-              leading: plant.img != null && plant.img!.isNotEmpty
-                  ? CircleAvatar(backgroundImage: NetworkImage(plant.img!))
-                  : const CircleAvatar(child: Icon(Icons.local_florist)),
-              title: Text(plant.plantName),
-              subtitle: Text(plant.type ?? ''),
-              onTap: () {
-                Navigator.pop(ctx);
-                Widget screen;
-                if (scheduleType == 'light' || scheduleType == 'rotate') {
-                  screen = LightScheduleScreen(plant: plant);
-                } else if (scheduleType == 'care') {
-                  screen = CareScheduleScreen(plant: plant);
-                } else {
-                  screen = WateringScheduleScreen(plant: plant);
-                }
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => screen),
+          children:
+              plantList.map((plant) {
+                return ListTile(
+                  leading:
+                      plant.img != null && plant.img!.isNotEmpty
+                          ? CircleAvatar(
+                            backgroundImage: NetworkImage(plant.img!),
+                          )
+                          : const CircleAvatar(
+                            child: Icon(Icons.local_florist),
+                          ),
+                  title: Text(plant.plantName),
+                  subtitle: Text(plant.type ?? ''),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    Widget screen;
+                    if (scheduleType == 'light' || scheduleType == 'rotate') {
+                      screen = LightScheduleScreen(plant: plant);
+                    } else if (scheduleType == 'care') {
+                      screen = CareScheduleScreen(plant: plant);
+                    } else {
+                      screen = WateringScheduleScreen(plant: plant);
+                    }
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => screen),
+                    );
+                  },
                 );
-              },
-            );
-          }).toList(),
+              }).toList(),
         );
       },
     );
@@ -134,10 +111,6 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
                       color: oliveTitleColor,
                       fontWeight: FontWeight.bold,
                     ),
-                  ),
-                  GestureDetector(
-                    onTap: () => _deletePlant('', 'Your Plants'),
-                    child: Icon(Icons.delete, color: oliveTitleColor, size: 24),
                   ),
                 ],
               ),
@@ -199,15 +172,17 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
                     }
 
                     // map Firestore docs to Plant objects
-                    final List<Plant> plants = snapshot.data!.docs
-                        .map<Plant>((doc) => doc.data() as Plant)
-                        .where((plant) {
-                          final name = plant.plantName.toLowerCase();
-                          final type = (plant.type ?? '').toLowerCase();
-                          final query = _searchQuery.toLowerCase();
-                          return name.contains(query) || type.contains(query);
-                        })
-                        .toList();
+                    final List<Plant> plants =
+                        snapshot.data!.docs
+                            .map<Plant>((doc) => doc.data() as Plant)
+                            .where((plant) {
+                              final name = plant.plantName.toLowerCase();
+                              final type = (plant.type ?? '').toLowerCase();
+                              final query = _searchQuery.toLowerCase();
+                              return name.contains(query) ||
+                                  type.contains(query);
+                            })
+                            .toList();
 
                     if (plants.isEmpty) {
                       return Center(
@@ -238,6 +213,7 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
       ),
       floatingActionButton: _buildFloatingActionBar(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      bottomNavigationBar: CustomNavBarPage(selectedIndex: widget.navIndex),
     );
   }
 
@@ -250,8 +226,9 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-                  PlantProfileScreen(userId: userId, plantId: plant.id),
+              builder:
+                  (context) =>
+                      PlantProfileScreen(userId: userId, plantId: plant.id),
             ),
           );
         },
@@ -262,16 +239,17 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
             Expanded(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: plant.img != null && plant.img!.isNotEmpty
-                    ? Image.network(plant.img!, fit: BoxFit.cover)
-                    : Container(
-                        color: Colors.grey[300],
-                        child: const Icon(
-                          Icons.local_florist,
-                          size: 60,
-                          color: Color(0xFF747822),
+                child:
+                    plant.img != null && plant.img!.isNotEmpty
+                        ? Image.network(plant.img!, fit: BoxFit.cover)
+                        : Container(
+                          color: Colors.grey[300],
+                          child: const Icon(
+                            Icons.local_florist,
+                            size: 60,
+                            color: Color(0xFF747822),
+                          ),
                         ),
-                      ),
               ),
             ),
             const SizedBox(height: 8),
@@ -339,8 +317,8 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
                   color: const Color(0xFF747822),
                 ),
                 tooltip: 'Light Reminder',
-                onPressed: () =>
-                    _showPlantPicker(context, scheduleType: 'light'),
+                onPressed:
+                    () => _showPlantPicker(context, scheduleType: 'light'),
               ),
               const SizedBox(width: 12),
               // care schedule button
@@ -352,8 +330,8 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
                   color: const Color(0xFF747822),
                 ),
                 tooltip: 'Care Reminder',
-                onPressed: () =>
-                    _showPlantPicker(context, scheduleType: 'care'),
+                onPressed:
+                    () => _showPlantPicker(context, scheduleType: 'care'),
               ),
               const SizedBox(width: 12),
               // water schedule button
@@ -365,8 +343,8 @@ class _PlantLibraryScreenState extends State<PlantLibraryScreen> {
                   color: const Color(0xFF747822),
                 ),
                 tooltip: 'Water Reminder',
-                onPressed: () =>
-                    _showPlantPicker(context, scheduleType: 'water'),
+                onPressed:
+                    () => _showPlantPicker(context, scheduleType: 'water'),
               ),
             ],
           ),

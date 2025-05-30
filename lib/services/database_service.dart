@@ -29,8 +29,8 @@ class DatabaseService {
         .doc(user.uid)
         .collection('plants')
         .withConverter<Plant>(
-          fromFirestore: (snapshots, _) =>
-              Plant.fromJson(snapshots.data()!, snapshots.id),
+          fromFirestore:
+              (snapshots, _) => Plant.fromJson(snapshots.data()!, snapshots.id),
           toFirestore: (plant, _) => plant.toJson(),
         );
   }
@@ -38,10 +38,8 @@ class DatabaseService {
   Future<String?> getCurrentUserName() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return null;
-    final doc = await FirebaseFirestore.instance
-        .collection('Users')
-        .doc(uid)
-        .get();
+    final doc =
+        await FirebaseFirestore.instance.collection('Users').doc(uid).get();
     if (doc.exists) {
       final data = doc.data();
       return data?['username'] as String?;
@@ -86,8 +84,8 @@ class DatabaseService {
         .doc(plantId)
         .collection('plant_issues')
         .withConverter<PlantIssue>(
-          fromFirestore: (snap, _) =>
-              PlantIssue.fromJson(snap.data()!, snap.id),
+          fromFirestore:
+              (snap, _) => PlantIssue.fromJson(snap.data()!, snap.id),
           toFirestore: (issue, _) => issue.toJson(),
         );
   }
@@ -104,8 +102,8 @@ class DatabaseService {
         .doc(plantId)
         .collection('plant_journal')
         .withConverter<PlantJournalEntry>(
-          fromFirestore: (snap, _) =>
-              PlantJournalEntry.fromJson(snap.data()!, snap.id),
+          fromFirestore:
+              (snap, _) => PlantJournalEntry.fromJson(snap.data()!, snap.id),
           toFirestore: (issue, _) => issue.toJson(),
         );
   }
@@ -128,8 +126,53 @@ class DatabaseService {
         .update(plant.toJson());
   }
 
-  void deletePlant(String plantId) {
-    _plantsRef.doc(plantId).delete();
+  Future<void> deletePlant(String plantId) async {
+    // Delete plant's image in Cloudinary
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('No user logged in');
+    }
+    final plantDoc = await _plantsRef.doc(plantId).get();
+    final plantData = plantDoc.data();
+    if (plantData == null || plantData.img == null || plantData.img!.isEmpty) {
+      print('No image to delete for plant $plantId');
+    } else {
+      try {
+        final publicId = extractCloudinaryPublicId(plantData.img!);
+        await deleteImageFromCloudinary(publicId);
+      } catch (e) {
+        print("Failed to delete plant image: $e");
+      }
+    }
+    // Delete all plant issues
+    final issuesRef = _plantIssueRef(plantId);
+    final issuesSnapshot = await issuesRef.get();
+    for (var issueDoc in issuesSnapshot.docs) {
+      await issueDoc.reference.delete();
+      print("DELETED ISSUE: ${issueDoc.id}");
+    }
+    // Delete all plant journals
+    final journalRef = _plantJournalRef(plantId);
+    final journalSnapshot = await journalRef.get();
+    for (var journalDoc in journalSnapshot.docs) {
+      // Delete journal images in Cloudinary
+      for (var imageUrl in journalDoc.data().imageUrls) {
+        if (imageUrl.isNotEmpty) {
+          try {
+            final publicId = extractCloudinaryPublicId(imageUrl);
+            await deleteImageFromCloudinary(publicId);
+          } catch (e) {
+            print("Failed to delete journal image: $e");
+          }
+        }
+      }
+      // Delete the journal entry
+      await journalDoc.reference.delete();
+      print("DELETED JOURNAL ENTRY: ${journalDoc.id}");
+    }
+    // Delete the plant doc
+    await _plantsRef.doc(plantId).delete();
+    print('DELETED PLANT: $plantId');
   }
 
   Future<Plant?> getPlantById(String plantId) async {
@@ -188,6 +231,26 @@ class DatabaseService {
     ).doc(journalId).update(updatedEntry.toJson());
   }
 
+  Future<void> deleteJournalEntry(String plantId, String journalId) async {
+    // Delete images in Cloudinary first
+    final journalDoc = await _plantJournalRef(plantId).doc(journalId).get();
+    final entryData = journalDoc.data();
+    if (entryData != null && entryData.imageUrls.isNotEmpty) {
+      for (var imageUrl in entryData.imageUrls) {
+        if (imageUrl.isNotEmpty) {
+          try {
+            final publicId = extractCloudinaryPublicId(imageUrl);
+            await deleteImageFromCloudinary(publicId);
+          } catch (e) {
+            print("Failed to delete journal image: $e");
+          }
+        }
+      }
+    }
+    // Delete the journal entry
+    await _plantJournalRef(plantId).doc(journalId).delete();
+  }
+
   // ----------------------- CARE TIPS -----------------------
   Future<List<String>> getAllCareTips() async {
     try {
@@ -212,10 +275,11 @@ class DatabaseService {
   // fetching all plants-categories values in firestore
   Future<List<String>> getDropdownOptions(String fieldPath) async {
     try {
-      final doc = await _firestore
-          .collection(plantCategoriesRef)
-          .doc(categoriesIdRef)
-          .get();
+      final doc =
+          await _firestore
+              .collection(plantCategoriesRef)
+              .doc(categoriesIdRef)
+              .get();
 
       if (!doc.exists) return [];
 
@@ -296,12 +360,13 @@ class DatabaseService {
   }
 
   Future<Plant?> getPlantProfileById(String userId, String plantId) async {
-    final doc = await FirebaseFirestore.instance
-        .collection('Users')
-        .doc(userId)
-        .collection('plants')
-        .doc(plantId)
-        .get();
+    final doc =
+        await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(userId)
+            .collection('plants')
+            .doc(plantId)
+            .get();
     if (doc.exists && doc.data() != null) {
       return Plant.fromJson(doc.data()!, doc.id);
     }
@@ -312,11 +377,12 @@ class DatabaseService {
     // always lowercase to match in firestore
     final typeLower = plantType.trim().toLowerCase();
 
-    final snapshot = await FirebaseFirestore.instance
-        .collection('guidebook')
-        .where('plantType', isEqualTo: typeLower)
-        .limit(1)
-        .get();
+    final snapshot =
+        await FirebaseFirestore.instance
+            .collection('guidebook')
+            .where('plantType', isEqualTo: typeLower)
+            .limit(1)
+            .get();
 
     if (snapshot.docs.isEmpty) return null;
     final data = snapshot.docs.first.data();
@@ -400,9 +466,10 @@ class DatabaseService {
 
   Stream<List<Reminder>> getReminders() {
     return _remindersRef.snapshots().map(
-      (snapshot) => snapshot.docs
-          .map((doc) => Reminder.fromMap(doc.data(), doc.id))
-          .toList(),
+      (snapshot) =>
+          snapshot.docs
+              .map((doc) => Reminder.fromMap(doc.data(), doc.id))
+              .toList(),
     );
   }
 
@@ -425,9 +492,10 @@ class DatabaseService {
         .collection('plants')
         .snapshots()
         .map(
-          (snap) => snap.docs
-              .map((doc) => Plant.fromJson(doc.data(), doc.id))
-              .toList(),
+          (snap) =>
+              snap.docs
+                  .map((doc) => Plant.fromJson(doc.data(), doc.id))
+                  .toList(),
         );
   }
 
@@ -436,11 +504,12 @@ class DatabaseService {
     required String plantId,
     required String reminderType,
   }) async {
-    final query = await _remindersRef
-        .where('plant_id', isEqualTo: plantId)
-        .where('reminder_type', isEqualTo: reminderType)
-        .limit(1)
-        .get();
+    final query =
+        await _remindersRef
+            .where('plant_id', isEqualTo: plantId)
+            .where('reminder_type', isEqualTo: reminderType)
+            .limit(1)
+            .get();
     if (query.docs.isNotEmpty) {
       final doc = query.docs.first;
       return Reminder.fromMap(doc.data(), doc.id);

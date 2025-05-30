@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:sproutly/widgets/navbar.dart';
 import '../../models/guidebook.dart';
 import 'plant_information_screen.dart';
 
 class GuideBookScreen extends StatefulWidget {
-  const GuideBookScreen({super.key});
+  final int navIndex;
+  const GuideBookScreen({super.key, this.navIndex = 2});
 
   @override
   State<GuideBookScreen> createState() => _GuideBookScreenState();
@@ -36,11 +38,13 @@ class _GuideBookScreenState extends State<GuideBookScreen> {
       if (query.isEmpty) {
         _displayedGuides = _allGuides;
       } else {
-        _displayedGuides = _allGuides
-            .where(
-              (plant) => plant.name.toLowerCase().contains(query.toLowerCase()),
-            )
-            .toList();
+        _displayedGuides =
+            _allGuides
+                .where(
+                  (plant) =>
+                      plant.name.toLowerCase().contains(query.toLowerCase()),
+                )
+                .toList();
       }
     });
   }
@@ -106,62 +110,67 @@ class _GuideBookScreenState extends State<GuideBookScreen> {
               ),
               const SizedBox(height: 24),
               Expanded(
-                child: _loading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _displayedGuides.isEmpty
-                    ? Center(
-                        child: Text(
-                          'No plant type found',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 18,
-                            color: textColor,
+                child:
+                    _loading
+                        ? const Center(child: CircularProgressIndicator())
+                        : _displayedGuides.isEmpty
+                        ? Center(
+                          child: Text(
+                            'No plant type found',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 18,
+                              color: textColor,
+                            ),
                           ),
-                        ),
-                      )
-                    : ListView.separated(
-                        itemCount: _displayedGuides.length,
-                        separatorBuilder: (context, index) => _buildDivider(),
-                        itemBuilder: (context, index) {
-                          final guide = _displayedGuides[index];
-                          return ListTile(
-                            leading: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.network(
-                                guide.plantImage,
-                                width: 80,
-                                height: 100,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const Icon(Icons.local_florist),
-                              ),
-                            ),
-                            title: Text(
-                              guide.name,
-                              style: TextStyle(
-                                color: textColor,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 22,
-                                fontFamily: 'Poppins',
-                              ),
-                            ),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      PlantInformationScreen(guide: guide),
+                        )
+                        : ListView.separated(
+                          itemCount: _displayedGuides.length,
+                          separatorBuilder: (context, index) => _buildDivider(),
+                          itemBuilder: (context, index) {
+                            final guide = _displayedGuides[index];
+                            return ListTile(
+                              leading: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  guide.plantImage,
+                                  width: 80,
+                                  height: 100,
+                                  fit: BoxFit.cover,
+                                  errorBuilder:
+                                      (context, error, stackTrace) =>
+                                          const Icon(Icons.local_florist),
                                 ),
-                              );
-                            },
-                          );
-                        },
-                      ),
+                              ),
+                              title: Text(
+                                guide.name,
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 22,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (_) => PlantInformationScreen(
+                                          guide: guide,
+                                        ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
               ),
             ],
           ),
         ),
       ),
+      bottomNavigationBar: CustomNavBarPage(selectedIndex: widget.navIndex),
     );
   }
 

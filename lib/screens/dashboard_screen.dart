@@ -6,15 +6,14 @@ import 'package:sproutly/services/database_service.dart';
 import '../widgets/navbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sproutly/screens/dev_tools.dart';
-import 'package:sproutly/screens/login_register.dart';
-import 'package:sproutly/screens/add_plant/add_plant_camera.dart';
 import 'package:sproutly/screens/reminders_screen.dart';
 import 'dart:async';
 
 import '../models/reminders.dart';
 
 class DashboardScreen extends StatelessWidget {
-  DashboardScreen({super.key});
+  final int navIndex;
+  DashboardScreen({super.key, this.navIndex = 0});
 
   final User? user = Auth().currentUser;
   final String? userId = FirebaseAuth.instance.currentUser?.uid;
@@ -35,48 +34,12 @@ class DashboardScreen extends StatelessWidget {
     }
   }
 
-  Future<void> signOut(BuildContext context) async {
-    try {
-      await Auth().signOut();
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const LoginPage()),
-        (route) => false,
-      );
-    } catch (e) {
-      debugPrint('Sign out failed: $e');
-    }
-  }
-
-  Widget _userNameWidget() {
-    return FutureBuilder<String?>(
-      future: DatabaseService().getCurrentUserName(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Text('Loading username...');
-        }
-        if (!snapshot.hasData || snapshot.data == null) {
-          return const Text('Username not found');
-        }
-        return Text('Username: ${snapshot.data!}');
-      },
-    );
-  }
-
   Widget _userUid() {
     return Column(
       children: [
         Text(user?.uid ?? 'User uid'),
         Text(user?.email ?? 'User email'),
       ],
-    );
-  }
-
-  Widget _signOutButton(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () async {
-        await signOut(context);
-      },
-      child: const Text('Sign Out'),
     );
   }
 
@@ -121,22 +84,22 @@ class DashboardScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _userNameWidget(),
               _userUid(),
-              _signOutButton(context),
               const SizedBox(height: 24),
 
               ElevatedButton(
-                onPressed: userId == null
-                    ? null
-                    : () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DevToolsPage(userId: userId!),
-                          ),
-                        );
-                      },
+                onPressed:
+                    userId == null
+                        ? null
+                        : () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => DevToolsPage(userId: userId!),
+                            ),
+                          );
+                        },
                 child: const Text('Dev Tools'),
               ),
 
@@ -183,12 +146,13 @@ class DashboardScreen extends StatelessWidget {
                   final now = DateTime.now();
 
                   // filter for today's reminders
-                  final todayReminders = reminders.where((reminder) {
-                    final date = reminder.reminderDate;
-                    return date.year == now.year &&
-                        date.month == now.month &&
-                        date.day == now.day;
-                  }).toList();
+                  final todayReminders =
+                      reminders.where((reminder) {
+                        final date = reminder.reminderDate;
+                        return date.year == now.year &&
+                            date.month == now.month &&
+                            date.day == now.day;
+                      }).toList();
 
                   todayReminders.sort(
                     (a, b) => a.reminderDate.compareTo(b.reminderDate),
@@ -241,30 +205,29 @@ class DashboardScreen extends StatelessWidget {
                       return const Center(child: Text('No plants added yet.'));
                     }
 
-                    final plants = snapshot.data!.docs
-                        .map((doc) => doc.data())
-                        .toList();
+                    final plants =
+                        snapshot.data!.docs.map((doc) => doc.data()).toList();
                     return RawScrollbar(
-                      thumbVisibility: true,
                       thumbColor: const Color(0xFF6C7511),
                       radius: const Radius.circular(8),
                       thickness: 8,
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
-                          children: plants.map((plant) {
-                            return Padding(
-                              padding: const EdgeInsets.only(
-                                right: 12,
-                                bottom: 12,
-                              ),
-                              child: PlantThumbnail(
-                                name: plant.plantName,
-                                imagePath:
-                                    plant.img ?? 'assets/placeholder.png',
-                              ),
-                            );
-                          }).toList(),
+                          children:
+                              plants.map((plant) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(
+                                    right: 12,
+                                    bottom: 12,
+                                  ),
+                                  child: PlantThumbnail(
+                                    name: plant.plantName,
+                                    imagePath:
+                                        plant.img ?? 'assets/placeholder.png',
+                                  ),
+                                );
+                              }).toList(),
                         ),
                       ),
                     );
@@ -295,7 +258,7 @@ class DashboardScreen extends StatelessWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
 
       // navbar
-      bottomNavigationBar: CustomNavBarPage(),
+      bottomNavigationBar: CustomNavBarPage(selectedIndex: navIndex),
     );
   }
 }
@@ -503,9 +466,10 @@ class _TipsWidgetState extends State<TipsWidget> {
                         height: 8,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: _currentPage == index
-                              ? const Color(0xFF4B5502)
-                              : Colors.grey[400],
+                          color:
+                              _currentPage == index
+                                  ? const Color(0xFF4B5502)
+                                  : Colors.grey[400],
                         ),
                       );
                     }),

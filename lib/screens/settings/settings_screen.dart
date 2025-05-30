@@ -1,10 +1,55 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:sproutly/auth.dart';
+import 'package:sproutly/screens/login_register.dart';
 import 'package:sproutly/screens/settings/help_center_screen.dart';
+import 'package:sproutly/services/database_service.dart';
+import 'package:sproutly/widgets/navbar.dart';
 
 const Color oliveGreen = Color(0xFF747822);
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
+  SettingsScreen({super.key});
+
+  final User? user = Auth().currentUser;
+
+  Widget _getUsername(double fontSize) {
+    return FutureBuilder<String?>(
+      future: DatabaseService().getCurrentUserName(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Text('Loading...', style: TextStyle(color: oliveGreen));
+        }
+        if (!snapshot.hasData || snapshot.data == null) {
+          return const Text(
+            'Username not found',
+            style: TextStyle(color: oliveGreen),
+          );
+        }
+        return Text(
+          snapshot.data!,
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.w700,
+            fontSize: fontSize,
+            color: oliveGreen,
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> signOut(BuildContext context) async {
+    try {
+      await Auth().signOut();
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+        (route) => false,
+      );
+    } catch (e) {
+      debugPrint('Sign out failed: $e');
+    }
+  }
 
   Widget _buildSettingsButton(
     BuildContext context,
@@ -34,12 +79,56 @@ class SettingsScreen extends StatelessWidget {
           ),
           elevation: 4,
         ),
-        onPressed: () {
+        onPressed: () async {
           if (text == 'Help Center') {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const HelpCenterScreen()),
             );
+          } else if (text == 'Sign Out') {
+            await signOut(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Signed out successfully')),
+            );
+          } else if (text == 'Clear Database') {
+            final confirm = await showDialog<bool>(
+              context: context,
+              builder:
+                  (context) => AlertDialog(
+                    title: const Text("Confirm Delete"),
+                    content: const Text(
+                      "Are you sure you want to delete all your plants?",
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text("Cancel"),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFF747822),
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text("Delete All"),
+                      ),
+                    ],
+                  ),
+            );
+            if (confirm == true) {
+              try {
+                await DatabaseService().deleteAllUserPlants();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("All plants deleted successfully"),
+                  ),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text("Error: $e")));
+              }
+            }
           }
         },
         child: Row(
@@ -108,17 +197,7 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               SizedBox(height: screenWidth * 0.015),
-              Center(
-                child: Text(
-                  'LeyHong',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.w700,
-                    fontSize: screenWidth * 0.07,
-                    color: oliveGreen,
-                  ),
-                ),
-              ),
+              Center(child: _getUsername(screenWidth * 0.07)),
               SizedBox(height: screenWidth * 0.015),
               Center(
                 child: Container(
@@ -131,7 +210,7 @@ class SettingsScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    'leyhong@hybe.svt',
+                    user?.email ?? 'No email available',
                     style: TextStyle(
                       fontFamily: 'Poppins',
                       fontWeight: FontWeight.w400,
@@ -199,6 +278,7 @@ class SettingsScreen extends StatelessWidget {
           ),
         ),
       ),
+      bottomNavigationBar: CustomNavBarPage(),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sproutly/screens/settings/settings_screen.dart';
 import '../screens/user_plant_library/plant_library.dart';
 import '../screens/guide_book/guide_book.dart';
 import '../screens/dashboard_screen.dart';
@@ -40,7 +41,10 @@ class _CustomNavBarPageState extends State<CustomNavBarPage> {
         );
         break;
       case 3:
-        // Settings - just clickable for now, no navigation
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => SettingsScreen()),
+        );
         break;
     }
   }
@@ -72,12 +76,13 @@ class _CustomNavBarPageState extends State<CustomNavBarPage> {
     return GestureDetector(
       onTap: () => _onItemTapped(index),
       child: Container(
-        decoration: isSelected
-            ? BoxDecoration(
-                color: const Color(0xFFDCE093),
-                borderRadius: BorderRadius.circular(30),
-              )
-            : null,
+        decoration:
+            isSelected
+                ? BoxDecoration(
+                  color: const Color(0xFFDCE093),
+                  borderRadius: BorderRadius.circular(30),
+                )
+                : null,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Icon(icon, color: const Color(0xFF6C7511)),
       ),

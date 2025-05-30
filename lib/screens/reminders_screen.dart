@@ -361,7 +361,7 @@ class RemindersScreen extends StatelessWidget {
   static String _reminderTaskText(Reminder reminder) {
     switch (reminder.reminderType) {
       case 'water':
-        return 'Water the ${reminder.plantName}';
+        return 'Water your ${reminder.plantName}';
       case 'rotate':
         return 'Rotate your ${reminder.plantName}';
       case 'check_light':

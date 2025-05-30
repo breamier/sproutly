@@ -43,7 +43,7 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
     }
     final lower = sunlight.toLowerCase();
     if (lower == _sunlightLevels[0].toLowerCase()) {
-      return {'type': 'check on you plant\'s light exposure', 'days': 21};
+      return {'type': 'check on your plant\'s light exposure', 'days': 21};
     } else if (lower == _sunlightLevels[1].toLowerCase()) {
       return {
         'type': 'It\'s time to rotate your plant for even growth!',

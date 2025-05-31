@@ -74,7 +74,6 @@ class Plant {
     };
   }
 
-  // Add this copyWith method
   Plant copyWith({
     String? id,
     String? plantName,
@@ -105,11 +104,12 @@ class Plants {
 
   factory Plants.fromJson(List<Map<String, Object?>> json) {
     return Plants(
-      plantList: json
-          .asMap()
-          .entries
-          .map((e) => Plant.fromJson(e.value, e.key.toString()))
-          .toList(),
+      plantList:
+          json
+              .asMap()
+              .entries
+              .map((e) => Plant.fromJson(e.value, e.key.toString()))
+              .toList(),
     );
   }
 }

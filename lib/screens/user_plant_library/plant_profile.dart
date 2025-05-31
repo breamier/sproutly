@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import "dart:math";
 import 'package:sproutly/models/plant.dart';
 import 'package:sproutly/screens/growth_journal/growthjournal_entries_screen.dart';
 import 'package:sproutly/services/database_service.dart';
@@ -211,6 +210,7 @@ class _PlantProfileScreenState extends State<PlantProfileScreen> {
                                 color: oliveTitleColor,
                                 width: 1.5,
                               ),
+                              color: oliveTitleColor,
                             ),
                             child: Row(
                               children: [
@@ -218,7 +218,7 @@ class _PlantProfileScreenState extends State<PlantProfileScreen> {
                                   'assets/knowledge_icon.png',
                                   height: 24,
                                   width: 24,
-                                  color: oliveTitleColor,
+                                  color: const Color(0xFFE8E8D5),
                                 ),
                                 const SizedBox(width: 15),
                                 Expanded(
@@ -234,7 +234,7 @@ class _PlantProfileScreenState extends State<PlantProfileScreen> {
                                           style: TextStyle(
                                             fontFamily: 'Poppins',
                                             fontSize: 14,
-                                            color: oliveTitleColor,
+                                            color: Color(0xFFE8E8D5),
                                           ),
                                         );
                                       }
@@ -245,7 +245,7 @@ class _PlantProfileScreenState extends State<PlantProfileScreen> {
                                           style: TextStyle(
                                             fontFamily: 'Poppins',
                                             fontSize: 14,
-                                            color: oliveTitleColor,
+                                            color: const Color(0xFFE8E8D5),
                                           ),
                                         );
                                       }
@@ -254,7 +254,7 @@ class _PlantProfileScreenState extends State<PlantProfileScreen> {
                                         style: TextStyle(
                                           fontFamily: 'Poppins',
                                           fontSize: 14,
-                                          color: oliveTitleColor,
+                                          color: const Color(0xFFE8E8D5),
                                         ),
                                       );
                                     },

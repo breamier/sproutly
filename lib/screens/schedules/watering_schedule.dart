@@ -84,8 +84,8 @@ class _WateringScheduleScreenState extends State<WateringScheduleScreen> {
         );
         await db.addReminder(reminder);
 
-        final notificationsEnabled = await DatabaseService()
-            .getNotificationsEnabled();
+        final notificationsEnabled =
+            await DatabaseService().getNotificationsEnabled();
         if (notificationsEnabled) {
           await notiService.scheduleNotification(
             id: notificationId,
@@ -116,39 +116,6 @@ class _WateringScheduleScreenState extends State<WateringScheduleScreen> {
     }
   }
 
-  Future<void> _testWaterNotification() async {
-    setState(() => _isSaving = true);
-    try {
-      final nowPlus30 = DateTime.now().add(const Duration(seconds: 30));
-      final notiService = Provider.of<NotiService>(context, listen: false);
-      final notificationsEnabled = await DatabaseService()
-          .getNotificationsEnabled();
-      if (notificationsEnabled) {
-        await notiService.scheduleNotification(
-          title: 'Water your ${widget.plant.plantName}',
-          body: 'This is a test watering notification!',
-          hour: nowPlus30.hour,
-          minute: nowPlus30.minute,
-        );
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Test notification scheduled.'),
-          backgroundColor: Color(0xFF747822),
-        ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to schedule test notification: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      setState(() => _isSaving = false);
-    }
-  }
-
   Widget _buildWeekdayChip(int weekday, String label) {
     return FilterChip(
       label: Text(label),
@@ -156,9 +123,10 @@ class _WateringScheduleScreenState extends State<WateringScheduleScreen> {
       selectedColor: const Color(0xFF747822),
       checkmarkColor: Colors.white,
       labelStyle: TextStyle(
-        color: _selectedWeekdays.contains(weekday)
-            ? Colors.white
-            : const Color(0xFF747822),
+        color:
+            _selectedWeekdays.contains(weekday)
+                ? Colors.white
+                : const Color(0xFF747822),
       ),
       backgroundColor: const Color(0xFFE8E8D5),
       shape: RoundedRectangleBorder(
@@ -207,7 +175,7 @@ class _WateringScheduleScreenState extends State<WateringScheduleScreen> {
           child: Text(
             'Watering Schedule',
             style: const TextStyle(
-              fontSize: 32,
+              fontSize: 25,
               fontFamily: 'Curvilingus',
               fontWeight: FontWeight.bold,
               color: Color(0xFF747822),
@@ -352,71 +320,42 @@ class _WateringScheduleScreenState extends State<WateringScheduleScreen> {
                     ),
                     elevation: 0,
                   ),
-                  child: _isSaving
-                      ? const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
+                  child:
+                      _isSaving
+                          ? const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
                               ),
-                            ),
-                            SizedBox(width: 12),
-                            Text(
-                              'Saving...',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                              SizedBox(width: 12),
+                              Text(
+                                'Saving...',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
+                            ],
+                          )
+                          : const Text(
+                            'Save Watering Schedule',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
                             ),
-                          ],
-                        )
-                      : const Text(
-                          'Save Watering Schedule',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
                           ),
-                        ),
                 ),
               ),
               const SizedBox(height: 16),
-
-              // Test Button
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE8E8D5),
-                    disabledBackgroundColor: Colors.grey,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
-                      side: BorderSide(
-                        color: const Color(0xFF747822),
-                        width: 2,
-                      ),
-                    ),
-                    elevation: 0,
-                  ),
-                  onPressed: _isSaving ? null : _testWaterNotification,
-                  child: const Text(
-                    'Test Notification',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF747822),
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
         ),

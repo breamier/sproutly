@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sproutly/auth.dart';
 import 'package:sproutly/screens/add_plant/add_plant_camera.dart';
+import 'package:sproutly/screens/settings/help_center_screen.dart';
 import 'package:sproutly/services/database_service.dart';
 import '../widgets/navbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../screens/user_plant_library/plant_profile.dart';
 import 'package:sproutly/screens/reminders_screen.dart';
 import 'dart:async';
+import 'dart:math' as math;
 
 import '../models/reminders.dart';
 
@@ -34,15 +36,6 @@ class DashboardScreen extends StatelessWidget {
     }
   }
 
-  Widget _userUid() {
-    return Column(
-      children: [
-        //Text(user?.uid ?? 'User uid'),
-        //Text(user?.email ?? 'User email'),
-      ],
-    );
-  }
-
   static const TextStyle headingFont = TextStyle(
     fontFamily: 'Poppins',
     fontWeight: FontWeight.w700,
@@ -54,7 +47,8 @@ class DashboardScreen extends StatelessWidget {
     fontFamily: 'Poppins',
     fontWeight: FontWeight.w400,
     fontSize: 14,
-    color: Colors.black87,
+    fontStyle: FontStyle.italic,
+    color: Color(0xFF4B5502),
   );
 
   @override
@@ -84,7 +78,6 @@ class DashboardScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _userUid(),
               const SizedBox(height: 5),
               // TIPS
               TipsWidget(),
@@ -105,7 +98,10 @@ class DashboardScreen extends StatelessWidget {
                     },
                     child: Text(
                       "See all",
-                      style: bodyFont.copyWith(color: Colors.grey),
+                      style: bodyFont.copyWith(
+                        color: Colors.grey,
+                        fontStyle: FontStyle.normal,
+                      ),
                     ),
                   ),
                 ],
@@ -119,9 +115,11 @@ class DashboardScreen extends StatelessWidget {
                     return const Center(child: CircularProgressIndicator());
                   }
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Text(
-                      "No reminders for today.",
-                      style: DashboardScreen.bodyFont,
+                    return const Center(
+                      child: Text(
+                        "No reminders for today.",
+                        style: DashboardScreen.bodyFont,
+                      ),
                     );
                   }
 
@@ -129,16 +127,20 @@ class DashboardScreen extends StatelessWidget {
                   final now = DateTime.now();
 
                   // filter for today's reminders
-                  final todayReminders = reminders.where((reminder) {
-                    final date = reminder.reminderDate;
-                    return date.year == now.year &&
-                        date.month == now.month &&
-                        date.day == now.day;
-                  }).toList();
+                  final todayReminders =
+                      reminders.where((reminder) {
+                        final date = reminder.reminderDate;
+                        return date.year == now.year &&
+                            date.month == now.month &&
+                            date.day == now.day;
+                      }).toList();
 
-                  todayReminders.sort(
-                    (a, b) => a.reminderDate.compareTo(b.reminderDate),
-                  );
+                  todayReminders.sort((a, b) {
+                    if (a.completed == b.completed) {
+                      return a.reminderDate.compareTo(b.reminderDate);
+                    }
+                    return a.completed ? 1 : -1;
+                  });
 
                   if (todayReminders.isEmpty) {
                     return const Text(
@@ -156,10 +158,20 @@ class DashboardScreen extends StatelessWidget {
                             (reminder) => Padding(
                               padding: const EdgeInsets.only(bottom: 8.0),
                               child: ReminderCard(
+                                reminder: reminder,
                                 task: _reminderTaskText(reminder),
                                 time: DateFormat(
                                   'MMM d, yyyy h:mm a',
                                 ).format(reminder.reminderDate),
+                                onChanged: (value) async {
+                                  final updated = reminder.copyWith(
+                                    completed: value ?? false,
+                                  );
+                                  await DatabaseService().updateReminder(
+                                    reminder.id,
+                                    updated,
+                                  );
+                                },
                               ),
                             ),
                           ),
@@ -184,12 +196,27 @@ class DashboardScreen extends StatelessWidget {
                     }
 
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return const Center(child: Text('No plants added yet.'));
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('Add some plants!', style: bodyFont),
+                            Transform.rotate(
+                              angle: math.pi / 8,
+                              child: Image.asset(
+                                'assets/arrow.png',
+                                height: 150,
+                                width: 150,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
                     }
 
-                    final plants = snapshot.data!.docs
-                        .map((doc) => doc.data())
-                        .toList();
+                    final plants =
+                        snapshot.data!.docs.map((doc) => doc.data()).toList();
                     return RawScrollbar(
                       thumbColor: const Color(0xFF6C7511),
                       radius: const Radius.circular(8),
@@ -197,35 +224,40 @@ class DashboardScreen extends StatelessWidget {
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
-                          children: plants.map((plant) {
-                            return Padding(
-                              padding: const EdgeInsets.only(
-                                right: 12,
-                                bottom: 12,
-                              ),
-                              child: GestureDetector(
-                                onTap: () {
-                                  final userId =
-                                      FirebaseAuth.instance.currentUser?.uid ??
-                                      '';
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => PlantProfileScreen(
-                                        userId: userId,
-                                        plantId: plant.id,
-                                      ),
+                          children:
+                              plants.map((plant) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(
+                                    right: 12,
+                                    bottom: 12,
+                                  ),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      final userId =
+                                          FirebaseAuth
+                                              .instance
+                                              .currentUser
+                                              ?.uid ??
+                                          '';
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) => PlantProfileScreen(
+                                                userId: userId,
+                                                plantId: plant.id,
+                                              ),
+                                        ),
+                                      );
+                                    },
+                                    child: PlantThumbnail(
+                                      name: plant.plantName,
+                                      imagePath:
+                                          plant.img ?? 'assets/placeholder.png',
                                     ),
-                                  );
-                                },
-                                child: PlantThumbnail(
-                                  name: plant.plantName,
-                                  imagePath:
-                                      plant.img ?? 'assets/placeholder.png',
-                                ),
-                              ),
-                            );
-                          }).toList(),
+                                  ),
+                                );
+                              }).toList(),
                         ),
                       ),
                     );
@@ -398,7 +430,10 @@ class _TipsWidgetState extends State<TipsWidget> {
                         color: Color(0xFF4B5502),
                       ),
                       const SizedBox(width: 8),
-                      Text('Tips', style: DashboardScreen.headingFont),
+                      Text(
+                        'Plant Care Tips',
+                        style: DashboardScreen.headingFont,
+                      ),
                     ],
                   ),
                 ),
@@ -464,9 +499,10 @@ class _TipsWidgetState extends State<TipsWidget> {
                         height: 8,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: _currentPage == index
-                              ? const Color(0xFF4B5502)
-                              : Colors.grey[400],
+                          color:
+                              _currentPage == index
+                                  ? const Color(0xFF4B5502)
+                                  : Colors.grey[400],
                         ),
                       );
                     }),
@@ -481,14 +517,27 @@ class _TipsWidgetState extends State<TipsWidget> {
   }
 }
 
-class ReminderCard extends StatelessWidget {
+class ReminderCard extends StatefulWidget {
+  final Reminder reminder;
+  final ValueChanged<bool?>? onChanged;
   final String task;
   final String time;
 
-  const ReminderCard({super.key, required this.task, required this.time});
+  const ReminderCard({
+    super.key,
+    required this.reminder,
+    this.onChanged,
+    required this.task,
+    required this.time,
+  });
 
   static const TextStyle bodyFont = DashboardScreen.bodyFont;
 
+  @override
+  State<ReminderCard> createState() => _ReminderCardState();
+}
+
+class _ReminderCardState extends State<ReminderCard> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -500,9 +549,15 @@ class ReminderCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.radio_button_unchecked,
-            color: Color.fromARGB(255, 85, 91, 16),
+          Transform.scale(
+            scale: 1.5,
+            child: Checkbox(
+              value: widget.reminder.completed,
+              onChanged: widget.onChanged,
+              shape: const CircleBorder(),
+              activeColor: const Color.fromARGB(255, 85, 91, 16),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -514,16 +569,16 @@ class ReminderCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        task,
-                        style: bodyFont.copyWith(
+                        widget.task,
+                        style: ReminderCard.bodyFont.copyWith(
                           fontWeight: FontWeight.w600,
                           color: Color.fromARGB(255, 114, 120, 49),
                         ),
                       ),
                     ),
                     Text(
-                      time,
-                      style: bodyFont.copyWith(
+                      widget.time,
+                      style: ReminderCard.bodyFont.copyWith(
                         color: Colors.grey,
                         fontSize: 12,
                       ),
@@ -571,7 +626,7 @@ class PlantThumbnail extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           name,
-          style: headingFont.copyWith(
+          style: bodyFont.copyWith(
             fontSize: screenWidth * 0.05,
             color: const Color.fromARGB(255, 114, 120, 49),
           ),

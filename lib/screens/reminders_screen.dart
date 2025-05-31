@@ -8,6 +8,19 @@ import 'package:sproutly/screens/schedules/watering_schedule.dart';
 import 'package:sproutly/models/plant.dart';
 
 class RemindersScreen extends StatelessWidget {
+  String _reminderInstructionText(scheduleType) {
+    switch (scheduleType) {
+      case 'light':
+        return 'Select a plant to set a light schedule';
+      case 'care':
+        return 'Select a plant to set a check up schedule';
+      case 'water':
+        return 'Select a plant to set a watering schedule';
+      default:
+        return 'Select a plant to set a reminder';
+    }
+  }
+
   const RemindersScreen({super.key});
 
   static const TextStyle titleFont = TextStyle(
@@ -65,7 +78,7 @@ class RemindersScreen extends StatelessWidget {
                 ),
               ),
               Text(
-                'Select a Plant',
+                _reminderInstructionText(scheduleType),
                 style: const TextStyle(
                   fontFamily: 'Curvilingus',
                   fontWeight: FontWeight.bold,
@@ -75,96 +88,102 @@ class RemindersScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Flexible(
-                child: plantList.isEmpty
-                    ? const Center(
-                        child: Text(
-                          'No plants found.',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 18,
-                            color: Color(0xFF747822),
+                child:
+                    plantList.isEmpty
+                        ? const Center(
+                          child: Text(
+                            'No plants found.',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 18,
+                              color: Color(0xFF747822),
+                            ),
                           ),
-                        ),
-                      )
-                    : ListView.separated(
-                        shrinkWrap: true,
-                        itemCount: plantList.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
-                        itemBuilder: (context, index) {
-                          final plant = plantList[index];
-                          return Material(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(18),
-                            child: InkWell(
+                        )
+                        : ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: plantList.length,
+                          separatorBuilder:
+                              (_, __) => const SizedBox(height: 10),
+                          itemBuilder: (context, index) {
+                            final plant = plantList[index];
+                            return Material(
+                              color: Colors.white,
                               borderRadius: BorderRadius.circular(18),
-                              onTap: () {
-                                Navigator.pop(ctx);
-                                Widget screen;
-                                if (scheduleType == 'light' ||
-                                    scheduleType == 'rotate') {
-                                  screen = LightScheduleScreen(plant: plant);
-                                } else if (scheduleType == 'care') {
-                                  screen = CareScheduleScreen(plant: plant);
-                                } else {
-                                  screen = WateringScheduleScreen(plant: plant);
-                                }
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => screen,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(18),
+                                onTap: () {
+                                  Navigator.pop(ctx);
+                                  Widget screen;
+                                  if (scheduleType == 'light' ||
+                                      scheduleType == 'rotate') {
+                                    screen = LightScheduleScreen(plant: plant);
+                                  } else if (scheduleType == 'care') {
+                                    screen = CareScheduleScreen(plant: plant);
+                                  } else {
+                                    screen = WateringScheduleScreen(
+                                      plant: plant,
+                                    );
+                                  }
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => screen,
+                                    ),
+                                  );
+                                },
+                                child: ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
                                   ),
-                                );
-                              },
-                              child: ListTile(
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 8,
-                                ),
-                                leading:
-                                    plant.img != null && plant.img!.isNotEmpty
-                                    ? ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Image.network(
-                                          plant.img!,
-                                          width: 48,
-                                          height: 48,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      )
-                                    : const CircleAvatar(
-                                        radius: 24,
-                                        backgroundColor: Color(0xFFE8E8D5),
-                                        child: Icon(
-                                          Icons.local_florist,
-                                          color: Color(0xFF747822),
-                                        ),
-                                      ),
-                                title: Text(
-                                  plant.plantName,
-                                  style: const TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
+                                  leading:
+                                      plant.img != null && plant.img!.isNotEmpty
+                                          ? ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            child: Image.network(
+                                              plant.img!,
+                                              width: 48,
+                                              height: 48,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          )
+                                          : const CircleAvatar(
+                                            radius: 24,
+                                            backgroundColor: Color(0xFFE8E8D5),
+                                            child: Icon(
+                                              Icons.local_florist,
+                                              color: Color(0xFF747822),
+                                            ),
+                                          ),
+                                  title: Text(
+                                    plant.plantName,
+                                    style: const TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                      color: Color(0xFF747822),
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    plant.type ?? '',
+                                    style: const TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: 14,
+                                      color: Color(0xFF747822),
+                                    ),
+                                  ),
+                                  trailing: const Icon(
+                                    Icons.chevron_right,
                                     color: Color(0xFF747822),
                                   ),
-                                ),
-                                subtitle: Text(
-                                  plant.type ?? '',
-                                  style: const TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 14,
-                                    color: Color(0xFF747822),
-                                  ),
-                                ),
-                                trailing: const Icon(
-                                  Icons.chevron_right,
-                                  color: Color(0xFF747822),
                                 ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
+                            );
+                          },
+                        ),
               ),
             ],
           ),
@@ -223,36 +242,61 @@ class RemindersScreen extends StatelessWidget {
                     return const Center(child: CircularProgressIndicator());
                   }
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('No reminders found.'));
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Schedule your first plant reminder!',
+                            style: bodyFont,
+                          ),
+                          Image.asset(
+                            'assets/arrow.png',
+                            height: 200,
+                            width: 200,
+                          ),
+                        ],
+                      ),
+                    );
                   }
 
                   final reminders = snapshot.data!;
                   final now = DateTime.now();
 
                   // divide reminders into today's and upcoming
-                  final todayReminders = reminders.where((reminder) {
-                    final date = reminder.reminderDate;
-                    return date.year == now.year &&
-                        date.month == now.month &&
-                        date.day == now.day;
-                  }).toList();
-
-                  final upcomingReminders = reminders.where((reminder) {
-                    final date = reminder.reminderDate;
-                    // return reminders that are not today and not in the past
-                    return !(date.year == now.year &&
+                  final todayReminders =
+                      reminders.where((reminder) {
+                        final date = reminder.reminderDate;
+                        return date.year == now.year &&
                             date.month == now.month &&
-                            date.day == now.day) &&
-                        date.isAfter(now);
-                  }).toList();
+                            date.day == now.day;
+                      }).toList();
+
+                  final upcomingReminders =
+                      reminders.where((reminder) {
+                        final date = reminder.reminderDate;
+                        // return reminders that are not today and not in the past
+                        return !(date.year == now.year &&
+                                date.month == now.month &&
+                                date.day == now.day) &&
+                            date.isAfter(now);
+                      }).toList();
 
                   // sort both lists by date/time ascending
-                  todayReminders.sort(
-                    (a, b) => a.reminderDate.compareTo(b.reminderDate),
-                  );
-                  upcomingReminders.sort(
-                    (a, b) => a.reminderDate.compareTo(b.reminderDate),
-                  );
+                  todayReminders.sort((a, b) {
+                    if (a.completed == b.completed) {
+                      return a.reminderDate.compareTo(b.reminderDate);
+                    }
+                    return a.completed ? 1 : -1;
+                  });
+
+                  upcomingReminders.sort((a, b) {
+                    if (a.completed == b.completed) {
+                      return a.reminderDate.compareTo(b.reminderDate);
+                    }
+                    return a.completed ? 1 : -1;
+                  });
 
                   return SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(
@@ -266,18 +310,30 @@ class RemindersScreen extends StatelessWidget {
                         Text("Today's Reminders", style: headingFont),
                         const SizedBox(height: 12),
                         if (todayReminders.isEmpty)
-                          const Text(
-                            "No reminders for today.",
-                            style: bodyFont,
+                          Center(
+                            child: const Text(
+                              "No reminders for today.",
+                              style: bodyFont,
+                            ),
                           ),
                         ...todayReminders.map(
                           (reminder) => Padding(
                             padding: const EdgeInsets.only(bottom: 8.0),
                             child: ReminderCard(
+                              reminder: reminder,
                               task: _reminderTaskText(reminder),
                               time: DateFormat(
                                 'MMM d, yyyy h:mm a',
                               ).format(reminder.reminderDate),
+                              onChanged: (value) async {
+                                final updated = reminder.copyWith(
+                                  completed: value ?? false,
+                                );
+                                await DatabaseService().updateReminder(
+                                  reminder.id,
+                                  updated,
+                                );
+                              },
                             ),
                           ),
                         ),
@@ -292,10 +348,20 @@ class RemindersScreen extends StatelessWidget {
                           (reminder) => Padding(
                             padding: const EdgeInsets.only(bottom: 8.0),
                             child: ReminderCard(
+                              reminder: reminder,
                               task: _reminderTaskText(reminder),
                               time: DateFormat(
                                 'MMM d, yyyy h:mm a',
                               ).format(reminder.reminderDate),
+                              onChanged: (value) async {
+                                final updated = reminder.copyWith(
+                                  completed: value ?? false,
+                                );
+                                await DatabaseService().updateReminder(
+                                  reminder.id,
+                                  updated,
+                                );
+                              },
                             ),
                           ),
                         ),
@@ -375,18 +441,24 @@ class RemindersScreen extends StatelessWidget {
 }
 
 class ReminderCard extends StatefulWidget {
+  final Reminder reminder;
+  final ValueChanged<bool?>? onChanged;
   final String task;
   final String time;
 
-  const ReminderCard({super.key, required this.task, required this.time});
+  const ReminderCard({
+    super.key,
+    required this.task,
+    required this.time,
+    required this.reminder,
+    this.onChanged,
+  });
 
   @override
   State<ReminderCard> createState() => _ReminderCardState();
 }
 
 class _ReminderCardState extends State<ReminderCard> {
-  bool isChecked = false;
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -401,12 +473,8 @@ class _ReminderCardState extends State<ReminderCard> {
           Transform.scale(
             scale: 1.5,
             child: Checkbox(
-              value: isChecked,
-              onChanged: (bool? value) {
-                setState(() {
-                  isChecked = value ?? false;
-                });
-              },
+              value: widget.reminder.completed,
+              onChanged: widget.onChanged,
               shape: const CircleBorder(),
               activeColor: const Color.fromARGB(255, 85, 91, 16),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,

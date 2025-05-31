@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:sproutly/models/plant.dart';
 import 'package:sproutly/screens/user_plant_library/plant_library.dart';
 import 'package:sproutly/services/database_service.dart';
-import 'package:sproutly/cloudinary/delete_image.dart';
 import 'package:sproutly/cloudinary/upload_image.dart';
 import 'package:sproutly/screens/add_plant/add_plant_camera.dart';
 
@@ -109,39 +108,6 @@ class _EditPlantFormState extends State<EditPlantForm> {
       setState(() => _isDeleting = false);
     }
   }
-
-  // Future<void> _deleteImage() async {
-  //   if (_imageUrl != null && _imageUrl!.isNotEmpty) {
-  //     setState(() => _isUploadingImage = true);
-  //     try {
-  //       final publicId = extractCloudinaryPublicId(_imageUrl!);
-  //       bool success = await deleteImageFromCloudinary(publicId);
-  //       if (success) {
-  //         await DatabaseService().updatePlantImage(
-  //           widget.userId,
-  //           widget.plant.id,
-  //           null,
-  //         );
-  //         setState(() {
-  //           _imageUrl = null;
-  //         });
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           const SnackBar(content: Text("Image deleted successfully.")),
-  //         );
-  //       } else {
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           const SnackBar(content: Text("Failed to delete image.")),
-  //         );
-  //       }
-  //     } catch (e) {
-  //       ScaffoldMessenger.of(
-  //         context,
-  //       ).showSnackBar(SnackBar(content: Text("Error deleting image: $e")));
-  //     } finally {
-  //       setState(() => _isUploadingImage = false);
-  //     }
-  //   }
-  // }
 
   Future<void> _selectNewImage() async {
     final File? newImage = await Navigator.push(

@@ -58,20 +58,6 @@ class DatabaseService {
         .collection('reminders');
   }
 
-  // DatabaseService() {
-  //   if (user == null) {
-  //     throw Exception('No user logged in');
-  //   }
-  //   _plantsRef = _firestore
-  //       .collection(USERS_COLLECTION_REF)
-  //       .doc(userId)
-  //       .collection('plants')
-  //       .withConverter<Plant>(
-  //         fromFirestore:
-  //             (snapshots, _) => Plant.fromJson(snapshots.data()!, snapshots.id),
-  //         toFirestore: (plant, _) => plant.toJson(),
-  //       );
-  // }
   CollectionReference<PlantIssue> _plantIssueRef(String plantId) {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -169,6 +155,12 @@ class DatabaseService {
       // Delete the journal entry
       await journalDoc.reference.delete();
       print("DELETED JOURNAL ENTRY: ${journalDoc.id}");
+    }
+    final remindersQuery =
+        await _remindersRef.where('plant_id', isEqualTo: plantId).get();
+    for (var reminderDoc in remindersQuery.docs) {
+      await reminderDoc.reference.delete();
+      print("DELETED REMINDER: ${reminderDoc.id}");
     }
     // Delete the plant doc
     await _plantsRef.doc(plantId).delete();
@@ -294,7 +286,6 @@ class DatabaseService {
       }
 
       // plant_types fields since nested
-      // didn't include lifespan yet since unsure how the types of plant will work because maraming categories din ng types :')
       if (fieldPath == 'lifespan' ||
           fieldPath == 'water-storage-and-adaptation') {
         final plantTypes = categories['plant_types'] as Map<String, dynamic>?;
@@ -437,6 +428,16 @@ class DatabaseService {
         await journalDoc.reference.delete();
       }
 
+      final remindersRef = FirebaseFirestore.instance
+          .collection('Users')
+          .doc(user.uid)
+          .collection('reminders');
+      final remindersSnapshot = await remindersRef.get();
+      for (var reminderDoc in remindersSnapshot.docs) {
+        await reminderDoc.reference.delete();
+        debugPrint('Deleted reminder: ${reminderDoc.id}');
+      }
+
       // Delete the plant doc itself
       await plantDoc.reference.delete();
       debugPrint('Deleted plant: ${plantDoc.id}');
@@ -473,12 +474,10 @@ class DatabaseService {
     );
   }
 
-  //TODO
   Future<void> updateReminder(String reminderId, Reminder reminder) async {
     await _remindersRef.doc(reminderId).update(reminder.toMap());
   }
 
-  //TODO
   Future<void> deleteReminder(String reminderId) async {
     await _remindersRef.doc(reminderId).delete();
   }

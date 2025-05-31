@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import "dart:math";
 import 'package:sproutly/models/plant.dart';
 import 'package:sproutly/screens/growth_journal/growthjournal_entries_screen.dart';
 import 'package:sproutly/services/database_service.dart';

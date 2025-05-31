@@ -25,16 +25,11 @@ Future<bool> deleteImageFromCloudinary(String publicId) async {
       'signature': signature,
     },
   );
-  //debug
-  print('Cloudinary response status: ${response.statusCode}');
-  print('Cloudinary response body: ${response.body}');
 
   if (response.statusCode == 200) {
     final respData = jsonDecode(response.body);
     return respData['result'] == 'ok';
   } else {
-    print('Failed to delete image: ${response.body}');
-
     return false;
   }
 }

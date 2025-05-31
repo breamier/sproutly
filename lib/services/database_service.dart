@@ -58,20 +58,6 @@ class DatabaseService {
         .collection('reminders');
   }
 
-  // DatabaseService() {
-  //   if (user == null) {
-  //     throw Exception('No user logged in');
-  //   }
-  //   _plantsRef = _firestore
-  //       .collection(USERS_COLLECTION_REF)
-  //       .doc(userId)
-  //       .collection('plants')
-  //       .withConverter<Plant>(
-  //         fromFirestore:
-  //             (snapshots, _) => Plant.fromJson(snapshots.data()!, snapshots.id),
-  //         toFirestore: (plant, _) => plant.toJson(),
-  //       );
-  // }
   CollectionReference<PlantIssue> _plantIssueRef(String plantId) {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -294,7 +280,6 @@ class DatabaseService {
       }
 
       // plant_types fields since nested
-      // didn't include lifespan yet since unsure how the types of plant will work because maraming categories din ng types :')
       if (fieldPath == 'lifespan' ||
           fieldPath == 'water-storage-and-adaptation') {
         final plantTypes = categories['plant_types'] as Map<String, dynamic>?;
@@ -473,12 +458,10 @@ class DatabaseService {
     );
   }
 
-  //TODO
   Future<void> updateReminder(String reminderId, Reminder reminder) async {
     await _remindersRef.doc(reminderId).update(reminder.toMap());
   }
 
-  //TODO
   Future<void> deleteReminder(String reminderId) async {
     await _remindersRef.doc(reminderId).delete();
   }

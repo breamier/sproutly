@@ -7,9 +7,6 @@ import 'package:sproutly/services/database_service.dart';
 import 'package:sproutly/widgets/navbar.dart';
 import 'package:sproutly/services/notification_service.dart';
 import 'package:sproutly/models/reminders.dart';
-import '../dev_tools.dart';
-import '../login_register.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 const Color oliveGreen = Color(0xFF747822);
 
@@ -171,26 +168,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
           } else if (text == 'Clear Database') {
             final confirm = await showDialog<bool>(
               context: context,
-              builder: (context) => AlertDialog(
-                title: const Text("Confirm Delete"),
-                content: const Text(
-                  "Are you sure you want to delete all your plants?",
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: const Text("Cancel"),
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF747822),
-                      foregroundColor: Colors.white,
+              builder:
+                  (context) => AlertDialog(
+                    title: const Text("Confirm Delete"),
+                    content: const Text(
+                      "Are you sure you want to delete all your plants?",
                     ),
-                    onPressed: () => Navigator.pop(context, true),
-                    child: const Text("Delete All"),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text("Cancel"),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFF747822),
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text("Delete All"),
+                      ),
+                    ],
                   ),
-                ],
-              ),
             );
             if (confirm == true) {
               try {
@@ -361,7 +359,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Switch(
                         value: _notificationsEnabled,
                         onChanged: _loading ? null : _toggleNotifications,
-                        activeThumbColor: oliveGreen,
+                        activeColor: oliveGreen,
                       ),
                     ],
                   ),
@@ -388,19 +386,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 iconSize: iconSize,
                 verticalPadding: verticalPadding,
                 horizontalPadding: horizontalPadding,
-              ),
-              ElevatedButton(
-                onPressed: userId == null
-                    ? null
-                    : () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DevToolsPage(userId: userId!),
-                          ),
-                        );
-                      },
-                child: const Text('Dev Tools'),
               ),
             ],
           ),

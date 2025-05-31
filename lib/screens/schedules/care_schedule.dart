@@ -94,8 +94,8 @@ class _CareScheduleScreenState extends State<CareScheduleScreen> {
       await db.addReminder(reminder);
 
       final notiService = Provider.of<NotiService>(context, listen: false);
-      final notificationsEnabled = await DatabaseService()
-          .getNotificationsEnabled();
+      final notificationsEnabled =
+          await DatabaseService().getNotificationsEnabled();
       if (notificationsEnabled) {
         await notiService.scheduleNotification(
           id: notificationId,
@@ -117,55 +117,6 @@ class _CareScheduleScreenState extends State<CareScheduleScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to save care reminder: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      setState(() => _isSaving = false);
-    }
-  }
-
-  Future<void> _testCareNotification() async {
-    setState(() => _isSaving = true);
-    try {
-      final nowPlus30 = DateTime.now().add(const Duration(seconds: 30));
-      final notificationId = nowPlus30.millisecondsSinceEpoch % 1000000000;
-      final db = Provider.of<DatabaseService>(context, listen: false);
-      final notiService = Provider.of<NotiService>(context, listen: false);
-
-      // Save a test care reminder
-      final testReminder = Reminder(
-        id: '',
-        plantName: widget.plant.plantName,
-        plantId: widget.plant.id,
-        reminderDate: nowPlus30,
-        reminderType: 'test_care',
-        completed: false,
-        notificationId: notificationId,
-      );
-      await db.addReminder(testReminder);
-
-      final notificationsEnabled = await DatabaseService()
-          .getNotificationsEnabled();
-      if (notificationsEnabled) {
-        await notiService.scheduleNotification(
-          id: notificationId,
-          title: 'Care for ${widget.plant.plantName}',
-          body: 'This is a test care notification!',
-          hour: nowPlus30.hour,
-          minute: nowPlus30.minute,
-        );
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Test care notification scheduled.'),
-          backgroundColor: Color(0xFF747822),
-        ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to schedule test notification: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -311,69 +262,42 @@ class _CareScheduleScreenState extends State<CareScheduleScreen> {
                     ),
                     elevation: 0,
                   ),
-                  child: _isSaving
-                      ? const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
+                  child:
+                      _isSaving
+                          ? const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
                               ),
-                            ),
-                            SizedBox(width: 12),
-                            Text(
-                              'Saving...',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                              SizedBox(width: 12),
+                              Text(
+                                'Saving...',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
+                            ],
+                          )
+                          : const Text(
+                            'Save Care Reminder',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
                             ),
-                          ],
-                        )
-                      : const Text(
-                          'Save Care Reminder',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
                           ),
-                        ),
                 ),
               ),
               const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE8E8D5),
-                    disabledBackgroundColor: Colors.grey,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
-                      side: BorderSide(
-                        color: const Color(0xFF747822),
-                        width: 2,
-                      ),
-                    ),
-                    elevation: 0,
-                  ),
-                  onPressed: _isSaving ? null : _testCareNotification,
-                  child: Text(
-                    'Test Notification',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF747822),
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
         ),

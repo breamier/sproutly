@@ -98,6 +98,7 @@ flutter:
     - assets/care_icon.png
     - assets/plant_icon.png
     - assets/resolved_icon.png
+    - assets/arrow.png
     - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see

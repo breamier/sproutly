@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sproutly/auth.dart';
 import 'package:sproutly/screens/add_plant/add_plant_camera.dart';
+import 'package:sproutly/screens/settings/help_center_screen.dart';
 import 'package:sproutly/services/database_service.dart';
 import '../widgets/navbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../screens/user_plant_library/plant_profile.dart';
 import 'package:sproutly/screens/reminders_screen.dart';
 import 'dart:async';
+import 'dart:math' as math;
 
 import '../models/reminders.dart';
 
@@ -45,7 +47,8 @@ class DashboardScreen extends StatelessWidget {
     fontFamily: 'Poppins',
     fontWeight: FontWeight.w400,
     fontSize: 14,
-    color: Colors.black87,
+    fontStyle: FontStyle.italic,
+    color: Color(0xFF4B5502),
   );
 
   @override
@@ -95,7 +98,10 @@ class DashboardScreen extends StatelessWidget {
                     },
                     child: Text(
                       "See all",
-                      style: bodyFont.copyWith(color: Colors.grey),
+                      style: bodyFont.copyWith(
+                        color: Colors.grey,
+                        fontStyle: FontStyle.normal,
+                      ),
                     ),
                   ),
                 ],
@@ -109,9 +115,11 @@ class DashboardScreen extends StatelessWidget {
                     return const Center(child: CircularProgressIndicator());
                   }
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Text(
-                      "No reminders for today.",
-                      style: DashboardScreen.bodyFont,
+                    return const Center(
+                      child: Text(
+                        "No reminders for today.",
+                        style: DashboardScreen.bodyFont,
+                      ),
                     );
                   }
 
@@ -188,7 +196,23 @@ class DashboardScreen extends StatelessWidget {
                     }
 
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return const Center(child: Text('No plants added yet.'));
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('Add some plants!', style: bodyFont),
+                            Transform.rotate(
+                              angle: math.pi / 8,
+                              child: Image.asset(
+                                'assets/arrow.png',
+                                height: 150,
+                                width: 150,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
                     }
 
                     final plants =
@@ -406,7 +430,10 @@ class _TipsWidgetState extends State<TipsWidget> {
                         color: Color(0xFF4B5502),
                       ),
                       const SizedBox(width: 8),
-                      Text('Tips', style: DashboardScreen.headingFont),
+                      Text(
+                        'Plant Care Tips',
+                        style: DashboardScreen.headingFont,
+                      ),
                     ],
                   ),
                 ),
@@ -599,7 +626,7 @@ class PlantThumbnail extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           name,
-          style: headingFont.copyWith(
+          style: bodyFont.copyWith(
             fontSize: screenWidth * 0.05,
             color: const Color.fromARGB(255, 114, 120, 49),
           ),

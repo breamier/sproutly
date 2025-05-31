@@ -43,7 +43,7 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
     }
     final lower = sunlight.toLowerCase();
     if (lower == _sunlightLevels[0].toLowerCase()) {
-      return {'type': 'check on your plant\'s light exposure', 'days': 21};
+      return {'type': 'Check on your plant\'s light exposure', 'days': 21};
     } else if (lower == _sunlightLevels[1].toLowerCase()) {
       return {
         'type': 'It\'s time to rotate your plant for even growth!',
@@ -105,17 +105,19 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
       await db.addReminder(reminder);
 
       final notiService = Provider.of<NotiService>(context, listen: false);
-      final notificationsEnabled = await DatabaseService()
-          .getNotificationsEnabled();
+      final notificationsEnabled =
+          await DatabaseService().getNotificationsEnabled();
       if (notificationsEnabled) {
         await notiService.scheduleNotification(
           id: notificationId,
-          title: reminderType == 'rotate'
-              ? 'Rotate your ${widget.plant.plantName}'
-              : 'Check light for ${widget.plant.plantName}',
-          body: reminderType == 'rotate'
-              ? 'It\'s time to rotate your plant for even growth!'
-              : 'Check if your plant is getting enough light.',
+          title:
+              reminderType == 'rotate'
+                  ? 'Rotate your ${widget.plant.plantName}'
+                  : 'Check light for ${widget.plant.plantName}',
+          body:
+              reminderType == 'rotate'
+                  ? 'It\'s time to rotate your plant for even growth!'
+                  : 'Check if your plant is getting enough light.',
           hour: 9,
           minute: 0,
         );
@@ -166,50 +168,6 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
         ],
       ),
     );
-  }
-
-  Future<void> _testLightNotification() async {
-    setState(() => _isSaving = true);
-    try {
-      final nowPlus1 = DateTime.now().add(const Duration(minutes: 1));
-      final notificationId = nowPlus1.millisecondsSinceEpoch % 1000000000;
-      final db = Provider.of<DatabaseService>(context, listen: false);
-      final notiService = Provider.of<NotiService>(context, listen: false);
-
-      // Save a test light reminder
-      final testReminder = Reminder(
-        id: '',
-        plantName: widget.plant.plantName,
-        plantId: widget.plant.id,
-        reminderDate: nowPlus1,
-        reminderType: 'test_light',
-        completed: false,
-        notificationId: notificationId,
-      );
-      await db.addReminder(testReminder);
-
-      final notificationsEnabled = await DatabaseService()
-          .getNotificationsEnabled();
-      if (notificationsEnabled) {
-        await notiService.scheduleNotification(
-          id: notificationId,
-          title: 'Light for ${widget.plant.plantName}',
-          body: 'This is a test light notification!',
-          hour: nowPlus1.hour,
-          minute: nowPlus1.minute,
-        );
-      }
-      debugPrint('Test notification scheduled for $nowPlus1');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Test light notification scheduled.')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to schedule test notification: $e')),
-      );
-    } finally {
-      setState(() => _isSaving = false);
-    }
   }
 
   @override
@@ -325,69 +283,42 @@ class _LightScheduleScreenState extends State<LightScheduleScreen> {
                     ),
                     elevation: 0,
                   ),
-                  child: _isSaving
-                      ? const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
+                  child:
+                      _isSaving
+                          ? const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
                               ),
-                            ),
-                            SizedBox(width: 12),
-                            Text(
-                              'Saving...',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                              SizedBox(width: 12),
+                              Text(
+                                'Saving...',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
+                            ],
+                          )
+                          : const Text(
+                            'Save Light Reminder',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
                             ),
-                          ],
-                        )
-                      : const Text(
-                          'Save Light Reminder',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
                           ),
-                        ),
                 ),
               ),
               const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE8E8D5),
-                    disabledBackgroundColor: Colors.grey,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
-                      side: BorderSide(
-                        color: const Color(0xFF747822),
-                        width: 2,
-                      ),
-                    ),
-                    elevation: 0,
-                  ),
-                  onPressed: _isSaving ? null : _testLightNotification,
-                  child: Text(
-                    'Test Notification',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF747822),
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
         ),

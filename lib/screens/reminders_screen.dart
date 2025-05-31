@@ -8,6 +8,19 @@ import 'package:sproutly/screens/schedules/watering_schedule.dart';
 import 'package:sproutly/models/plant.dart';
 
 class RemindersScreen extends StatelessWidget {
+  String _reminderInstructionText(scheduleType) {
+    switch (scheduleType) {
+      case 'light':
+        return 'Select a plant to set a light schedule';
+      case 'care':
+        return 'Select a plant to set a check up schedule';
+      case 'water':
+        return 'Select a plant to set a watering schedule';
+      default:
+        return 'Select a plant to set a reminder';
+    }
+  }
+
   const RemindersScreen({super.key});
 
   static const TextStyle titleFont = TextStyle(
@@ -65,7 +78,7 @@ class RemindersScreen extends StatelessWidget {
                 ),
               ),
               Text(
-                'Select a Plant',
+                _reminderInstructionText(scheduleType),
                 style: const TextStyle(
                   fontFamily: 'Curvilingus',
                   fontWeight: FontWeight.bold,
@@ -229,7 +242,23 @@ class RemindersScreen extends StatelessWidget {
                     return const Center(child: CircularProgressIndicator());
                   }
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('No reminders found.'));
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Schedule your first plant reminder!',
+                            style: bodyFont,
+                          ),
+                          Image.asset(
+                            'assets/arrow.png',
+                            height: 200,
+                            width: 200,
+                          ),
+                        ],
+                      ),
+                    );
                   }
 
                   final reminders = snapshot.data!;
@@ -281,9 +310,11 @@ class RemindersScreen extends StatelessWidget {
                         Text("Today's Reminders", style: headingFont),
                         const SizedBox(height: 12),
                         if (todayReminders.isEmpty)
-                          const Text(
-                            "No reminders for today.",
-                            style: bodyFont,
+                          Center(
+                            child: const Text(
+                              "No reminders for today.",
+                              style: bodyFont,
+                            ),
                           ),
                         ...todayReminders.map(
                           (reminder) => Padding(

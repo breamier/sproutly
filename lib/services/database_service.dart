@@ -156,6 +156,12 @@ class DatabaseService {
       await journalDoc.reference.delete();
       print("DELETED JOURNAL ENTRY: ${journalDoc.id}");
     }
+    final remindersQuery =
+        await _remindersRef.where('plant_id', isEqualTo: plantId).get();
+    for (var reminderDoc in remindersQuery.docs) {
+      await reminderDoc.reference.delete();
+      print("DELETED REMINDER: ${reminderDoc.id}");
+    }
     // Delete the plant doc
     await _plantsRef.doc(plantId).delete();
     print('DELETED PLANT: $plantId');
@@ -420,6 +426,16 @@ class DatabaseService {
       final journalSnapshot = await journalRef.get();
       for (var journalDoc in journalSnapshot.docs) {
         await journalDoc.reference.delete();
+      }
+
+      final remindersRef = FirebaseFirestore.instance
+          .collection('Users')
+          .doc(user.uid)
+          .collection('reminders');
+      final remindersSnapshot = await remindersRef.get();
+      for (var reminderDoc in remindersSnapshot.docs) {
+        await reminderDoc.reference.delete();
+        debugPrint('Deleted reminder: ${reminderDoc.id}');
       }
 
       // Delete the plant doc itself
